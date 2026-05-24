@@ -2,7 +2,12 @@ import { StrictMode } from 'react'
 import './index.css'
 import { createRoot } from 'react-dom/client'
 import { CssBaseline, ThemeProvider, createTheme } from '@mui/material'
+import Framework7 from 'framework7/lite-bundle'
+import Framework7React from 'framework7-react'
+import 'framework7/css/bundle'
 import App from './App.jsx'
+
+Framework7.use(Framework7React)
 
 const theme = createTheme({
   palette: {
