@@ -2,8 +2,8 @@ import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet'
 import 'leaflet/dist/leaflet.css'
 import './Map.css'
 
-const position = [51.505, -0.09]
-const marker = [51.505, -0.08]
+const position = [54.4047, 10.2256]
+const marker = [54.4047, 10.2256]
 
 function Map() {
   return (
@@ -14,7 +14,7 @@ function Map() {
       />
       <Marker position={marker}>
         <Popup>
-          Name of the place <br /> Easily customizable.
+          Name of the place <br /> LABOE!!!!!
         </Popup>
       </Marker>
     </MapContainer>
