@@ -1,9 +1,9 @@
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet'
-import 'leaflet/dist/leaflet.css'
-import './Map.css'
+import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import 'leaflet/dist/leaflet.css';
+import './Map.css';
 
-const position = [54.4047, 10.2256]
-const marker = [54.4047, 10.2256]
+const position = [54.4047, 10.2256];
+const marker = [54.4047, 10.2256];
 
 function Map() {
   return (
@@ -18,7 +18,7 @@ function Map() {
         </Popup>
       </Marker>
     </MapContainer>
-  )
+  );
 }
 
-export default Map
+export default Map;
