@@ -1,6 +1,7 @@
 import { Box, Typography, AppBar, Toolbar } from '@mui/material'
 import LocationOnIcon from '@mui/icons-material/LocationOn'
 import { App as F7App, View, Page } from 'framework7-react'
+import Map from './Map.jsx'
 
 const f7params = {
   name: 'Location Based Service',
@@ -23,14 +24,7 @@ function App() {
               </Toolbar>
             </AppBar>
 
-            <Box
-              component="main"
-              sx={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-            >
-              <Typography variant="body1" color="text.secondary">
-                Karte wird hier angezeigt
-              </Typography>
-            </Box>
+            <Map />
           </Box>
         </Page>
       </View>
