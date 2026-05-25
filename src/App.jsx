@@ -1,13 +1,13 @@
-import { Box, Typography, AppBar, Toolbar } from '@mui/material'
-import LocationOnIcon from '@mui/icons-material/LocationOn'
-import { App as F7App, View, Page } from 'framework7-react'
-import Map from './Map.jsx'
+import { Box, Typography, AppBar, Toolbar } from '@mui/material';
+import LocationOnIcon from '@mui/icons-material/LocationOn';
+import { App as F7App, View, Page } from 'framework7-react';
+import Map from './Map.jsx';
 
 const f7params = {
   name: 'Location Based Service',
   id: 'de.dhbw.location-based-service',
   theme: 'auto',
-}
+};
 
 function App() {
   return (
@@ -29,7 +29,7 @@ function App() {
         </Page>
       </View>
     </F7App>
-  )
+  );
 }
 
-export default App
+export default App;
