@@ -2,6 +2,7 @@ import { Box, Typography, AppBar, Toolbar } from '@mui/material';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import { App as F7App, View, Page } from 'framework7-react';
 import Map from './Map.jsx';
+import PWAUpdatePrompt from './PWAUpdatePrompt.jsx';
 
 const f7params = {
   name: 'Location Based Service',
@@ -26,6 +27,7 @@ function App() {
 
             <Map />
           </Box>
+          <PWAUpdatePrompt />
         </Page>
       </View>
     </F7App>
