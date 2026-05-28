@@ -2,3 +2,22 @@
   height: 100%;
   width: 100%;
 }
+
+.locate-control .locate-btn {
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fff;
+  border: none;
+  cursor: pointer;
+  font-size: 18px;
+  line-height: 1;
+  color: #333;
+  padding: 0;
+}
+
+.locate-control .locate-btn:hover {
+  background: #f4f4f4;
+}

@@ -1,16 +1,15 @@
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMapEvents } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import './Map.css';
+import LocateControl from './components/LocateControl';
 
 const initialPosition = [54.4047, 10.2256];
 
-function LocationMarker() {
-  const [position, setPosition] = useState(null);
-
+function LocationMarker({ position, onSelect }) {
   useMapEvents({
     click(e) {
-      setPosition(e.latlng);
+      onSelect(e.latlng);
     },
   });
 
@@ -24,13 +23,17 @@ function LocationMarker() {
 }
 
 function Map() {
+  const [position, setPosition] = useState(null);
+  const handleLocate = useCallback((latlng) => setPosition(latlng), []);
+
   return (
     <MapContainer center={initialPosition} zoom={15} scrollWheelZoom={true} className="map-container">
       <TileLayer
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
-      <LocationMarker />
+      <LocationMarker position={position} onSelect={setPosition} />
+      <LocateControl onLocate={handleLocate} />
     </MapContainer>
   );
 }
