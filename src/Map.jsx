@@ -1,10 +1,20 @@
 import { useCallback, useState } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMapEvents } from 'react-leaflet';
+import L from 'leaflet';
+import markerIconUrl from './assets/marker.png';
 import 'leaflet/dist/leaflet.css';
 import './Map.css';
 import LocateControl from './components/LocateControl';
 
 const initialPosition = [54.4047, 10.2256];
+
+const customMarkerIcon = new L.Icon({
+  iconUrl: markerIconUrl,
+  iconRetinaUrl: markerIconUrl,
+  iconSize: [32, 32],
+  iconAnchor: [16, 32],
+  popupAnchor: [0, -32],
+});
 
 function LocationMarker({ position, onSelect }) {
   useMapEvents({
@@ -14,7 +24,7 @@ function LocationMarker({ position, onSelect }) {
   });
 
   return position === null ? null : (
-    <Marker position={position}>
+    <Marker position={position} icon={customMarkerIcon}>
       <Popup>
         Name of the place <br /> LABOE!!!!!
       </Popup>
