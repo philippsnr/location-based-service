@@ -5,6 +5,7 @@ import markerIconUrl from './assets/marker.png';
 import 'leaflet/dist/leaflet.css';
 import './Map.css';
 import LocateControl from './components/LocateControl';
+import LocationInfoSheet from './components/LocationInfoSheet';
 
 const defaultPosition = [54.4047, 10.2256];
 
@@ -16,7 +17,59 @@ const customMarkerIcon = new L.Icon({
   popupAnchor: [0, -32],
 });
 
-function LocationMarker({ position, onSelect }) {
+async function fetchLocationInfo(lat, lng) {
+  const nominatimRes = await fetch(
+    `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&zoom=18&extratags=1&namedetails=1`,
+    { headers: { 'Accept-Language': 'en' } }
+  );
+  const nominatimData = await nominatimRes.json();
+
+  const addr = nominatimData.address ?? {};
+  const placeName =
+    addr.attraction ||
+    addr.tourism ||
+    addr.amenity ||
+    addr.leisure ||
+    addr.historic ||
+    addr.building ||
+    addr.man_made ||
+    addr.natural ||
+    addr.park ||
+    addr.village ||
+    addr.town ||
+    addr.city ||
+    addr.suburb ||
+    addr.neighbourhood ||
+    addr.county ||
+    addr.state ||
+    addr.road ||
+    nominatimData.name ||
+    nominatimData.display_name?.split(',')[0] ||
+    'Unknown location';
+
+  const searchRes = await fetch(
+    `https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(placeName)}&format=json&origin=*`
+  );
+  const searchData = await searchRes.json();
+  const firstResult = searchData?.query?.search?.[0];
+
+  if (!firstResult) {
+    return { placeName, wikiSummary: null, wikiUrl: null };
+  }
+
+  const summaryRes = await fetch(
+    `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(firstResult.title)}`
+  );
+  const summaryData = await summaryRes.json();
+
+  return {
+    placeName,
+    wikiSummary: summaryData.extract ?? null,
+    wikiUrl: summaryData.content_urls?.desktop?.page ?? null,
+  };
+}
+
+function LocationMarker({ position, onSelect, placeName }) {
   useMapEvents({
     click(e) {
       onSelect(e.latlng);
@@ -25,9 +78,7 @@ function LocationMarker({ position, onSelect }) {
 
   return position === null ? null : (
     <Marker position={position} icon={customMarkerIcon}>
-      <Popup>
-        Name of the place <br /> LABOE!!!!!
-      </Popup>
+      <Popup>{placeName ?? 'Loading…'}</Popup>
     </Marker>
   );
 }
@@ -49,14 +100,36 @@ function ZoomToLocation({ position }) {
 function Map() {
   const [position, setPosition] = useState(null);
   const [mapCenter, setMapCenter] = useState(null);
-  const handleLocate = useCallback((latlng) => setPosition(latlng), []);
+  const [sheetOpen, setSheetOpen] = useState(false);
+  const [locationInfo, setLocationInfo] = useState(null);
+  const [infoLoading, setInfoLoading] = useState(false);
+
+  const handlePositionSelect = useCallback(async (latlng) => {
+    const lat = latlng.lat ?? latlng[0];
+    const lng = latlng.lng ?? latlng[1];
+    setPosition(latlng);
+    setSheetOpen(true);
+    setInfoLoading(true);
+    setLocationInfo(null);
+    try {
+      const info = await fetchLocationInfo(lat, lng);
+      setLocationInfo(info);
+    } catch (err) {
+      console.warn('Failed to fetch location info:', err);
+      setLocationInfo({ placeName: 'Unknown location', wikiSummary: null, wikiUrl: null });
+    } finally {
+      setInfoLoading(false);
+    }
+  }, []);
+
+  const handleLocate = useCallback((latlng) => handlePositionSelect(latlng), [handlePositionSelect]);
 
   useEffect(() => {
     // Request user's geolocation on component mount
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const { latitude, longitude } = position.coords;
+        (pos) => {
+          const { latitude, longitude } = pos.coords;
           const userPosition = [latitude, longitude];
           setMapCenter(userPosition);
           setPosition(userPosition);
@@ -79,15 +152,23 @@ function Map() {
   }
 
   return (
-    <MapContainer center={mapCenter} zoom={15} scrollWheelZoom={true} className="map-container">
-      <TileLayer
-        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+    <>
+      <MapContainer center={mapCenter} zoom={15} scrollWheelZoom={true} className="map-container">
+        <TileLayer
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+        />
+        <ZoomToLocation position={position} />
+        <LocationMarker position={position} onSelect={handlePositionSelect} placeName={locationInfo?.placeName} />
+        <LocateControl onLocate={handleLocate} />
+      </MapContainer>
+      <LocationInfoSheet
+        opened={sheetOpen}
+        onClosed={() => setSheetOpen(false)}
+        locationInfo={locationInfo}
+        loading={infoLoading}
       />
-      <ZoomToLocation position={position} />
-      <LocationMarker position={position} onSelect={setPosition} />
-      <LocateControl onLocate={handleLocate} />
-    </MapContainer>
+    </>
   );
 }
 
