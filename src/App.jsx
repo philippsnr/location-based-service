@@ -1,5 +1,5 @@
 import { Box, Typography, AppBar, Toolbar } from '@mui/material';
-import LocationOnIcon from '@mui/icons-material/LocationOn';
+import PublicIcon from '@mui/icons-material/Public';
 import { App as F7App, View, Page } from 'framework7-react';
 import Map from './Map.jsx';
 import PWAUpdatePrompt from './PWAUpdatePrompt.jsx';
@@ -18,7 +18,7 @@ function App() {
           <Box sx={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
             <AppBar position="static">
               <Toolbar>
-                <LocationOnIcon sx={{ mr: 1 }} />
+                <PublicIcon sx={{ mr: 1 }} />
                 <Typography variant="h6" component="h1">
                   Location Based Service
                 </Typography>
