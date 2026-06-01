@@ -6,6 +6,7 @@ import 'leaflet/dist/leaflet.css';
 import './Map.css';
 import LocateControl from './components/LocateControl';
 import LocationInfoSheet from './components/LocationInfoSheet';
+import { reverseGeocode } from './services/nominatim';
 
 const defaultPosition = [54.4047, 10.2256];
 
@@ -18,34 +19,7 @@ const customMarkerIcon = new L.Icon({
 });
 
 async function fetchLocationInfo(lat, lng) {
-  const nominatimRes = await fetch(
-    `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&zoom=18&extratags=1&namedetails=1`,
-    { headers: { 'Accept-Language': 'en' } }
-  );
-  const nominatimData = await nominatimRes.json();
-
-  const addr = nominatimData.address ?? {};
-  const placeName =
-    addr.attraction ||
-    addr.tourism ||
-    addr.amenity ||
-    addr.leisure ||
-    addr.historic ||
-    addr.building ||
-    addr.man_made ||
-    addr.natural ||
-    addr.park ||
-    addr.village ||
-    addr.town ||
-    addr.city ||
-    addr.suburb ||
-    addr.neighbourhood ||
-    addr.county ||
-    addr.state ||
-    addr.road ||
-    nominatimData.name ||
-    nominatimData.display_name?.split(',')[0] ||
-    'Unknown location';
+  const { placeName } = await reverseGeocode(lat, lng);
 
   const searchRes = await fetch(
     `https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(placeName)}&format=json&origin=*`
