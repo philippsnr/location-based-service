@@ -132,7 +132,7 @@ function Map() {
           const { latitude, longitude } = pos.coords;
           const userPosition = [latitude, longitude];
           setMapCenter(userPosition);
-          setPosition(userPosition);
+          handlePositionSelect(userPosition);
         },
         (error) => {
           console.warn('Geolocation error:', error);
@@ -144,7 +144,7 @@ function Map() {
       console.warn('Geolocation is not supported by this browser');
       setMapCenter(defaultPosition);
     }
-  }, []);
+  }, [handlePositionSelect]);
 
   // Only render map when center position is determined
   if (!mapCenter) {
