@@ -50,8 +50,30 @@ function LocationInfoSheet({ opened, onClosed, locationInfo, loading }) {
         onClick={handleClick}
       >
         <div className="location-info-sheet__handle" />
-        <div className="location-info-sheet__place-name">
-          {loading ? 'Loading…' : locationInfo?.placeName ?? 'Unknown location'}
+        <div className="location-info-sheet__header-container">
+          <div className="location-info-sheet__place-name">
+            {loading ? 'Loading…' : locationInfo?.placeName ?? 'Unknown location'}
+          </div>
+          <button
+            className="location-info-sheet__reset-btn"
+            onClick={handleClose}
+            aria-label="Close"
+            title="Close"
+          >
+            <svg
+              viewBox="0 0 24 24"
+              width="20"
+              height="20"
+              stroke="white"
+              strokeWidth="2"
+              fill="none"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
+          </button>
         </div>
       </div>
       <div className="location-info-sheet__scroll">
