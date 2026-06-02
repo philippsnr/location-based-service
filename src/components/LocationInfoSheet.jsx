@@ -30,17 +30,25 @@ function LocationInfoSheet({ opened, onClosed, locationInfo, loading }) {
         <Block>
           {loading ? (
             <p>Fetching information…</p>
-          ) : locationInfo?.wikiSummary ? (
+          ) : (
             <>
-              <p>{locationInfo.wikiSummary}</p>
-              {locationInfo.wikiUrl && (
-                <Link external href={locationInfo.wikiUrl} target="_blank">
-                  Read more on Wikipedia
-                </Link>
+              <div style={{ marginBottom: '12px', fontSize: '14px', color: '#666' }}>
+                <div><strong>Latitude:</strong> {locationInfo?.lat?.toFixed(6)}</div>
+                <div><strong>Longitude:</strong> {locationInfo?.lng?.toFixed(6)}</div>
+              </div>
+              {locationInfo?.wikiSummary ? (
+                <>
+                  <p>{locationInfo.wikiSummary}</p>
+                  {locationInfo.wikiUrl && (
+                    <Link external href={locationInfo.wikiUrl} target="_blank">
+                      Read more on Wikipedia
+                    </Link>
+                  )}
+                </>
+              ) : (
+                <p>No Wikipedia information found for this location.</p>
               )}
             </>
-          ) : (
-            <p>No Wikipedia information found for this location.</p>
           )}
         </Block>
       </PageContent>

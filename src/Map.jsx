@@ -28,7 +28,7 @@ async function fetchLocationInfo(lat, lng) {
   const firstResult = searchData?.query?.search?.[0];
 
   if (!firstResult) {
-    return { placeName, wikiSummary: null, wikiUrl: null, wikiThumbnail: null };
+    return { placeName, lat, lng, wikiSummary: null, wikiUrl: null, wikiThumbnail: null };
   }
 
   const summaryRes = await fetch(
@@ -38,6 +38,8 @@ async function fetchLocationInfo(lat, lng) {
 
   return {
     placeName,
+    lat,
+    lng,
     wikiSummary: summaryData.extract ?? null,
     wikiUrl: summaryData.content_urls?.desktop?.page ?? null,
     wikiThumbnail: summaryData.thumbnail?.source ?? null,
@@ -91,7 +93,7 @@ function Map() {
       setLocationInfo(info);
     } catch (err) {
       console.warn('Failed to fetch location info:', err);
-      setLocationInfo({ placeName: 'Unknown location', wikiSummary: null, wikiUrl: null, wikiThumbnail: null });
+      setLocationInfo({ placeName: 'Unknown location', lat, lng, wikiSummary: null, wikiUrl: null, wikiThumbnail: null });
     } finally {
       setInfoLoading(false);
     }
