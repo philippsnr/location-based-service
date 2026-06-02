@@ -5,25 +5,27 @@ const DRAG_THRESHOLD = 40;
 
 function LocationInfoSheet({ opened, onClosed, locationInfo, loading }) {
   const [isExpanded, setIsExpanded] = useState(false);
-  const dragRef = useRef({ startY: 0, dragged: false });
+  const dragRef = useRef({ dragged: false });
 
   const handleClose = useCallback(() => {
     setIsExpanded(false);
     onClosed();
   }, [onClosed]);
 
-  const handlePointerDown = useCallback((e) => {
-    dragRef.current = { startY: e.clientY, dragged: false };
-    e.currentTarget.setPointerCapture(e.pointerId);
-  }, []);
+  const handlePointerDown = (e) => {
+    const startY = e.clientY;
+    dragRef.current.dragged = false;
 
-  const handlePointerUp = useCallback((e) => {
-    const dy = dragRef.current.startY - e.clientY;
-    if (Math.abs(dy) > DRAG_THRESHOLD) {
-      dragRef.current.dragged = true;
-      setIsExpanded(dy > 0);
-    }
-  }, []);
+    const onUp = (upEvent) => {
+      document.removeEventListener('pointerup', onUp);
+      const dy = startY - upEvent.clientY;
+      if (Math.abs(dy) > DRAG_THRESHOLD) {
+        dragRef.current.dragged = true;
+        setIsExpanded(dy > 0);
+      }
+    };
+    document.addEventListener('pointerup', onUp);
+  };
 
   const handleClick = useCallback(() => {
     if (dragRef.current.dragged) {
@@ -45,7 +47,6 @@ function LocationInfoSheet({ opened, onClosed, locationInfo, loading }) {
       <div
         className="sheet-modal-swipe-step"
         onPointerDown={handlePointerDown}
-        onPointerUp={handlePointerUp}
         onClick={handleClick}
       >
         <div className="location-info-sheet__handle" />
