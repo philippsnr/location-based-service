@@ -17,6 +17,13 @@ function LocationInfoSheet({ opened, onClosed, locationInfo, loading }) {
         <div className="location-info-sheet__handle" />
       </div>
       <PageContent>
+        {!loading && locationInfo?.wikiThumbnail && (
+          <img
+            src={locationInfo.wikiThumbnail}
+            alt={locationInfo.placeName}
+            style={{ width: '100%', maxHeight: '180px', objectFit: 'cover', display: 'block' }}
+          />
+        )}
         <BlockTitle large>
           {loading ? 'Loading…' : locationInfo?.placeName ?? 'Unknown location'}
         </BlockTitle>
