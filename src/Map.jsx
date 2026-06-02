@@ -72,12 +72,21 @@ function ZoomToLocation({ position }) {
   return null;
 }
 
-function Map() {
+function Map({ onMarkerChange, resetSignal }) {
   const [position, setPosition] = useState(null);
   const [mapCenter, setMapCenter] = useState(null);
   const [sheetOpen, setSheetOpen] = useState(false);
   const [locationInfo, setLocationInfo] = useState(null);
   const [infoLoading, setInfoLoading] = useState(false);
+
+  // Handle reset signal from parent
+  useEffect(() => {
+    if (resetSignal > 0) {
+      setPosition(null);
+      setSheetOpen(false);
+      setLocationInfo(null);
+    }
+  }, [resetSignal]);
 
   const handlePositionSelect = useCallback(async (latlng) => {
     const lat = latlng.lat ?? latlng[0];
@@ -98,6 +107,13 @@ function Map() {
   }, []);
 
   const handleLocate = useCallback((latlng) => handlePositionSelect(latlng), [handlePositionSelect]);
+
+  // Notify parent when marker state changes
+  useEffect(() => {
+    if (onMarkerChange) {
+      onMarkerChange(position !== null);
+    }
+  }, [position, onMarkerChange]);
 
   useEffect(() => {
     // Request user's geolocation on component mount
