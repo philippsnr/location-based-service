@@ -1,39 +1,109 @@
 import { useCallback, useRef, useState } from 'react';
+import { flushSync } from 'react-dom';
 import { Sheet, Block, Link } from 'framework7-react';
 
+const PEEK_HEIGHT = 80;
+const FULL_HEIGHT_RATIO = 0.92;
 const DRAG_THRESHOLD = 40;
+const SNAP_DURATION = 300;
+
+function getFullHeight() {
+  return Math.round(window.innerHeight * FULL_HEIGHT_RATIO);
+}
+
+function snapTo(sheetEl, targetHeight, onDone) {
+  let settled = false;
+  const finish = () => {
+    if (settled) return;
+    settled = true;
+    sheetEl.removeEventListener('transitionend', onTransEnd);
+    onDone();
+    sheetEl.style.height = '';
+    sheetEl.style.transition = '';
+  };
+  const onTransEnd = (ev) => {
+    if (ev.propertyName === 'height') finish();
+  };
+  sheetEl.style.transition = `transform var(--f7-sheet-transition-duration), height ${SNAP_DURATION}ms ease`;
+  sheetEl.style.height = `${targetHeight}px`;
+  sheetEl.addEventListener('transitionend', onTransEnd);
+  setTimeout(finish, SNAP_DURATION + 50);
+}
 
 function LocationInfoSheet({ opened, onClosed, locationInfo, loading }) {
   const [isExpanded, setIsExpanded] = useState(false);
+  const isExpandedRef = useRef(false);
   const dragRef = useRef({ dragged: false });
+  const sheetElRef = useRef(null);
+
+  const applyExpanded = useCallback((value) => {
+    isExpandedRef.current = value;
+    setIsExpanded(value);
+  }, []);
 
   const handleClose = useCallback(() => {
-    setIsExpanded(false);
+    if (sheetElRef.current) {
+      sheetElRef.current.style.height = '';
+      sheetElRef.current.style.transition = '';
+    }
+    applyExpanded(false);
     onClosed();
-  }, [onClosed]);
+  }, [onClosed, applyExpanded]);
 
   const handlePointerDown = (e) => {
+    const sheetEl = e.currentTarget.closest('.sheet-modal');
+    if (!sheetEl) return;
+    sheetElRef.current = sheetEl;
+
+    const fullHeight = getFullHeight();
     const startY = e.clientY;
+    const startHeight = sheetEl.offsetHeight;
     dragRef.current.dragged = false;
 
-    const onUp = (upEvent) => {
-      document.removeEventListener('pointerup', onUp);
-      const dy = startY - upEvent.clientY;
-      if (Math.abs(dy) > DRAG_THRESHOLD) {
-        dragRef.current.dragged = true;
-        setIsExpanded(dy > 0);
-      }
+    sheetEl.style.transition = 'transform var(--f7-sheet-transition-duration)';
+
+    const onMove = (ev) => {
+      const newH = Math.min(fullHeight, Math.max(PEEK_HEIGHT, startHeight + (startY - ev.clientY)));
+      sheetEl.style.height = `${newH}px`;
     };
+
+    const onUp = (ev) => {
+      document.removeEventListener('pointermove', onMove);
+      document.removeEventListener('pointerup', onUp);
+
+      if (Math.abs(startY - ev.clientY) > DRAG_THRESHOLD) dragRef.current.dragged = true;
+
+      const currentH = sheetEl.offsetHeight;
+      const fullH = getFullHeight();
+      const shouldExpand = currentH > (PEEK_HEIGHT + fullH) / 2;
+      const targetH = shouldExpand ? fullH : PEEK_HEIGHT;
+
+      snapTo(sheetEl, targetH, () => {
+        flushSync(() => applyExpanded(shouldExpand));
+      });
+    };
+
+    document.addEventListener('pointermove', onMove);
     document.addEventListener('pointerup', onUp);
   };
 
-  const handleClick = useCallback(() => {
+  const handleClick = (e) => {
     if (dragRef.current.dragged) {
       dragRef.current.dragged = false;
       return;
     }
-    setIsExpanded(prev => !prev);
-  }, []);
+    const sheetEl = e.currentTarget.closest('.sheet-modal');
+    if (!sheetEl) return;
+    sheetElRef.current = sheetEl;
+
+    const newExpanded = !isExpandedRef.current;
+    const fullH = getFullHeight();
+    const targetH = newExpanded ? fullH : PEEK_HEIGHT;
+
+    snapTo(sheetEl, targetH, () => {
+      flushSync(() => applyExpanded(newExpanded));
+    });
+  };
 
   return (
     <Sheet
