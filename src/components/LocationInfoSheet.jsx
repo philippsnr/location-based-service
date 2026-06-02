@@ -1,28 +1,52 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { Sheet, Block, Link } from 'framework7-react';
+
+const DRAG_THRESHOLD = 40;
 
 function LocationInfoSheet({ opened, onClosed, locationInfo, loading }) {
   const [isExpanded, setIsExpanded] = useState(false);
+  const dragRef = useRef({ startY: 0, dragged: false });
 
   const handleClose = useCallback(() => {
     setIsExpanded(false);
     onClosed();
   }, [onClosed]);
 
+  const handlePointerDown = useCallback((e) => {
+    dragRef.current = { startY: e.clientY, dragged: false };
+    e.currentTarget.setPointerCapture(e.pointerId);
+  }, []);
+
+  const handlePointerUp = useCallback((e) => {
+    const dy = dragRef.current.startY - e.clientY;
+    if (Math.abs(dy) > DRAG_THRESHOLD) {
+      dragRef.current.dragged = true;
+      setIsExpanded(dy > 0);
+    }
+  }, []);
+
+  const handleClick = useCallback(() => {
+    if (dragRef.current.dragged) {
+      dragRef.current.dragged = false;
+      return;
+    }
+    setIsExpanded(prev => !prev);
+  }, []);
+
   return (
     <Sheet
       className={`location-info-sheet${isExpanded ? ' location-info-sheet--expanded' : ''}`}
       opened={opened}
       onSheetClosed={handleClose}
-      swipeToClose
-      swipeHandler=".sheet-modal-swipe-step"
       backdrop={false}
       closeByBackdropClick={false}
       closeByOutsideClick={false}
     >
       <div
         className="sheet-modal-swipe-step"
-        onClick={() => setIsExpanded(prev => !prev)}
+        onPointerDown={handlePointerDown}
+        onPointerUp={handlePointerUp}
+        onClick={handleClick}
       >
         <div className="location-info-sheet__handle" />
         <div className="location-info-sheet__place-name">

@@ -45,7 +45,9 @@
   flex-direction: column;
   align-items: center;
   padding-bottom: 12px;
-  cursor: pointer;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
 }
 
 .location-info-sheet__handle {
