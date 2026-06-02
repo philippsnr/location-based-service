@@ -1,32 +1,42 @@
-import { Sheet, BlockTitle, Block, Link, PageContent } from 'framework7-react';
+import { useCallback, useState } from 'react';
+import { Sheet, Block, Link } from 'framework7-react';
 
 function LocationInfoSheet({ opened, onClosed, locationInfo, loading }) {
+  const [isExpanded, setIsExpanded] = useState(false);
+
+  const handleClose = useCallback(() => {
+    setIsExpanded(false);
+    onClosed();
+  }, [onClosed]);
+
   return (
     <Sheet
-      className="location-info-sheet"
+      className={`location-info-sheet${isExpanded ? ' location-info-sheet--expanded' : ''}`}
       opened={opened}
-      onSheetClosed={onClosed}
+      onSheetClosed={handleClose}
       swipeToClose
       swipeHandler=".sheet-modal-swipe-step"
       backdrop={false}
       closeByBackdropClick={false}
       closeByOutsideClick={false}
-      style={{ height: 'auto', maxHeight: '35vh' }}
     >
-      <div className="sheet-modal-swipe-step">
+      <div
+        className="sheet-modal-swipe-step"
+        onClick={() => setIsExpanded(prev => !prev)}
+      >
         <div className="location-info-sheet__handle" />
+        <div className="location-info-sheet__place-name">
+          {loading ? 'Loading…' : locationInfo?.placeName ?? 'Unknown location'}
+        </div>
       </div>
-      <PageContent>
+      <div className="location-info-sheet__scroll">
         {!loading && locationInfo?.wikiThumbnail && (
           <img
             src={locationInfo.wikiThumbnail}
             alt={locationInfo.placeName}
-            style={{ width: '100%', maxHeight: '180px', objectFit: 'cover', display: 'block' }}
+            style={{ width: '100%', maxHeight: '220px', objectFit: 'cover', display: 'block' }}
           />
         )}
-        <BlockTitle large>
-          {loading ? 'Loading…' : locationInfo?.placeName ?? 'Unknown location'}
-        </BlockTitle>
         <Block>
           {loading ? (
             <p>Fetching information…</p>
@@ -51,7 +61,7 @@ function LocationInfoSheet({ opened, onClosed, locationInfo, loading }) {
             </>
           )}
         </Block>
-      </PageContent>
+      </div>
     </Sheet>
   );
 }
