@@ -3,7 +3,7 @@ import { flushSync } from 'react-dom';
 import { Sheet, Block, Link } from 'framework7-react';
 
 const PEEK_HEIGHT = 80;
-const FULL_HEIGHT_RATIO = 0.92;
+const FULL_HEIGHT_RATIO = 0.67;
 const DRAG_THRESHOLD = 40;
 const SNAP_DURATION = 300;
 
