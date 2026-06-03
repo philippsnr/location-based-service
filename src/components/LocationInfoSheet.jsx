@@ -162,7 +162,16 @@ function LocationInfoSheet({ opened, onClosed, locationInfo, loading, onShowRout
         )}
         <Block>
           <button
-            onClick={onShowRoute}
+            onClick={() => {
+              const sheetEl = sheetElRef.current ?? document.querySelector('.location-info-sheet');
+              if (sheetEl) {
+                sheetElRef.current = sheetEl;
+                snapTo(sheetEl, PEEK_HEIGHT, () => {
+                  flushSync(() => applyExpanded(false));
+                });
+              }
+              onShowRoute();
+            }}
             disabled={loading || routingActive}
             style={{
               width: '100%',
