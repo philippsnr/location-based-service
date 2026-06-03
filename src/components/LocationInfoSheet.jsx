@@ -4,7 +4,8 @@ import { Sheet, Block, Link } from 'framework7-react';
 
 const PEEK_HEIGHT = 80;
 const FULL_HEIGHT_RATIO = 0.67;
-const DRAG_THRESHOLD = 40;
+const DRAG_THRESHOLD = 20;
+const SNAP_THRESHOLD = 50;
 const SNAP_DURATION = 300;
 
 function getFullHeight() {
@@ -71,11 +72,16 @@ function LocationInfoSheet({ opened, onClosed, locationInfo, loading }) {
       document.removeEventListener('pointermove', onMove);
       document.removeEventListener('pointerup', onUp);
 
-      if (Math.abs(startY - ev.clientY) > DRAG_THRESHOLD) dragRef.current.dragged = true;
+      const totalDrag = startY - ev.clientY; // positive = dragged up
+      if (Math.abs(totalDrag) > DRAG_THRESHOLD) dragRef.current.dragged = true;
 
-      const currentH = sheetEl.offsetHeight;
       const fullH = getFullHeight();
-      const shouldExpand = currentH > (PEEK_HEIGHT + fullH) / 2;
+      let shouldExpand;
+      if (Math.abs(totalDrag) > SNAP_THRESHOLD) {
+        shouldExpand = totalDrag > 0;
+      } else {
+        shouldExpand = isExpandedRef.current; // not enough drag → stay in current state
+      }
       const targetH = shouldExpand ? fullH : PEEK_HEIGHT;
 
       snapTo(sheetEl, targetH, () => {
