@@ -168,7 +168,7 @@ function Map() {
       </MapContainer>
       <LocationInfoSheet
         opened={sheetOpen}
-        onClosed={() => { setSheetOpen(false); setRoutingActive(false); }}
+        onClosed={() => { setSheetOpen(false); setRoutingActive(false); setPosition(null); }}
         locationInfo={locationInfo}
         loading={infoLoading}
         onShowRoute={() => setRoutingActive(true)}
