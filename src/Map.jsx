@@ -1,4 +1,4 @@
-import { useCallback, useState, useEffect } from 'react';
+import { useCallback, useState, useEffect, useMemo } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMapEvents, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import markerIconUrl from './assets/marker.png';
@@ -6,9 +6,19 @@ import 'leaflet/dist/leaflet.css';
 import './Map.css';
 import LocateControl from './components/LocateControl';
 import LocationInfoSheet from './components/LocationInfoSheet';
+import RoutingMachine from './components/RoutingMachine';
 import { reverseGeocode } from './services/nominatim';
 
 const defaultPosition = [54.4047, 10.2256];
+
+// Normalize {lat,lng} objects, [lat,lng] arrays, and L.LatLng instances to L.LatLng.
+function toLatLng(v) {
+  if (!v) return null;
+  if (v instanceof L.LatLng) return v;
+  if (Array.isArray(v)) return L.latLng(v[0], v[1]);
+  if (typeof v.lat === 'number' && typeof v.lng === 'number') return L.latLng(v.lat, v.lng);
+  return null;
+}
 
 const customMarkerIcon = new L.Icon({
   iconUrl: markerIconUrl,
@@ -76,6 +86,7 @@ function ZoomToLocation({ position }) {
 
 function Map() {
   const [position, setPosition] = useState(null);
+  const [userPosition, setUserPosition] = useState(null);
   const [mapCenter, setMapCenter] = useState(null);
   const [sheetOpen, setSheetOpen] = useState(false);
   const [locationInfo, setLocationInfo] = useState(null);
@@ -99,7 +110,11 @@ function Map() {
     }
   }, []);
 
-  const handleLocate = useCallback((latlng) => handlePositionSelect(latlng), [handlePositionSelect]);
+  const handleLocate = useCallback((latlng) => {
+    // Refresh the route origin only; do not change the selected target or open the info sheet.
+    const ll = toLatLng(latlng);
+    if (ll) setUserPosition(ll);
+  }, []);
 
   useEffect(() => {
     // Request user's geolocation on component mount
@@ -107,9 +122,8 @@ function Map() {
       navigator.geolocation.getCurrentPosition(
         (pos) => {
           const { latitude, longitude } = pos.coords;
-          const userPosition = [latitude, longitude];
-          setMapCenter(userPosition);
-          handlePositionSelect(userPosition);
+          setMapCenter([latitude, longitude]);
+          setUserPosition(L.latLng(latitude, longitude));
         },
         (error) => {
           console.warn('Geolocation error:', error);
@@ -121,7 +135,17 @@ function Map() {
       console.warn('Geolocation is not supported by this browser');
       setMapCenter(defaultPosition);
     }
-  }, [handlePositionSelect]);
+  }, []);
+
+  // Compute routing waypoints. Memoized so the RoutingMachine effect doesn't tear down
+  // and rebuild the OSRM control on unrelated re-renders.
+  const waypoints = useMemo(() => {
+    const start = toLatLng(userPosition);
+    const end = toLatLng(position);
+    if (!start || !end) return null;
+    if (start.equals(end)) return null;
+    return [start, end];
+  }, [userPosition, position]);
 
   // Only render map when center position is determined
   if (!mapCenter) {
@@ -138,6 +162,7 @@ function Map() {
         <ZoomToLocation position={position} />
         <LocationMarker position={position} onSelect={handlePositionSelect} placeName={locationInfo?.placeName} />
         <LocateControl onLocate={handleLocate} />
+        {waypoints && <RoutingMachine waypoints={waypoints} />}
       </MapContainer>
       <LocationInfoSheet
         opened={sheetOpen}

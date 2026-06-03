@@ -3,6 +3,10 @@
   width: 100%;
 }
 
+.leaflet-routing-container {
+  display: none !important;
+}
+
 .locate-control .locate-btn {
   width: 30px;
   height: 30px;
