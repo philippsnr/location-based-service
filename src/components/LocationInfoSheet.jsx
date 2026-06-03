@@ -31,7 +31,7 @@ function snapTo(sheetEl, targetHeight, onDone) {
   setTimeout(finish, SNAP_DURATION + 50);
 }
 
-function LocationInfoSheet({ opened, onClosed, locationInfo, loading }) {
+function LocationInfoSheet({ opened, onClosed, locationInfo, loading, onShowRoute, routingActive }) {
   const [isExpanded, setIsExpanded] = useState(false);
   const isExpandedRef = useRef(false);
   const dragRef = useRef({ dragged: false });
@@ -160,6 +160,24 @@ function LocationInfoSheet({ opened, onClosed, locationInfo, loading }) {
             style={{ width: '100%', maxHeight: '220px', objectFit: 'cover', display: 'block' }}
           />
         )}
+        <Block>
+          <button
+            onClick={onShowRoute}
+            disabled={loading || routingActive}
+            style={{
+              width: '100%',
+              padding: '10px',
+              background: routingActive ? '#aaa' : '#007aff',
+              color: '#fff',
+              border: 'none',
+              borderRadius: '8px',
+              fontSize: '16px',
+              cursor: routingActive ? 'default' : 'pointer',
+            }}
+          >
+            {routingActive ? 'Route active' : 'Show route'}
+          </button>
+        </Block>
         <Block>
           {loading ? (
             <p>Fetching information…</p>
