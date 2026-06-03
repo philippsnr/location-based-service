@@ -3,15 +3,12 @@ import { useMap } from 'react-leaflet'
 import L from 'leaflet'
 import 'leaflet-routing-machine'
 
-const DEFAULT_WAYPOINTS = [
-  L.latLng(53.5511, 9.9937),
-  L.latLng(52.52, 13.405),
-]
-
-export default function RoutingMachine({ waypoints = DEFAULT_WAYPOINTS }) {
+export default function RoutingMachine({ waypoints }) {
   const map = useMap()
 
   useEffect(() => {
+    if (!waypoints || waypoints.length < 2) return undefined
+
     const control = L.Routing.control({
       waypoints,
       router: L.Routing.osrmv1({
@@ -20,7 +17,19 @@ export default function RoutingMachine({ waypoints = DEFAULT_WAYPOINTS }) {
       routeWhileDragging: false,
       addWaypoints: false,
       showAlternatives: false,
+      draggableWaypoints: false,
+      fitSelectedRoutes: false,
+      show: false,
+      createMarker: () => null,
+      lineOptions: {
+        addWaypoints: false,
+        styles: [{ color: '#1976d2', weight: 5, opacity: 0.85 }],
+      },
     }).addTo(map)
+
+    control.on('routingerror', (e) => {
+      console.warn('OSRM routing error:', e.error)
+    })
 
     return () => {
       map.removeControl(control)
