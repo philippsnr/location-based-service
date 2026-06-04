@@ -8,6 +8,7 @@ import LocateControl from './components/LocateControl';
 import LocationInfoSheet from './components/LocationInfoSheet';
 import RoutingMachine from './components/RoutingMachine';
 import { reverseGeocode } from './services/nominatim';
+import wikipedia from './services/wikipedia'
 
 const defaultPosition = [54.4047, 10.2256];
 
@@ -28,31 +29,19 @@ const customMarkerIcon = new L.Icon({
   popupAnchor: [0, -32],
 });
 
+//Updated: now uses wikipedia.js service
 async function fetchLocationInfo(lat, lng) {
   const { placeName } = await reverseGeocode(lat, lng);
 
-  const searchRes = await fetch(
-    `https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(placeName)}&format=json&origin=*`
-  );
-  const searchData = await searchRes.json();
-  const firstResult = searchData?.query?.search?.[0];
-
-  if (!firstResult) {
-    return { placeName, lat, lng, wikiSummary: null, wikiUrl: null, wikiThumbnail: null };
-  }
-
-  const summaryRes = await fetch(
-    `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(firstResult.title)}`
-  );
-  const summaryData = await summaryRes.json();
+  const wiki = await wikipedia.getLocationSummary(placeName);
 
   return {
     placeName,
     lat,
     lng,
-    wikiSummary: summaryData.extract ?? null,
-    wikiUrl: summaryData.content_urls?.desktop?.page ?? null,
-    wikiThumbnail: summaryData.thumbnail?.source ?? null,
+    wikiSummary: wiki?.summary ?? null,
+    wikiUrl: wiki?.url ?? null,
+    wikiThumbnail: wiki?.thumbnail ?? null,
   };
 }
 
