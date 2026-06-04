@@ -1,9 +1,7 @@
 const WIKI_API_BASE = "https://en.wikipedia.org/w/api.php";
 const WIKI_REST_BASE = "https://en.wikipedia.org/api/rest_v1";
 
-/**
- * Generic helper for MediaWiki API requests.
- */
+//Helper for MediaWiki API requests
 async function query(params) {
   const url = new URL(WIKI_API_BASE);
 
