@@ -81,6 +81,7 @@ function Map() {
   const [locationInfo, setLocationInfo] = useState(null);
   const [infoLoading, setInfoLoading] = useState(false);
   const [routingActive, setRoutingActive] = useState(false);
+  const [routeInfo, setRouteInfo] = useState(null);
 
   const handlePositionSelect = useCallback(async (latlng) => {
     const lat = latlng.lat ?? latlng[0];
@@ -90,6 +91,7 @@ function Map() {
     setInfoLoading(true);
     setLocationInfo(null);
     setRoutingActive(false);
+    setRouteInfo(null);
     try {
       const info = await fetchLocationInfo(lat, lng);
       setLocationInfo(info);
@@ -153,15 +155,16 @@ function Map() {
         <ZoomToLocation position={position} />
         <LocationMarker position={position} onSelect={handlePositionSelect} placeName={locationInfo?.placeName} />
         <LocateControl onLocate={handleLocate} />
-        {routingActive && waypoints && <RoutingMachine waypoints={waypoints} />}
+        {routingActive && waypoints && <RoutingMachine waypoints={waypoints} onRouteFound={setRouteInfo} />}
       </MapContainer>
       <LocationInfoSheet
         opened={sheetOpen}
-        onClosed={() => { setSheetOpen(false); setRoutingActive(false); setPosition(null); }}
+        onClosed={() => { setSheetOpen(false); setRoutingActive(false); setRouteInfo(null); setPosition(null); }}
         locationInfo={locationInfo}
         loading={infoLoading}
         onShowRoute={() => setRoutingActive(true)}
         routingActive={routingActive}
+        routeInfo={routeInfo}
       />
     </>
   );

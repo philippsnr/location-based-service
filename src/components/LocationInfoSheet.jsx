@@ -31,7 +31,19 @@ function snapTo(sheetEl, targetHeight, onDone) {
   setTimeout(finish, SNAP_DURATION + 50);
 }
 
-function LocationInfoSheet({ opened, onClosed, locationInfo, loading, onShowRoute, routingActive }) {
+function formatDistance(meters) {
+  if (meters >= 1000) return `${(meters / 1000).toFixed(1)} km`
+  return `${Math.round(meters)} m`
+}
+
+function formatDuration(seconds) {
+  const h = Math.floor(seconds / 3600)
+  const m = Math.floor((seconds % 3600) / 60)
+  if (h > 0) return `${h} h ${m} min`
+  return `${m} min`
+}
+
+function LocationInfoSheet({ opened, onClosed, locationInfo, loading, onShowRoute, routingActive, routeInfo }) {
   const [isExpanded, setIsExpanded] = useState(false);
   const isExpandedRef = useRef(false);
   const dragRef = useRef({ dragged: false });
@@ -186,6 +198,12 @@ function LocationInfoSheet({ opened, onClosed, locationInfo, loading, onShowRout
           >
             {routingActive ? 'Route active' : 'Show route'}
           </button>
+          {routeInfo && (
+            <div style={{ marginTop: '10px', display: 'flex', gap: '16px', fontSize: '14px', color: '#333' }}>
+              <span><strong>Distance:</strong> {formatDistance(routeInfo.distance)}</span>
+              <span><strong>Duration:</strong> {formatDuration(routeInfo.duration)}</span>
+            </div>
+          )}
         </Block>
         <Block>
           {loading ? (
