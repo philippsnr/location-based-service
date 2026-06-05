@@ -3,7 +3,7 @@ import { useMap } from 'react-leaflet'
 import L from 'leaflet'
 import 'leaflet-routing-machine'
 
-export default function RoutingMachine({ waypoints }) {
+export default function RoutingMachine({ waypoints, onRouteFound }) {
   const map = useMap()
 
   useEffect(() => {
@@ -26,6 +26,13 @@ export default function RoutingMachine({ waypoints }) {
         styles: [{ color: '#1976d2', weight: 5, opacity: 0.85 }],
       },
     }).addTo(map)
+
+    control.on('routesfound', (e) => {
+      const route = e.routes[0]
+      if (route && onRouteFound) {
+        onRouteFound({ distance: route.summary.totalDistance, duration: route.summary.totalTime })
+      }
+    })
 
     control.on('routingerror', (e) => {
       console.warn('OSRM routing error:', e.error)
