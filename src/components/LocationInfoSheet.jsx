@@ -169,7 +169,7 @@ function LocationInfoSheet({ opened, onClosed, locationInfo, loading, onShowRout
           <img
             src={locationInfo.wikiThumbnail}
             alt={locationInfo.placeName}
-            style={{ width: '100%', maxHeight: '220px', objectFit: 'cover', display: 'block' }}
+            className="location-info-sheet__thumb"
           />
         )}
         <Block>
@@ -185,21 +185,16 @@ function LocationInfoSheet({ opened, onClosed, locationInfo, loading, onShowRout
               onShowRoute();
             }}
             disabled={loading || routingActive}
+            className="location-info-sheet__route-btn"
             style={{
-              width: '100%',
-              padding: '10px',
               background: routingActive ? '#aaa' : '#007aff',
-              color: '#fff',
-              border: 'none',
-              borderRadius: '8px',
-              fontSize: '16px',
               cursor: routingActive ? 'default' : 'pointer',
             }}
           >
             {routingActive ? 'Route active' : 'Show route'}
           </button>
           {routeInfo && (
-            <div style={{ marginTop: '10px', display: 'flex', gap: '16px', fontSize: '14px', color: '#333' }}>
+            <div className="location-info-sheet__route-info">
               <span><strong>Distance:</strong> {formatDistance(routeInfo.distance)}</span>
               <span><strong>Duration:</strong> {formatDuration(routeInfo.duration)}</span>
             </div>
@@ -210,7 +205,7 @@ function LocationInfoSheet({ opened, onClosed, locationInfo, loading, onShowRout
             <p>Fetching information…</p>
           ) : (
             <>
-              <div style={{ marginBottom: '12px', fontSize: '14px', color: '#666' }}>
+              <div className="location-info-sheet__coords">
                 <div><strong>Latitude:</strong> {locationInfo?.lat?.toFixed(6)}</div>
                 <div><strong>Longitude:</strong> {locationInfo?.lng?.toFixed(6)}</div>
               </div>
