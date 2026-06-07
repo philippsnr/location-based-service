@@ -7,6 +7,7 @@ import './Map.css';
 import LocateControl from './components/LocateControl';
 import LocationInfoSheet from './components/LocationInfoSheet';
 import RoutingMachine from './components/RoutingMachine';
+import SearchControl from './components/SearchControl';
 import { reverseGeocode } from './services/nominatim';
 import wikipedia from './services/wikipedia'
 
@@ -147,16 +148,19 @@ function Map() {
 
   return (
     <>
-      <MapContainer center={mapCenter} zoom={15} scrollWheelZoom={true} className="map-container">
-        <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-        />
-        <ZoomToLocation position={position} />
-        <LocationMarker position={position} onSelect={handlePositionSelect} placeName={locationInfo?.placeName} />
-        <LocateControl onLocate={handleLocate} />
-        {routingActive && waypoints && <RoutingMachine waypoints={waypoints} onRouteFound={setRouteInfo} />}
-      </MapContainer>
+      <div className="map-wrapper">
+        <MapContainer center={mapCenter} zoom={15} scrollWheelZoom={true} className="map-container">
+          <TileLayer
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          />
+          <ZoomToLocation position={position} />
+          <LocationMarker position={position} onSelect={handlePositionSelect} placeName={locationInfo?.placeName} />
+          <LocateControl onLocate={handleLocate} />
+          {routingActive && waypoints && <RoutingMachine waypoints={waypoints} onRouteFound={setRouteInfo} />}
+        </MapContainer>
+        <SearchControl onSelect={({ lat, lng }) => handlePositionSelect(L.latLng(lat, lng))} />
+      </div>
       <LocationInfoSheet
         opened={sheetOpen}
         onClosed={() => { setSheetOpen(false); setRoutingActive(false); setRouteInfo(null); setPosition(null); }}
