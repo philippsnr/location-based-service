@@ -1,6 +1,12 @@
 .map-container {
-  height: 100%;
+  flex: 1;
   width: 100%;
+  min-height: 0;
+}
+
+.app-shell {
+  height: 100vh;
+  height: 100dvh;
 }
 
 .leaflet-routing-container {
@@ -22,6 +28,17 @@
   padding: 0;
 }
 
+@media (hover: none) and (pointer: coarse) {
+  .locate-control .locate-btn {
+    width: 44px;
+    height: 44px;
+  }
+  .locate-control .locate-btn svg {
+    width: 22px;
+    height: 22px;
+  }
+}
+
 .locate-control .locate-btn:hover {
   background: #f4f4f4;
 }
@@ -35,6 +52,7 @@
 
 .location-info-sheet--expanded {
   height: 67vh;
+  height: 67dvh;
 }
 
 .location-info-sheet .sheet-modal-inner {
@@ -62,19 +80,13 @@
   margin: 8px 0 6px;
 }
 
-.location-info-sheet__place-name {
-  width: 100%;
-  padding: 0 16px;
-  font-size: 20px;
-  font-weight: 600;
-  line-height: 1.2;
-}
-
 .location-info-sheet__scroll {
   flex: 1;
   min-height: 0;
   overflow-y: auto;
   padding-bottom: 16px;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
 }
 
 .location-info-sheet .block {
@@ -91,19 +103,35 @@
   justify-content: space-between;
   padding: 0 16px;
   gap: 8px;
+  min-width: 0;
 }
 
 .location-info-sheet__place-name {
   flex: 1;
+  min-width: 0;
   font-size: 20px;
   font-weight: 600;
   line-height: 1.2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.location-info-sheet--expanded .location-info-sheet__place-name {
+  white-space: normal;
+  overflow: visible;
+}
+
+@media (max-width: 360px) {
+  .location-info-sheet__place-name {
+    font-size: 17px;
+  }
 }
 
 .location-info-sheet__reset-btn {
   flex-shrink: 0;
-  width: 36px;
-  height: 36px;
+  width: 40px;
+  height: 40px;
   padding: 0;
   border: none;
   border-radius: 4px;
@@ -121,4 +149,43 @@
 
 .location-info-sheet__reset-btn:active {
   background-color: #990000;
+}
+
+.location-info-sheet__thumb {
+  width: 100%;
+  max-height: 220px;
+  object-fit: cover;
+  display: block;
+}
+
+@media (max-height: 700px) {
+  .location-info-sheet__thumb {
+    max-height: 140px;
+  }
+}
+
+.location-info-sheet__route-btn {
+  width: 100%;
+  padding: 12px;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  min-height: 44px;
+}
+
+.location-info-sheet__route-info {
+  margin-top: 10px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  font-size: 14px;
+  color: #333;
+}
+
+.location-info-sheet__coords {
+  margin-bottom: 12px;
+  font-size: 14px;
+  color: #666;
+  word-break: break-word;
 }

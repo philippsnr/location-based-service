@@ -15,7 +15,7 @@ function App() {
     <F7App {...f7params}>
       <View main>
         <Page>
-          <Box sx={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
+          <Box className="app-shell" sx={{ display: 'flex', flexDirection: 'column' }}>
             <AppBar position="static">
               <Toolbar>
                 <PublicIcon sx={{ mr: 1 }} />
