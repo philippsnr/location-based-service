@@ -14,9 +14,9 @@ export default defineConfig({
         name: 'Location Based Service',
         short_name: 'LBS',
         description: 'A location-based service PWA with map, geocoding and routing',
-        theme_color: 'transparent',
+        theme_color: '#ffffff',
         background_color: '#ffffff',
-        display: 'standalone',
+        display: 'fullscreen',
         start_url: '/location-based-service/',
         scope: '/location-based-service/',
         icons: [
