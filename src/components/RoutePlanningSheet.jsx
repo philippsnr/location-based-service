@@ -18,10 +18,17 @@ function formatDuration(seconds) {
   return `${m} min`;
 }
 
+// routing.openstreetmap.de has separate servers per profile with correct data.
+// router.project-osrm.org only carries the car graph and silently returns car
+// results for any profile name, making foot indistinguishable from driving.
+const OSRM_BASE = {
+  car: 'https://routing.openstreetmap.de/routed-car/route/v1/driving',
+  foot: 'https://routing.openstreetmap.de/routed-foot/route/v1/foot',
+};
+
 async function fetchRoutePreview(start, end, profile, signal) {
-  const url =
-    `https://router.project-osrm.org/route/v1/${profile}/` +
-    `${start.lng},${start.lat};${end.lng},${end.lat}?overview=false`;
+  const base = OSRM_BASE[profile] ?? OSRM_BASE.car;
+  const url = `${base}/${start.lng},${start.lat};${end.lng},${end.lat}?overview=false`;
   const res = await fetch(url, { signal });
   const data = await res.json();
   return data.routes?.[0]
