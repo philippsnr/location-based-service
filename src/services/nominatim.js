@@ -32,3 +32,23 @@ export async function reverseGeocode(lat, lng) {
 
   return { placeName };
 }
+
+export async function forwardGeocode(query, { limit = 5, signal } = {}) {
+  const url =
+    `${BASE_URL}/search?q=${encodeURIComponent(query)}` +
+    `&format=json&limit=${limit}&addressdetails=1`;
+  const res = await fetch(url, {
+    headers: { 'Accept-Language': 'en' },
+    signal,
+  });
+  if (!res.ok) throw new Error(`Nominatim search failed: ${res.status}`);
+  const data = await res.json();
+
+  return data.map((r) => ({
+    displayName: r.display_name,
+    name: r.name || r.display_name?.split(',')[0] || 'Unknown',
+    country: r.address?.country ?? null,
+    lat: parseFloat(r.lat),
+    lng: parseFloat(r.lon),
+  }));
+}
