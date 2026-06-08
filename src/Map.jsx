@@ -1,5 +1,5 @@
 import { useCallback, useState, useEffect, useMemo, useRef } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, useMapEvents, useMap } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, Tooltip, useMapEvents, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import markerIconUrl from './assets/marker.png';
 import 'leaflet/dist/leaflet.css';
@@ -10,9 +10,10 @@ import LocationInfoSheet from './components/LocationInfoSheet';
 import RoutePlanningSheet from './components/RoutePlanningSheet';
 import RoutingMachine from './components/RoutingMachine';
 import SearchControl from './components/SearchControl';
+import PoiFilterBar from './components/PoiFilterBar';
 import { reverseGeocode } from './services/nominatim';
 import wikipedia from './services/wikipedia'
-import { fetchWeather } from './services/weather'
+import { POI_FILTERS, fetchPois } from './services/overpass'
 
 const defaultPosition = [54.4047, 10.2256];
 const MAP_STYLE_STORAGE_KEY = 'map-style';
@@ -48,21 +49,45 @@ const customMarkerIcon = new L.Icon({
   popupAnchor: [0, -32],
 });
 
+const poiIconByFilter = Object.fromEntries(
+  POI_FILTERS.map(f => [
+    f.id,
+    new L.DivIcon({
+      html: `<div style="width:14px;height:14px;border-radius:50%;background:${f.color};border:2.5px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.3)"></div>`,
+      iconSize: [14, 14],
+      iconAnchor: [7, 7],
+      className: '',
+    }),
+  ])
+);
+
+function MapCenterTracker({ centerRef }) {
+  const map = useMap();
+  useMapEvents({ moveend() { centerRef.current = map.getCenter(); } });
+  useEffect(() => { centerRef.current = map.getCenter(); }, [map, centerRef]);
+  return null;
+}
+
+function buildPoiAddress(tags) {
+  const street = tags['addr:street'];
+  const num = tags['addr:housenumber'];
+  const post = tags['addr:postcode'];
+  const city = tags['addr:city'];
+  const parts = [];
+  if (street) parts.push(num ? `${street} ${num}` : street);
+  if (post || city) parts.push([post, city].filter(Boolean).join(' '));
+  return parts.join(', ') || null;
+}
+
 async function fetchLocationInfo(lat, lng) {
   const { placeName, cityName } = await reverseGeocode(lat, lng);
-
-  const [wiki, commonsPhoto] = await Promise.allSettled([
-    wikipedia.getCityLocationSummary(lat, lng, cityName),
-    wikipedia.getCommonsGeoPhoto(lat, lng, { cityName }),
-  ]);
-
+  const wiki = await wikipedia.getCityLocationSummary(lat, lng, cityName).catch(() => null);
   return {
     placeName: cityName ?? placeName,
     lat,
     lng,
-    wikiSummary: wiki.status === 'fulfilled' ? (wiki.value?.summary ?? null) : null,
-    wikiUrl: wiki.status === 'fulfilled' ? (wiki.value?.url ?? null) : null,
-    wikiThumbnail: commonsPhoto.status === 'fulfilled' ? commonsPhoto.value : null,
+    wikiSummary: wiki?.summary ?? null,
+    wikiUrl: wiki?.url ?? null,
   };
 }
 
@@ -107,6 +132,14 @@ function Map() {
   const [routePlanningOpen, setRoutePlanningOpen] = useState(false);
   const [routePlanningKey, setRoutePlanningKey] = useState(0);
   const [confirmedRoute, setConfirmedRoute] = useState(null);
+  const [activeFilter, setActiveFilter] = useState(null);
+  const [poiMarkers, setPoiMarkers] = useState([]);
+  const [poiLoading, setPoiLoading] = useState(false);
+  const [poiError, setPoiError] = useState(false);
+  const [isPoiSheet, setIsPoiSheet] = useState(false);
+  const mapCenterRef = useRef(null);
+  const activeFilterRef = useRef(null);
+  const poiAbortRef = useRef(null);
   // Prevents onClosed of LocationInfoSheet from clearing position when the
   // close was triggered by opening the route planning sheet.
   const openingRoutePlanningRef = useRef(false);
@@ -133,6 +166,7 @@ function Map() {
   const handlePositionSelect = useCallback(async (latlng) => {
     const lat = latlng.lat ?? latlng[0];
     const lng = latlng.lng ?? latlng[1];
+    setIsPoiSheet(false);
     setPosition(latlng);
     setSheetOpen(true);
     setInfoLoading(true);
@@ -142,21 +176,44 @@ function Map() {
     setConfirmedRoute(null);
     setRoutePlanningOpen(false);
     try {
-      const [infoResult, weatherResult] = await Promise.allSettled([
-        fetchLocationInfo(lat, lng),
-        fetchWeather(lat, lng),
-      ]);
-      const info = infoResult.status === 'fulfilled'
-        ? infoResult.value
-        : { placeName: 'Unknown location', lat, lng, wikiSummary: null, wikiUrl: null, wikiThumbnail: null };
-      const weatherInfo = weatherResult.status === 'fulfilled' ? weatherResult.value : null;
-      setLocationInfo({ ...info, weatherInfo });
+      const info = await fetchLocationInfo(lat, lng);
+      setLocationInfo(info);
     } catch (err) {
       console.warn('Failed to fetch location info:', err);
-      setLocationInfo({ placeName: 'Unknown location', lat, lng, wikiSummary: null, wikiUrl: null, wikiThumbnail: null, weatherInfo: null });
+      setLocationInfo({ placeName: 'Unknown location', lat, lng, wikiSummary: null, wikiUrl: null });
     } finally {
       setInfoLoading(false);
     }
+  }, []);
+
+  const handlePoiSelect = useCallback((poi) => {
+    const latlng = L.latLng(poi.lat, poi.lng);
+    setIsPoiSheet(true);
+    setPosition(latlng);
+    setSheetOpen(true);
+    setInfoLoading(true);
+    setLocationInfo(null);
+    setRoutingActive(false);
+    setRouteInfo(null);
+    setConfirmedRoute(null);
+    setRoutePlanningOpen(false);
+    const tags = poi.tags ?? {};
+    setLocationInfo({
+      placeName: poi.name,
+      lat: poi.lat,
+      lng: poi.lng,
+      wikiSummary: null,
+      wikiUrl: null,
+      poi: {
+        type: poi.filterType,
+        address: buildPoiAddress(tags),
+        openingHours: tags['opening_hours'] ?? null,
+        website: tags['website'] ?? tags['contact:website'] ?? null,
+        phone: tags['phone'] ?? tags['contact:phone'] ?? null,
+        cuisine: tags['cuisine'] ?? null,
+      },
+    });
+    setInfoLoading(false);
   }, []);
 
   const handleLocate = useCallback((latlng) => {
@@ -220,6 +277,49 @@ function Map() {
     setMapStyle((currentStyle) => (currentStyle === 'standard' ? 'satellite' : 'standard'));
   }, []);
 
+  const handleFilterToggle = useCallback(async (filterId) => {
+    poiAbortRef.current?.abort();
+    poiAbortRef.current = null;
+
+    if (activeFilterRef.current === filterId) {
+      activeFilterRef.current = null;
+      setActiveFilter(null);
+      setPoiMarkers([]);
+      setPoiError(false);
+      setPoiLoading(false);
+      return;
+    }
+    activeFilterRef.current = filterId;
+    setActiveFilter(filterId);
+    setPoiMarkers([]);
+    setPoiError(false);
+    const center = mapCenterRef.current;
+    if (!center) return;
+    setPoiLoading(true);
+
+    const controller = new AbortController();
+    poiAbortRef.current = controller;
+    const timeoutId = setTimeout(() => controller.abort(), 12000);
+
+    try {
+      const pois = await fetchPois(center.lat, center.lng, filterId, controller.signal);
+      clearTimeout(timeoutId);
+      if (activeFilterRef.current === filterId) {
+        setPoiMarkers(pois);
+        setPoiLoading(false);
+      }
+    } catch (err) {
+      clearTimeout(timeoutId);
+      // AbortError with a different active filter = user switched away, discard silently
+      if (err.name === 'AbortError' && activeFilterRef.current !== filterId) return;
+      console.warn('Failed to fetch POIs:', err);
+      if (activeFilterRef.current === filterId) {
+        setPoiError(true);
+        setPoiLoading(false);
+      }
+    }
+  }, []);
+
   // Waypoints for RoutingMachine — only set after the user confirms a route.
   const waypoints = useMemo(() => {
     if (!confirmedRoute) return null;
@@ -250,9 +350,20 @@ function Map() {
             url={MAP_STYLES[mapStyle].url}
           />
           <ZoomToLocation position={position} />
-          <LocationMarker position={position} onSelect={handlePositionSelect} placeName={locationInfo?.placeName} />
+          <LocationMarker position={isPoiSheet ? null : position} onSelect={handlePositionSelect} placeName={locationInfo?.placeName} />
           <LocateControl onLocate={handleLocate} />
           <MapStyleControl style={mapStyle} onToggle={handleToggleMapStyle} />
+          <MapCenterTracker centerRef={mapCenterRef} />
+          {poiMarkers.map(poi => (
+            <Marker
+              key={poi.id}
+              position={[poi.lat, poi.lng]}
+              icon={poiIconByFilter[activeFilter] ?? poiIconByFilter.restaurant}
+              eventHandlers={{ click: (e) => { e.originalEvent?.stopPropagation(); handlePoiSelect(poi); } }}
+            >
+              <Tooltip direction="top" offset={[0, -8]}>{poi.name}</Tooltip>
+            </Marker>
+          ))}
           {routingActive && waypoints && (
             <RoutingMachine
               waypoints={waypoints}
@@ -262,6 +373,7 @@ function Map() {
           )}
         </MapContainer>
         <SearchControl onSelect={({ lat, lng }) => handlePositionSelect(L.latLng(lat, lng))} />
+        <PoiFilterBar activeFilter={activeFilter} loading={poiLoading} error={poiError} onToggle={handleFilterToggle} />
       </div>
       <LocationInfoSheet
         opened={sheetOpen}
@@ -272,6 +384,7 @@ function Map() {
             return;
           }
           setSheetOpen(false);
+          setIsPoiSheet(false);
           setRoutingActive(false);
           setRouteInfo(null);
           setConfirmedRoute(null);

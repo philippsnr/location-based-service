@@ -43,17 +43,77 @@ function formatDuration(seconds) {
   return `${m} min`;
 }
 
-function WeatherStrip({ weatherInfo }) {
-  const descText = weatherInfo.description.split(' ').slice(0, -1).join(' ');
+const POI_TYPE_LABEL = {
+  restaurant: 'Restaurant',
+  cafe: 'Café',
+  supermarket: 'Supermarket',
+};
+
+function formatWebsiteLabel(url) {
+  try { return new URL(url).hostname.replace(/^www\./, ''); }
+  catch { return url; }
+}
+
+function PoiInfoSection({ poi }) {
+  const typeLabel = POI_TYPE_LABEL[poi.type] ?? poi.type;
+  const cuisine = poi.cuisine
+    ? poi.cuisine.split(/[;,]/)[0].trim()
+    : null;
+
   return (
-    <div className="lis-weather">
-      <span className="lis-weather__icon">{weatherInfo.icon}</span>
-      <span className="lis-weather__temp">{Math.round(weatherInfo.temperature)}°</span>
-      <span className="lis-weather__desc">{descText}</span>
-      <span className="lis-weather__wind">💨 {Math.round(weatherInfo.windSpeed)} km/h</span>
+    <div className="lis-poi">
+      <span className="lis-poi__type">{typeLabel}</span>
+
+      {poi.address && (
+        <div className="lis-poi__row">
+          <svg className="lis-poi__icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+          </svg>
+          <span>{poi.address}</span>
+        </div>
+      )}
+
+      {poi.openingHours && (
+        <div className="lis-poi__row">
+          <svg className="lis-poi__icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67V7z"/>
+          </svg>
+          <span>{poi.openingHours}</span>
+        </div>
+      )}
+
+      {cuisine && (
+        <div className="lis-poi__row">
+          <svg className="lis-poi__icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M11 9H9V2H7v7H5V2H3v7c0 2.12 1.66 3.84 3.75 3.97V22h2.5v-9.03C11.34 12.84 13 11.12 13 9V2h-2v7zm5-3v8h2.5v8H21V2c-2.76 0-5 2.24-5 4z"/>
+          </svg>
+          <span style={{ textTransform: 'capitalize' }}>{cuisine}</span>
+        </div>
+      )}
+
+      {poi.website && (
+        <div className="lis-poi__row">
+          <svg className="lis-poi__icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
+          </svg>
+          <a href={poi.website} target="_blank" rel="noopener noreferrer" className="lis-poi__link">
+            {formatWebsiteLabel(poi.website)}
+          </a>
+        </div>
+      )}
+
+      {poi.phone && (
+        <div className="lis-poi__row">
+          <svg className="lis-poi__icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/>
+          </svg>
+          <a href={`tel:${poi.phone}`} className="lis-poi__link">{poi.phone}</a>
+        </div>
+      )}
     </div>
   );
 }
+
 
 function LocationInfoSheet({ opened, onClosed, locationInfo, loading, onShowRoute, routingActive, routeInfo }) {
   const [isExpanded, setIsExpanded] = useState(false);
@@ -255,20 +315,6 @@ function LocationInfoSheet({ opened, onClosed, locationInfo, loading, onShowRout
           <div className="lis-share-msg">{shareMessage}</div>
         )}
 
-        {!loading && locationInfo?.wikiThumbnail && (
-          <img
-            src={locationInfo.wikiThumbnail}
-            alt={locationInfo.placeName}
-            className="lis-hero"
-          />
-        )}
-
-        {loading ? (
-          <div className="lis-weather lis-weather--loading">Loading weather…</div>
-        ) : locationInfo?.weatherInfo ? (
-          <WeatherStrip weatherInfo={locationInfo.weatherInfo} />
-        ) : null}
-
         {routeInfo && (
           <div className="lis-route-summary">
             <span className="lis-route-summary__distance">{formatDistance(routeInfo.distance)}</span>
@@ -288,7 +334,9 @@ function LocationInfoSheet({ opened, onClosed, locationInfo, loading, onShowRout
                   {lngLabel && <span className="lis-coords__chip">{lngLabel}</span>}
                 </div>
               )}
-              {locationInfo?.wikiSummary && (
+              {locationInfo?.poi ? (
+                <PoiInfoSection poi={locationInfo.poi} />
+              ) : locationInfo?.wikiSummary ? (
                 <div className="lis-wiki">
                   <p className="lis-wiki__text">{locationInfo.wikiSummary}</p>
                   {locationInfo.wikiUrl && (
@@ -307,7 +355,7 @@ function LocationInfoSheet({ opened, onClosed, locationInfo, loading, onShowRout
                     </a>
                   )}
                 </div>
-              )}
+              ) : null}
             </>
           )}
         </div>
