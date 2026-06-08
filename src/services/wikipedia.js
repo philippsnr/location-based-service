@@ -67,6 +67,32 @@ export async function getLocationSummary(placeName) {
   return getSummary(firstResult.title);
 }
 
+// Find Wikipedia articles near a coordinate
+async function geosearch(lat, lng, { radius = 10000, limit = 10 } = {}) {
+  const data = await query({
+    action: 'query',
+    list: 'geosearch',
+    gscoord: `${lat}|${lng}`,
+    gsradius: radius,
+    gslimit: limit,
+  });
+  return data?.query?.geosearch ?? [];
+}
+
+// Fetch city-level Wikipedia summary using coordinate search + city name matching.
+// Returns null if no geographically matching city article is found.
+export async function getCityLocationSummary(lat, lng, cityName) {
+  if (!cityName) return null;
+
+  const candidates = await geosearch(lat, lng);
+  const cityLower = cityName.toLowerCase();
+  const match = candidates.find((c) => c.title.toLowerCase() === cityLower);
+
+  if (!match) return null;
+
+  return getSummary(match.title);
+}
+
 // FOR FUTURE: returns page metadata
 export async function getPage(title) {
   return query({
@@ -81,5 +107,6 @@ export default {
   search,
   getSummary,
   getLocationSummary,
+  getCityLocationSummary,
   getPage,
 };
