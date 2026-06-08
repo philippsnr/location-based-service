@@ -343,8 +343,20 @@ function LocationInfoSheet({ opened, onClosed, locationInfo, loading, onShowRout
       >
         <div className="location-info-sheet__handle" />
         <div className="location-info-sheet__header">
-          <div className="location-info-sheet__place-name">
-            {loading ? 'Loading…' : locationInfo?.placeName ?? 'Unknown location'}
+          <div className="location-info-sheet__title-group">
+            <div className="location-info-sheet__place-name">
+              {loading ? 'Loading…' : locationInfo?.placeName ?? 'Unknown location'}
+            </div>
+            {!loading && locationInfo?.country && (
+              <div className="location-info-sheet__country">
+                {locationInfo.countryCode
+                  ? String.fromCodePoint(
+                      ...locationInfo.countryCode.toUpperCase().split('').map(c => 0x1F1E6 - 65 + c.charCodeAt(0))
+                    ) + ' '
+                  : ''}
+                {locationInfo.country}
+              </div>
+            )}
           </div>
 
           <button

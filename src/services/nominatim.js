@@ -37,7 +37,10 @@ export async function reverseGeocode(lat, lng) {
     addr.municipality ??
     null;
 
-  return { placeName, cityName };
+  const country = addr.country ?? null;
+  const countryCode = addr.country_code ?? null;
+
+  return { placeName, cityName, country, countryCode };
 }
 
 export async function forwardGeocode(query, { limit = 5, signal } = {}) {
