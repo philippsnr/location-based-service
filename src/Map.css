@@ -56,6 +56,12 @@
   left: 12px;
 }
 
+.map-wrapper .leaflet-bottom.leaflet-right .leaflet-control-scale {
+  transform: rotate(-90deg);
+  transform-origin: right bottom;
+  margin-bottom: 32px;
+}
+
 @media (max-width: 480px) {
   .search-control {
     left: 12px;

@@ -6,7 +6,7 @@ export default function ScaleControl() {
   const map = useMap()
 
   useEffect(() => {
-    const control = L.control.scale({ imperial: false })
+    const control = L.control.scale({ imperial: false, position: 'bottomright' })
     control.addTo(map)
     return () => { map.removeControl(control) }
   }, [map])
