@@ -220,7 +220,13 @@ function Map() {
   return (
     <>
       <div className="map-wrapper">
-        <MapContainer center={mapCenter} zoom={15} scrollWheelZoom={true} className="map-container">
+        <MapContainer
+          center={mapCenter}
+          zoom={15}
+          scrollWheelZoom={true}
+          zoomControl={false}
+          className="map-container"
+        >
           <TileLayer
             key={mapStyle}
             attribution={MAP_STYLES[mapStyle].attribution}
