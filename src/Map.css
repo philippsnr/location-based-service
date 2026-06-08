@@ -9,6 +9,120 @@
   height: 100dvh;
 }
 
+.map-wrapper {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+}
+
+.search-control {
+  position: absolute;
+  top: 12px;
+  left: 60px;
+  /* Leaflet controls live at z-index 1000; sit just above so the dropdown
+     overlays the locate button when results expand. */
+  z-index: 1001;
+  width: min(360px, calc(100% - 72px));
+  font-size: 14px;
+}
+
+.search-control__input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  background: #fff;
+  border-radius: 9999px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  min-height: 44px;
+}
+
+.search-control .search-control__input {
+  flex: 1;
+  height: 44px;
+  box-sizing: border-box;
+  padding: 0 52px 0 20px;
+  border: none;
+  border-radius: 9999px;
+  font-size: 14px;
+  background: transparent;
+  outline: none;
+  color: #333;
+}
+
+.search-control__clear {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 24px;
+  height: 24px;
+  border: none;
+  border-radius: 50%;
+  background: #e0e0e0;
+  color: #555;
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+.search-control__clear:hover {
+  background: #ccc;
+}
+
+.search-control__results {
+  list-style: none;
+  margin: 4px 0 0;
+  padding: 0;
+  background: #fff;
+  border-radius: 22px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  max-height: 50vh;
+  overflow: hidden auto;
+}
+
+.search-control__item {
+  padding: 12px 20px;
+  cursor: pointer;
+}
+
+.search-control__item:first-child {
+  padding-top: 16px;
+}
+
+.search-control__item:last-child {
+  padding-bottom: 16px;
+}
+
+.search-control__item:hover {
+  background: #f4f4f4;
+}
+
+.search-control__item-name {
+  font-weight: 500;
+  color: #222;
+  /* Truncate long display names — Nominatim sometimes returns full
+     hierarchy, which would wrap unpleasantly inside a 360px dropdown. */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.search-control__item-country {
+  font-size: 12px;
+  color: #777;
+  margin-top: 2px;
+}
+
+.search-control__status {
+  padding: 16px 20px;
+  color: #777;
+  font-style: italic;
+}
+
 .leaflet-routing-container {
   display: none !important;
 }
