@@ -93,6 +93,70 @@ export async function getCityLocationSummary(lat, lng, cityName) {
   return getSummary(match.title);
 }
 
+async function searchCommonsJpgs(query, limit = 15) {
+  const url = new URL('https://commons.wikimedia.org/w/api.php');
+  Object.entries({
+    action: 'query',
+    generator: 'search',
+    gsrnamespace: 6,
+    gsrsearch: query,
+    gsrlimit: limit,
+    prop: 'imageinfo',
+    iiprop: 'url|size',
+    iiurlwidth: 600,
+    format: 'json',
+    origin: '*',
+  }).forEach(([k, v]) => url.searchParams.set(k, v));
+
+  const response = await fetch(url);
+  if (!response.ok) throw new Error(`Commons API failed: ${response.status}`);
+  const data = await response.json();
+  return Object.values(data?.query?.pages ?? {});
+}
+
+function pickBestLandscape(pages) {
+  const candidates = pages
+    .filter((p) => /\.(jpe?g)$/i.test(p.title))
+    .map((p) => {
+      const info = p.imageinfo?.[0] ?? {};
+      const w = info.width ?? 0;
+      const h = info.height ?? 0;
+      const ratio = h > 0 ? w / h : 0;
+      return { info, pixels: w * h, ok: w > h && ratio >= 1.2 && ratio <= 3.5 };
+    })
+    .filter((c) => c.ok);
+
+  if (candidates.length === 0) return null;
+  candidates.sort((a, b) => b.pixels - a.pixels);
+  const best = candidates[0].info;
+  return best.thumburl ?? best.url ?? null;
+}
+
+// Fetch a scenic .jpg photo of the city from Wikimedia Commons.
+// Searches by city name so the result is consistent regardless of where in the city was clicked.
+// Prefers panorama/skyline shots; falls back to any city photo.
+// Returns the photo URL string, or null if none found.
+export async function getCommonsGeoPhoto(lat, lng, { cityName = null } = {}) {
+  if (!cityName) return null;
+
+  const [panoramaResult, skylineResult] = await Promise.allSettled([
+    searchCommonsJpgs(`${cityName} panorama`),
+    searchCommonsJpgs(`${cityName} skyline`),
+  ]);
+
+  const scenicPages = [
+    ...(panoramaResult.status === 'fulfilled' ? panoramaResult.value : []),
+    ...(skylineResult.status === 'fulfilled' ? skylineResult.value : []),
+  ];
+
+  const scenicPick = pickBestLandscape(scenicPages);
+  if (scenicPick) return scenicPick;
+
+  // Fallback: any landscape photo of the city
+  const fallbackPages = await searchCommonsJpgs(cityName, 30).catch(() => []);
+  return pickBestLandscape(fallbackPages);
+}
+
 // FOR FUTURE: returns page metadata
 export async function getPage(title) {
   return query({
@@ -108,5 +172,6 @@ export default {
   getSummary,
   getLocationSummary,
   getCityLocationSummary,
+  getCommonsGeoPhoto,
   getPage,
 };

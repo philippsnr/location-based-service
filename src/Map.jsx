@@ -51,15 +51,18 @@ const customMarkerIcon = new L.Icon({
 async function fetchLocationInfo(lat, lng) {
   const { placeName, cityName } = await reverseGeocode(lat, lng);
 
-  const wiki = await wikipedia.getCityLocationSummary(lat, lng, cityName);
+  const [wiki, commonsPhoto] = await Promise.allSettled([
+    wikipedia.getCityLocationSummary(lat, lng, cityName),
+    wikipedia.getCommonsGeoPhoto(lat, lng, { cityName }),
+  ]);
 
   return {
     placeName: cityName ?? placeName,
     lat,
     lng,
-    wikiSummary: wiki?.summary ?? null,
-    wikiUrl: wiki?.url ?? null,
-    wikiThumbnail: wiki?.thumbnail ?? null,
+    wikiSummary: wiki.status === 'fulfilled' ? (wiki.value?.summary ?? null) : null,
+    wikiUrl: wiki.status === 'fulfilled' ? (wiki.value?.url ?? null) : null,
+    wikiThumbnail: commonsPhoto.status === 'fulfilled' ? commonsPhoto.value : null,
   };
 }
 
