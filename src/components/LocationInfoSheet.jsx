@@ -141,19 +141,15 @@ function LocationInfoSheet({ opened, onClosed, locationInfo, loading, onShowRout
     applyExpanded(true);
   }, [opened, locationInfo?.lat, locationInfo?.lng, applyExpanded]);
 
-  const getOsmUrl = useCallback((lat, lng) =>
-    `https://www.openstreetmap.org/?mlat=${lat}&mlon=${lng}#map=18/${lat}/${lng}`,
-  []);
-
   const handleShare = useCallback(async () => {
     if (!locationInfo?.lat || !locationInfo?.lng) return;
     const title = locationInfo.placeName || 'Selected location';
-    const url = getOsmUrl(locationInfo.lat, locationInfo.lng);
+    const url = `https://philippsnr.github.io/location-based-service/?lat=${locationInfo.lat}&lng=${locationInfo.lng}`;
     try {
       if (navigator.share) {
         await navigator.share({ title, url });
       } else if (navigator.clipboard?.writeText) {
-        await navigator.clipboard.writeText(`${title} - ${url}`);
+        await navigator.clipboard.writeText(url);
         setShareMessage('Link copied to clipboard.');
       } else {
         window.prompt('Copy this location URL', url);
@@ -162,14 +158,14 @@ function LocationInfoSheet({ opened, onClosed, locationInfo, loading, onShowRout
       console.warn('Share failed:', err);
       if (navigator.clipboard?.writeText) {
         try {
-          await navigator.clipboard.writeText(`${title} - ${url}`);
+          await navigator.clipboard.writeText(url);
           setShareMessage('Link copied to clipboard.');
         } catch {
           setShareMessage('Unable to share location.');
         }
       }
     }
-  }, [getOsmUrl, locationInfo]);
+  }, [locationInfo]);
 
   useEffect(() => {
     if (!shareMessage) return;
