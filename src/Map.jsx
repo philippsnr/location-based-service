@@ -369,7 +369,13 @@ function Map() {
 
   // Only render map when center position is determined
   if (!mapCenter) {
-    return <div className="map-container">Loading your location...</div>;
+    return (
+      <div className="loading-screen">
+        <div className="loading-screen__icon">🗺️</div>
+        <div className="loading-screen__spinner" aria-hidden="true" />
+        <p className="loading-screen__text">Finding your location…</p>
+      </div>
+    );
   }
 
   return (
