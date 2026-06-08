@@ -213,6 +213,7 @@ function Map() {
     setRouteInfo(null);
     setConfirmedRoute(null);
     setRoutePlanningOpen(false);
+    setPosition(null);
   }, []);
 
   const handleToggleMapStyle = useCallback(() => {

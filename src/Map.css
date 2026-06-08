@@ -755,22 +755,3 @@
   color: #444;
   text-align: center;
 }
-
-.route-sheet__cancel-btn {
-  width: 100%;
-  padding: 14px;
-  background: #ff3b30;
-  color: #fff;
-  border: none;
-  border-radius: 12px;
-  font-size: 16px;
-  font-weight: 600;
-  cursor: pointer;
-  min-height: 50px;
-  transition: background 0.15s;
-  margin-top: 12px;
-}
-
-.route-sheet__cancel-btn:hover {
-  background: #d63029;
-}

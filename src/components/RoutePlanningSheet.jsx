@@ -405,12 +405,6 @@ export default function RoutePlanningSheet({
                 </span>
               </div>
             )}
-            <button
-              className="route-sheet__cancel-btn"
-              onClick={handleCancelRoute}
-            >
-              Cancel Route
-            </button>
           </>
         ) : (
           <>
