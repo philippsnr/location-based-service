@@ -103,6 +103,7 @@ export async function getCommonsGeoPhoto(lat, lng, { radius = 10000, limit = 10 
     ggscoord: `${lat}|${lng}`,
     ggsradius: radius,
     ggslimit: limit,
+    ggsnamespace: 6,
     prop: 'imageinfo',
     iiprop: 'url',
     iiurlwidth: 600,
