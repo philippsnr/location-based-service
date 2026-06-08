@@ -51,11 +51,19 @@ export async function forwardGeocode(query, { limit = 5, signal } = {}) {
   if (!res.ok) throw new Error(`Nominatim search failed: ${res.status}`);
   const data = await res.json();
 
-  return data.map((r) => ({
-    displayName: r.display_name,
-    name: r.name || r.display_name?.split(',')[0] || 'Unknown',
-    country: r.address?.country ?? null,
-    lat: parseFloat(r.lat),
-    lng: parseFloat(r.lon),
-  }));
+  return data.map((r) => {
+    const addr = r.address ?? {};
+    const state = addr.state ?? addr.county ?? null;
+    const country = addr.country ?? null;
+    const subtitle = state && country
+      ? `${state}, ${country}`
+      : country ?? state ?? null;
+    return {
+      displayName: r.display_name,
+      name: r.name || r.display_name?.split(',')[0] || 'Unknown',
+      country: subtitle,
+      lat: parseFloat(r.lat),
+      lng: parseFloat(r.lon),
+    };
+  });
 }
