@@ -93,6 +93,33 @@ export async function getCityLocationSummary(lat, lng, cityName) {
   return getSummary(match.title);
 }
 
+// Fetch the first geotagged .jpg photo from Wikimedia Commons near the given coordinates.
+// Returns the photo URL string, or null if none found.
+export async function getCommonsGeoPhoto(lat, lng, { radius = 10000, limit = 10 } = {}) {
+  const url = new URL('https://commons.wikimedia.org/w/api.php');
+  Object.entries({
+    action: 'query',
+    generator: 'geosearch',
+    ggscoord: `${lat}|${lng}`,
+    ggsradius: radius,
+    ggslimit: limit,
+    prop: 'imageinfo',
+    iiprop: 'url',
+    iiurlwidth: 600,
+    format: 'json',
+    origin: '*',
+  }).forEach(([k, v]) => url.searchParams.set(k, v));
+
+  const response = await fetch(url);
+  if (!response.ok) throw new Error(`Commons API failed: ${response.status}`);
+  const data = await response.json();
+
+  const pages = Object.values(data?.query?.pages ?? {});
+  const jpgPage = pages.find((p) => /\.(jpe?g)$/i.test(p.title));
+  const info = jpgPage?.imageinfo?.[0];
+  return info?.thumburl ?? info?.url ?? null;
+}
+
 // FOR FUTURE: returns page metadata
 export async function getPage(title) {
   return query({
@@ -108,5 +135,6 @@ export default {
   getSummary,
   getLocationSummary,
   getCityLocationSummary,
+  getCommonsGeoPhoto,
   getPage,
 };
