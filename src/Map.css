@@ -13,7 +13,7 @@
 
 .search-control {
   position: absolute;
-  top: 12px;
+  top: calc(env(safe-area-inset-top) + 12px);
   left: 12px;
   /* Leaflet controls live at z-index 1000; sit just above so the dropdown
      overlays the locate button when results expand. */
@@ -23,13 +23,13 @@
 }
 
 .map-wrapper .leaflet-top.leaflet-left {
-  top: 112px;
+  top: calc(env(safe-area-inset-top) + 112px);
   left: 12px;
 }
 
 @media (max-width: 480px) {
   .map-wrapper .leaflet-top.leaflet-left {
-    top: 108px;
+    top: calc(env(safe-area-inset-top) + 108px);
   }
 }
 
@@ -941,7 +941,7 @@
 
 .poi-filter-bar {
   position: absolute;
-  top: 64px;
+  top: calc(env(safe-area-inset-top) + 64px);
   left: 0;
   right: 0;
   z-index: 1000;
