@@ -136,6 +136,11 @@ function LocationInfoSheet({ opened, onClosed, locationInfo, loading, onShowRout
     });
   };
 
+  useEffect(() => {
+    if (!opened) return;
+    applyExpanded(true);
+  }, [opened, locationInfo?.lat, locationInfo?.lng, applyExpanded]);
+
   const getOsmUrl = useCallback((lat, lng) =>
     `https://www.openstreetmap.org/?mlat=${lat}&mlon=${lng}#map=18/${lat}/${lng}`,
   []);
