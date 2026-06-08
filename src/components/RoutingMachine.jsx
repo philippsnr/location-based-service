@@ -40,8 +40,12 @@ export default function RoutingMachine({ waypoints, profile = 'car', onRouteFoun
 
     control.on('routesfound', (e) => {
       const route = e.routes[0]
-      if (route && onRouteFound) {
+      if (!route) return
+      if (onRouteFound) {
         onRouteFound({ distance: route.summary.totalDistance, duration: route.summary.totalTime })
+      }
+      if (route.coordinates?.length > 1) {
+        map.flyToBounds(L.latLngBounds(route.coordinates), { padding: [50, 50], maxZoom: 15 })
       }
     })
 
