@@ -165,8 +165,12 @@
   overflow: hidden;
 }
 
+.map-style-control__group {
+  display: flex;
+}
+
 .map-style-control__btn {
-  min-width: 92px;
+  min-width: 72px;
   min-height: 36px;
   padding: 0 12px;
   border: none;
@@ -179,6 +183,11 @@
   align-items: center;
   justify-content: center;
   transition: background-color 0.2s ease, color 0.2s ease;
+  border-right: 1px solid #d8d8d8;
+}
+
+.map-style-control__btn:last-child {
+  border-right: none;
 }
 
 .map-style-control__btn:hover {
@@ -187,6 +196,15 @@
 
 .map-style-control__btn:active {
   background: #e9e9e9;
+}
+
+.map-style-control__btn[data-active='true'] {
+  background: #2d6cdf;
+  color: #fff;
+}
+
+.map-style-control__btn[data-active='true']:hover {
+  background: #2559b0;
 }
 
 .location-info-sheet {
