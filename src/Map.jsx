@@ -83,7 +83,7 @@ function buildPoiAddress(tags) {
 }
 
 async function fetchLocationInfo(lat, lng) {
-  const { placeName, cityName } = await reverseGeocode(lat, lng);
+  const { placeName, cityName, country, countryCode } = await reverseGeocode(lat, lng);
   const [wikiResult, heroResult] = await Promise.allSettled([
     wikipedia.getCityLocationSummary(lat, lng, cityName),
     wikipedia.getCommonsGeoPhoto(lat, lng, { cityName }),
@@ -97,6 +97,8 @@ async function fetchLocationInfo(lat, lng) {
     wikiSummary: wiki?.summary ?? null,
     wikiUrl: wiki?.url ?? null,
     wikiThumbnail,
+    country,
+    countryCode,
   };
 }
 
