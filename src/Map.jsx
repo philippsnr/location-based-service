@@ -15,6 +15,7 @@ import { reverseGeocode } from './services/nominatim';
 import wikipedia from './services/wikipedia'
 import { fetchWeather } from './services/weather'
 import { POI_FILTERS, fetchPois } from './services/overpass'
+import { fetchWikidataImage } from './services/wikidata'
 
 const defaultPosition = [54.4047, 10.2256];
 const MAP_STYLE_STORAGE_KEY = 'map-style';
@@ -211,8 +212,12 @@ function Map() {
     setConfirmedRoute(null);
     setRoutePlanningOpen(false);
     try {
-      const weatherResult = await fetchWeather(poi.lat, poi.lng).catch(() => null);
       const tags = poi.tags ?? {};
+      const qid = tags['brand:wikidata'] ?? tags['wikidata'] ?? null;
+      const [weatherResult, wikidataImage] = await Promise.all([
+        fetchWeather(poi.lat, poi.lng).catch(() => null),
+        tags.image ? Promise.resolve(tags.image) : qid ? fetchWikidataImage(qid).catch(() => null) : Promise.resolve(null),
+      ]);
       setLocationInfo({
         placeName: poi.name,
         lat: poi.lat,
@@ -228,6 +233,7 @@ function Map() {
           website: tags['website'] ?? tags['contact:website'] ?? null,
           phone: tags['phone'] ?? tags['contact:phone'] ?? null,
           cuisine: tags['cuisine'] ?? null,
+          image: wikidataImage,
         },
       });
     } catch (err) {
