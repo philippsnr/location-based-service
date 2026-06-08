@@ -1103,6 +1103,141 @@
   cursor: default;
 }
 
+/* ── POI results sheet ──────────────────────────────────────────────────── */
+
+.poi-results-sheet {
+  height: 80px;
+  transition-property: transform;
+  transition-duration: var(--f7-sheet-transition-duration);
+  transition-timing-function: var(--f7-sheet-transition-timing-function);
+  z-index: 12400;
+}
+
+.poi-results-sheet--expanded {
+  height: 67vh;
+  height: 67dvh;
+}
+
+.poi-results-sheet .sheet-modal-inner {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.poi-results-sheet .sheet-modal-swipe-step {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-bottom: 10px;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+}
+
+.poi-results-sheet__handle {
+  width: 36px;
+  height: 4px;
+  border-radius: 2px;
+  background: #d0d0d5;
+  margin: 10px 0 8px;
+}
+
+.poi-results-sheet__header {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  padding: 0 14px 0 16px;
+  gap: 8px;
+}
+
+.poi-results-sheet__title {
+  flex: 1;
+  font-size: 17px;
+  font-weight: 600;
+  color: #111;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.poi-results-sheet__close-btn {
+  flex-shrink: 0;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: rgba(255, 59, 48, 0.12);
+  color: #ff3b30;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.poi-results-sheet__close-btn:hover {
+  background: rgba(255, 59, 48, 0.22);
+}
+
+.poi-results-sheet__scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding-bottom: 24px;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+}
+
+.poi-results-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 12px 16px;
+  border: none;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.poi-results-item + .poi-results-item {
+  border-top: 1px solid #f0f0f0;
+}
+
+.poi-results-item:hover,
+.poi-results-item:active {
+  background: #f4f4f8;
+}
+
+.poi-results-item__dot {
+  flex-shrink: 0;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 2px solid #fff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+}
+
+.poi-results-item__name {
+  flex: 1;
+  min-width: 0;
+  font-size: 14px;
+  font-weight: 500;
+  color: #222;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.poi-results-item__dist {
+  flex-shrink: 0;
+  font-size: 12px;
+  color: #888;
+}
+
 /* ── POI filter bar ─────────────────────────────────────────────────────── */
 
 .poi-filter-bar {
