@@ -183,8 +183,10 @@ export default function RoutePlanningSheet({
   destination,
   userPosition,
   onConfirmRoute,
+  onCancelRoute,
 }) {
   const [isExpanded, setIsExpanded] = useState(false);
+  const [routeActive, setRouteActive] = useState(false);
   const isExpandedRef = useRef(false);
   const dragRef = useRef({ dragged: false });
   const sheetElRef = useRef(null);
@@ -213,6 +215,16 @@ export default function RoutePlanningSheet({
     applyExpanded(false);
     onClosed();
   }, [onClosed, applyExpanded]);
+
+  const handleCancelRoute = useCallback(() => {
+    if (sheetElRef.current) {
+      sheetElRef.current.style.height = '';
+      sheetElRef.current.style.transition = '';
+    }
+    applyExpanded(false);
+    setRouteActive(false);
+    onCancelRoute?.();
+  }, [onCancelRoute, applyExpanded]);
 
   const handlePointerDown = (e) => {
     const sheetEl = e.currentTarget.closest('.sheet-modal');
@@ -277,6 +289,7 @@ export default function RoutePlanningSheet({
   useEffect(() => {
     if (!opened) {
       applyExpanded(false);
+      setRouteActive(false);
       return;
     }
     applyExpanded(true);
@@ -315,11 +328,35 @@ export default function RoutePlanningSheet({
   const handleConfirm = () => {
     if (!startCoords || !endCoords) return;
     onConfirmRoute(startCoords, endCoords, travelMode);
+    setRouteActive(true);
+    const sheetEl = sheetElRef.current ?? document.querySelector('.route-planning-sheet.sheet-modal');
+    if (sheetEl) {
+      sheetElRef.current = sheetEl;
+      snapTo(sheetEl, PEEK_HEIGHT, () => {
+        flushSync(() => applyExpanded(false));
+      });
+    }
   };
+
+  const closeIcon = (
+    <svg
+      viewBox="0 0 24 24"
+      width="14"
+      height="14"
+      stroke="currentColor"
+      strokeWidth="2.5"
+      fill="none"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <line x1="18" y1="6" x2="6" y2="18" />
+      <line x1="6" y1="6" x2="18" y2="18" />
+    </svg>
+  );
 
   return (
     <Sheet
-      className={`route-planning-sheet${isExpanded ? ' route-planning-sheet--expanded' : ''}`}
+      className={`route-planning-sheet${isExpanded ? ' route-planning-sheet--expanded' : ''}${routeActive ? ' route-planning-sheet--active' : ''}`}
       opened={opened}
       onSheetClosed={handleClose}
       backdrop={false}
@@ -327,97 +364,115 @@ export default function RoutePlanningSheet({
       closeByOutsideClick={false}
     >
       <div
-        className="route-planning-sheet__header sheet-modal-swipe-step"
-        onPointerDown={handlePointerDown}
-        onClick={handleClick}
+        className={`route-planning-sheet__header sheet-modal-swipe-step${routeActive ? ' route-planning-sheet__header--active' : ''}`}
+        onPointerDown={routeActive ? undefined : handlePointerDown}
+        onClick={routeActive ? undefined : handleClick}
       >
-        <div className="location-info-sheet__handle" />
+        {!routeActive && <div className="location-info-sheet__handle" />}
         <div className="route-planning-sheet__title-row">
-          <span className="route-planning-sheet__title">Plan Route</span>
+          {routeActive ? (
+            <>
+              <div className="route-sheet__active-icon">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <polygon points="3 11 22 2 13 21 11 13 3 11" />
+                </svg>
+              </div>
+              <div className="route-sheet__active-info">
+                <span className="route-sheet__active-label">Active Route</span>
+                {routePreview && (
+                  <div className="route-sheet__active-metrics">
+                    <span className="route-sheet__active-distance">
+                      {formatDistance(routePreview.distance)}
+                    </span>
+                    <span className="route-sheet__active-sep">·</span>
+                    <span className="route-sheet__active-duration">
+                      {formatDuration(routePreview.duration)}
+                    </span>
+                  </div>
+                )}
+              </div>
+            </>
+          ) : (
+            <span className="route-planning-sheet__title">Plan Route</span>
+          )}
           <button
             className="location-info-sheet__close-btn"
-            onClick={(e) => { e.stopPropagation(); handleClose(); }}
-            aria-label="Close"
+            onClick={(e) => {
+              e.stopPropagation();
+              if (routeActive) handleCancelRoute();
+              else handleClose();
+            }}
+            aria-label={routeActive ? 'Cancel route' : 'Close'}
           >
-            <svg
-              viewBox="0 0 24 24"
-              width="14"
-              height="14"
-              stroke="currentColor"
-              strokeWidth="2.5"
-              fill="none"
-              strokeLinecap="round"
-              strokeLinejoin="round"
+            {closeIcon}
+          </button>
+        </div>
+      </div>
+
+      {!routeActive && <div className="route-planning-sheet__body">
+        <>
+            <AddressField
+              label="From"
+              query={startQuery}
+              setQuery={setStartQuery}
+              coords={startCoords}
+              setCoords={setStartCoords}
+              placeholder="Start location"
+            />
+            <AddressField
+              label="To"
+              query={endQuery}
+              setQuery={setEndQuery}
+              coords={endCoords}
+              setCoords={setEndCoords}
+              placeholder="Destination"
+            />
+
+            <div className="route-sheet__mode-row">
+              <button
+                className={`route-sheet__mode-btn${travelMode === 'car' ? ' route-sheet__mode-btn--active' : ''}`}
+                onClick={() => setTravelMode('car')}
+              >
+                Drive
+              </button>
+              <button
+                className={`route-sheet__mode-btn${travelMode === 'foot' ? ' route-sheet__mode-btn--active' : ''}`}
+                onClick={() => setTravelMode('foot')}
+              >
+                Walk
+              </button>
+            </div>
+
+            <div className="route-sheet__preview">
+              {previewLoading && (
+                <span className="route-sheet__preview-status">Calculating route…</span>
+              )}
+              {!previewLoading && routePreview && (
+                <>
+                  <span className="route-sheet__preview-distance">
+                    {formatDistance(routePreview.distance)}
+                  </span>
+                  <span className="route-sheet__preview-duration">
+                    {formatDuration(routePreview.duration)}
+                  </span>
+                </>
+              )}
+              {!previewLoading && previewError && (
+                <span className="route-sheet__preview-status route-sheet__preview-status--error">
+                  No route found
+                </span>
+              )}
+            </div>
+
+            <button
+              className="route-sheet__confirm-btn"
+              disabled={!startCoords || !endCoords}
+              onClick={handleConfirm}
             >
-              <line x1="18" y1="6" x2="6" y2="18" />
-              <line x1="6" y1="6" x2="18" y2="18" />
-            </svg>
-          </button>
-        </div>
-      </div>
-
-      <div className="route-planning-sheet__body">
-        <AddressField
-          label="From"
-          query={startQuery}
-          setQuery={setStartQuery}
-          coords={startCoords}
-          setCoords={setStartCoords}
-          placeholder="Start location"
-        />
-        <AddressField
-          label="To"
-          query={endQuery}
-          setQuery={setEndQuery}
-          coords={endCoords}
-          setCoords={setEndCoords}
-          placeholder="Destination"
-        />
-
-        <div className="route-sheet__mode-row">
-          <button
-            className={`route-sheet__mode-btn${travelMode === 'car' ? ' route-sheet__mode-btn--active' : ''}`}
-            onClick={() => setTravelMode('car')}
-          >
-            Drive
-          </button>
-          <button
-            className={`route-sheet__mode-btn${travelMode === 'foot' ? ' route-sheet__mode-btn--active' : ''}`}
-            onClick={() => setTravelMode('foot')}
-          >
-            Walk
-          </button>
-        </div>
-
-        <div className="route-sheet__preview">
-          {previewLoading && (
-            <span className="route-sheet__preview-status">Calculating route…</span>
-          )}
-          {!previewLoading && routePreview && (
-            <>
-              <span className="route-sheet__preview-distance">
-                {formatDistance(routePreview.distance)}
-              </span>
-              <span className="route-sheet__preview-duration">
-                {formatDuration(routePreview.duration)}
-              </span>
-            </>
-          )}
-          {!previewLoading && previewError && (
-            <span className="route-sheet__preview-status route-sheet__preview-status--error">
-              No route found
-            </span>
-          )}
-        </div>
-
-        <button
-          className="route-sheet__confirm-btn"
-          disabled={!startCoords || !endCoords}
-          onClick={handleConfirm}
-        >
-          Get Directions
-        </button>
-      </div>
+              Get Directions
+            </button>
+          </>
+      </div>}
     </Sheet>
   );
 }

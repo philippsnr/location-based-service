@@ -205,7 +205,15 @@ function Map() {
   const handleConfirmRoute = useCallback((start, end, profile) => {
     setConfirmedRoute({ start, end, profile });
     setRoutingActive(true);
+    // Keep the sheet open so the user can cancel the route
+  }, []);
+
+  const handleCancelRoute = useCallback(() => {
+    setRoutingActive(false);
+    setRouteInfo(null);
+    setConfirmedRoute(null);
     setRoutePlanningOpen(false);
+    setPosition(null);
   }, []);
 
   const handleToggleMapStyle = useCallback(() => {
@@ -282,6 +290,7 @@ function Map() {
         destination={locationInfo}
         userPosition={userPosition}
         onConfirmRoute={handleConfirmRoute}
+        onCancelRoute={handleCancelRoute}
       />
     </>
   );
