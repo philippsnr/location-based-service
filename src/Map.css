@@ -301,8 +301,8 @@
   padding: 0;
   border: none;
   border-radius: 50%;
-  background: rgba(0, 0, 0, 0.07);
-  color: #555;
+  background: rgba(255, 59, 48, 0.12);
+  color: #ff3b30;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -311,7 +311,7 @@
 }
 
 .location-info-sheet__close-btn:hover {
-  background: rgba(0, 0, 0, 0.13);
+  background: rgba(255, 59, 48, 0.22);
 }
 
 .location-info-sheet__scroll {
@@ -493,9 +493,14 @@
 /* ── Route planning sheet ───────────────────────────────────────────────── */
 
 .route-planning-sheet {
+  height: 80px;
+  transition-property: transform;
+  transition-duration: var(--f7-sheet-transition-duration);
+  transition-timing-function: var(--f7-sheet-transition-timing-function);
+}
+
+.route-planning-sheet--expanded {
   height: min(520px, 80dvh);
-  display: flex;
-  flex-direction: column;
 }
 
 .route-planning-sheet .sheet-modal-inner {
@@ -505,8 +510,14 @@
   overflow: hidden;
 }
 
-.route-planning-sheet__header {
+.route-planning-sheet .sheet-modal-swipe-step {
   flex-shrink: 0;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+}
+
+.route-planning-sheet__header {
   display: flex;
   flex-direction: column;
   align-items: center;
