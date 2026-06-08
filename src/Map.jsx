@@ -453,6 +453,7 @@ function Map() {
         userPosition={userPosition}
         activeFilter={activeFilter}
         onSelectPoi={handlePoiSelect}
+        obscured={sheetOpen}
       />
       <LocationInfoSheet
         opened={sheetOpen}

@@ -1113,6 +1113,10 @@
   z-index: 12400;
 }
 
+.poi-results-sheet--obscured {
+  pointer-events: none;
+}
+
 .poi-results-sheet--expanded {
   height: 67vh;
   height: 67dvh;

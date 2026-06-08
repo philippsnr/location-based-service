@@ -38,7 +38,7 @@ function formatDistance(meters) {
   return `${Math.round(meters)} m`;
 }
 
-function PoiResultsSheet({ opened, onClosed, pois, userPosition, activeFilter, onSelectPoi }) {
+function PoiResultsSheet({ opened, onClosed, pois, userPosition, activeFilter, onSelectPoi, obscured }) {
   const [isExpanded, setIsExpanded] = useState(false);
   const isExpandedRef = useRef(false);
   const dragRef = useRef({ dragged: false });
@@ -140,7 +140,7 @@ function PoiResultsSheet({ opened, onClosed, pois, userPosition, activeFilter, o
 
   return (
     <Sheet
-      className={`poi-results-sheet${isExpanded ? ' poi-results-sheet--expanded' : ''}`}
+      className={`poi-results-sheet${isExpanded ? ' poi-results-sheet--expanded' : ''}${obscured ? ' poi-results-sheet--obscured' : ''}`}
       opened={opened}
       onSheetClosed={handleClose}
       backdrop={false}
