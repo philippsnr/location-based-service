@@ -131,7 +131,9 @@ function Map() {
   const [activeFilter, setActiveFilter] = useState(null);
   const [poiMarkers, setPoiMarkers] = useState([]);
   const [poiLoading, setPoiLoading] = useState(false);
+  const [poiError, setPoiError] = useState(false);
   const mapCenterRef = useRef(null);
+  const activeFilterRef = useRef(null);
   // Prevents onClosed of LocationInfoSheet from clearing position when the
   // close was triggered by opening the route planning sheet.
   const openingRoutePlanningRef = useRef(false);
@@ -246,29 +248,32 @@ function Map() {
   }, []);
 
   const handleFilterToggle = useCallback(async (filterId) => {
-    if (activeFilter === filterId) {
+    if (activeFilterRef.current === filterId) {
+      activeFilterRef.current = null;
       setActiveFilter(null);
       setPoiMarkers([]);
+      setPoiError(false);
       return;
     }
+    activeFilterRef.current = filterId;
     setActiveFilter(filterId);
     setPoiMarkers([]);
+    setPoiError(false);
     const center = mapCenterRef.current;
     if (!center) return;
     setPoiLoading(true);
     try {
       const pois = await fetchPois(center.lat, center.lng, filterId);
-      // Guard against a filter switch that happened while we were fetching
-      setActiveFilter(current => {
-        if (current === filterId) setPoiMarkers(pois);
-        return current;
-      });
+      if (activeFilterRef.current === filterId) {
+        setPoiMarkers(pois);
+      }
     } catch (err) {
       console.warn('Failed to fetch POIs:', err);
+      if (activeFilterRef.current === filterId) setPoiError(true);
     } finally {
       setPoiLoading(false);
     }
-  }, [activeFilter]);
+  }, []);
 
   // Waypoints for RoutingMachine — only set after the user confirms a route.
   const waypoints = useMemo(() => {
@@ -323,7 +328,7 @@ function Map() {
           )}
         </MapContainer>
         <SearchControl onSelect={({ lat, lng }) => handlePositionSelect(L.latLng(lat, lng))} />
-        <PoiFilterBar activeFilter={activeFilter} loading={poiLoading} onToggle={handleFilterToggle} />
+        <PoiFilterBar activeFilter={activeFilter} loading={poiLoading} error={poiError} onToggle={handleFilterToggle} />
       </div>
       <LocationInfoSheet
         opened={sheetOpen}

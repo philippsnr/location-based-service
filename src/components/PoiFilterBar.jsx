@@ -16,22 +16,32 @@ const ICONS = {
       <path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96C5 16.1 6.9 18 9 18h12v-2H9.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63H19c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/>
     </svg>
   ),
+  spinner: (
+    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true" className="poi-spinner">
+      <circle cx="12" cy="12" r="9" strokeOpacity="0.25"/>
+      <path d="M12 3a9 9 0 0 1 9 9" strokeLinecap="round"/>
+    </svg>
+  ),
 };
 
-function PoiFilterBar({ activeFilter, loading, onToggle }) {
+function PoiFilterBar({ activeFilter, loading, error, onToggle }) {
   return (
     <div className="poi-filter-bar" role="toolbar" aria-label="Nearby places filters">
       {POI_FILTERS.map(filter => {
         const isActive = activeFilter === filter.id;
         const isLoading = loading && isActive;
+        const hasError = error && isActive;
         return (
           <button
             key={filter.id}
-            className={`poi-filter-btn${isActive ? ' poi-filter-btn--active' : ''}${isLoading ? ' poi-filter-btn--loading' : ''}`}
+            className={`poi-filter-btn${isActive ? ' poi-filter-btn--active' : ''}${isLoading ? ' poi-filter-btn--loading' : ''}${hasError ? ' poi-filter-btn--error' : ''}`}
             onClick={() => onToggle(filter.id)}
             aria-pressed={isActive}
+            aria-busy={isLoading}
           >
-            <span className="poi-filter-btn__icon">{ICONS[filter.id]}</span>
+            <span className="poi-filter-btn__icon">
+              {isLoading ? ICONS.spinner : ICONS[filter.id]}
+            </span>
             {filter.label}
           </button>
         );

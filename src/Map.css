@@ -876,8 +876,13 @@
 }
 
 .poi-filter-btn--loading {
-  opacity: 0.75;
   pointer-events: none;
+}
+
+.poi-filter-btn--error {
+  background: #fce8e6;
+  border-color: #c5221f;
+  color: #c5221f;
 }
 
 .poi-filter-btn__icon {
@@ -888,4 +893,17 @@
 
 .poi-filter-btn--active .poi-filter-btn__icon {
   color: #ffffff;
+}
+
+.poi-filter-btn--error .poi-filter-btn__icon {
+  color: #c5221f;
+}
+
+@keyframes poi-spin {
+  to { transform: rotate(360deg); }
+}
+
+.poi-spinner {
+  animation: poi-spin 0.8s linear infinite;
+  transform-origin: center;
 }
