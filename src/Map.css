@@ -452,6 +452,46 @@
   color: #888;
 }
 
+.lis-daylight-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.lis-daylight-label {
+  font-size: 12px;
+  color: #888;
+  white-space: nowrap;
+}
+
+.lis-daylight-track {
+  position: relative;
+  flex: 1;
+  height: 4px;
+  background: #e8e8e8;
+  border-radius: 2px;
+}
+
+.lis-daylight-fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  background: #f5a623;
+  border-radius: 2px;
+}
+
+.lis-daylight-dot {
+  position: absolute;
+  top: 50%;
+  width: 10px;
+  height: 10px;
+  background: #f5a623;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  box-shadow: 0 0 0 1px #f5a623;
+}
+
 /* ── Header action buttons ──────────────────────────────────────────────── */
 
 .lis-action-btn {

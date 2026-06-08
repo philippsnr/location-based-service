@@ -119,6 +119,29 @@ function uvIndexLabel(uv) {
   return             { text: 'very high', color: '#f44336' };
 }
 
+function toMinutes(hhmm) {
+  const [h, m] = hhmm.split(':').map(Number);
+  return h * 60 + m;
+}
+
+function DaylightBar({ sunrise, sunset }) {
+  const now = new Date();
+  const nowMin = now.getHours() * 60 + now.getMinutes();
+  const riseMin = toMinutes(sunrise);
+  const setMin = toMinutes(sunset);
+  const progress = Math.min(1, Math.max(0, (nowMin - riseMin) / (setMin - riseMin)));
+  return (
+    <div className="lis-daylight-row">
+      <span className="lis-daylight-label">🌅 {sunrise}</span>
+      <div className="lis-daylight-track">
+        <div className="lis-daylight-fill" style={{ width: `${progress * 100}%` }} />
+        <div className="lis-daylight-dot" style={{ left: `${progress * 100}%` }} />
+      </div>
+      <span className="lis-daylight-label">🌇 {sunset}</span>
+    </div>
+  );
+}
+
 function WeatherStrip({ weatherInfo }) {
   const descText = weatherInfo.description.split(' ').slice(0, -1).join(' ');
   const { sunrise, sunset, humidity, uvIndex } = weatherInfo;
@@ -140,34 +163,6 @@ function WeatherStrip({ weatherInfo }) {
               </svg>
               {Math.round(weatherInfo.windSpeed)} km/h
             </span>
-            {sunrise && (
-              <span className="lis-weather-meta__item">
-                <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                  <path d="M17 18a5 5 0 0 0-10 0"/>
-                  <line x1="12" y1="2" x2="12" y2="9"/>
-                  <line x1="4.22" y1="10.22" x2="5.64" y2="11.64"/>
-                  <line x1="2" y1="18" x2="4" y2="18"/>
-                  <line x1="20" y1="18" x2="22" y2="18"/>
-                  <line x1="18.36" y1="11.64" x2="19.78" y2="10.22"/>
-                  <polyline points="8 6 12 2 16 6"/>
-                </svg>
-                {sunrise}
-              </span>
-            )}
-            {sunset && (
-              <span className="lis-weather-meta__item">
-                <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                  <path d="M17 18a5 5 0 0 0-10 0"/>
-                  <line x1="12" y1="9" x2="12" y2="2"/>
-                  <line x1="4.22" y1="10.22" x2="5.64" y2="11.64"/>
-                  <line x1="2" y1="18" x2="4" y2="18"/>
-                  <line x1="20" y1="18" x2="22" y2="18"/>
-                  <line x1="18.36" y1="11.64" x2="19.78" y2="10.22"/>
-                  <polyline points="16 5 12 9 8 5"/>
-                </svg>
-                {sunset}
-              </span>
-            )}
             {humidity != null && (
               <span className="lis-weather-meta__item">
                 💧 {humidity}%
@@ -184,6 +179,7 @@ function WeatherStrip({ weatherInfo }) {
           </div>
         </div>
       </div>
+      {sunrise && sunset && <DaylightBar sunrise={sunrise} sunset={sunset} />}
     </div>
   );
 }
