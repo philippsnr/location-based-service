@@ -128,6 +128,18 @@ function ZoomToLocation({ position }) {
   return null;
 }
 
+function FitBoundsOnPoi({ poiMarkers }) {
+  const map = useMap();
+
+  useEffect(() => {
+    if (!poiMarkers.length) return;
+    const bounds = L.latLngBounds(poiMarkers.map(p => [p.lat, p.lng]));
+    map.fitBounds(bounds, { padding: [48, 48], maxZoom: 15 });
+  }, [poiMarkers, map]);
+
+  return null;
+}
+
 function Map() {
   const [position, setPosition] = useState(null);
   const [userPosition, setUserPosition] = useState(null);
@@ -385,6 +397,7 @@ function Map() {
           <LocateControl onLocate={handleLocate} />
           <MapStyleControl style={mapStyle} onToggle={handleToggleMapStyle} />
           <MapCenterTracker centerRef={mapCenterRef} />
+          <FitBoundsOnPoi poiMarkers={poiMarkers} />
           {poiMarkers.map(poi => (
             <Marker
               key={poi.id}
