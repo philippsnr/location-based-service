@@ -815,3 +815,62 @@
   background: #b0c8f0;
   cursor: default;
 }
+
+/* ── POI filter bar ─────────────────────────────────────────────────────── */
+
+.poi-filter-bar {
+  position: absolute;
+  bottom: 16px;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  display: flex;
+  gap: 8px;
+  padding: 0 16px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  pointer-events: none;
+}
+
+.poi-filter-bar::-webkit-scrollbar {
+  display: none;
+}
+
+.poi-filter-btn {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border: none;
+  border-radius: 9999px;
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
+  font-size: 14px;
+  font-weight: 500;
+  color: #333;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s, color 0.15s, box-shadow 0.15s;
+  min-height: 36px;
+  pointer-events: auto;
+}
+
+.poi-filter-btn:hover {
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.22);
+}
+
+.poi-filter-btn--active {
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.22);
+}
+
+.poi-filter-btn__emoji {
+  font-size: 16px;
+  line-height: 1;
+}
+
+.poi-filter-btn__label {
+  line-height: 1;
+}
