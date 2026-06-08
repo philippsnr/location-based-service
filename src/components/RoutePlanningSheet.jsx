@@ -437,18 +437,36 @@ export default function RoutePlanningSheet({
                 className={`route-sheet__mode-btn${travelMode === 'car' ? ' route-sheet__mode-btn--active' : ''}`}
                 onClick={() => setTravelMode('car')}
               >
+                <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <rect x="1" y="11" width="22" height="8" rx="2" ry="2"/>
+                  <path d="M5 11V7a7 7 0 0 1 14 0v4"/>
+                  <circle cx="7.5" cy="19" r="1.5"/><circle cx="16.5" cy="19" r="1.5"/>
+                </svg>
                 Drive
               </button>
               <button
                 className={`route-sheet__mode-btn${travelMode === 'foot' ? ' route-sheet__mode-btn--active' : ''}`}
                 onClick={() => setTravelMode('foot')}
               >
+                <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <circle cx="12" cy="4" r="1.5"/>
+                  <path d="M9 8l-2 5h5l1 5"/>
+                  <path d="M13 8l2 3-2 2"/>
+                  <path d="M7 13l-2 5"/>
+                </svg>
                 Walk
               </button>
               <button
                 className={`route-sheet__mode-btn${travelMode === 'bike' ? ' route-sheet__mode-btn--active' : ''}`}
                 onClick={() => setTravelMode('bike')}
               >
+                <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <circle cx="5.5" cy="17.5" r="3.5"/><circle cx="18.5" cy="17.5" r="3.5"/>
+                  <path d="M15 6a1 1 0 0 0-1-1h-2"/>
+                  <path d="M15 6l-3 8H5.5"/>
+                  <path d="M15 6l3.5 5.5"/>
+                  <path d="M18.5 11.5L18.5 17.5"/>
+                </svg>
                 Bike
               </button>
             </div>
