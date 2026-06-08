@@ -114,7 +114,7 @@ function Map() {
   useEffect(() => {
     try {
       const storedStyle = window.localStorage.getItem(MAP_STYLE_STORAGE_KEY);
-      if (storedStyle === 'standard' || storedStyle === 'satellite') {
+      if (storedStyle && Object.hasOwn(MAP_STYLES, storedStyle)) {
         setMapStyle(storedStyle);
       }
     } catch (error) {
