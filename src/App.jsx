@@ -1,5 +1,3 @@
-import { Box, Typography, AppBar, Toolbar } from '@mui/material';
-import PublicIcon from '@mui/icons-material/Public';
 import { App as F7App, View, Page } from 'framework7-react';
 import Map from './Map.jsx';
 import PWAUpdatePrompt from './PWAUpdatePrompt.jsx';
@@ -15,18 +13,7 @@ function App() {
     <F7App {...f7params}>
       <View main>
         <Page>
-          <Box className="app-shell" sx={{ display: 'flex', flexDirection: 'column' }}>
-            <AppBar position="static">
-              <Toolbar>
-                <PublicIcon sx={{ mr: 1 }} />
-                <Typography variant="h6" component="h1" sx={{ flexGrow: 1 }}>
-                  Location Based Service
-                </Typography>
-              </Toolbar>
-            </AppBar>
-
-            <Map />
-          </Box>
+          <Map />
           <PWAUpdatePrompt />
         </Page>
       </View>
