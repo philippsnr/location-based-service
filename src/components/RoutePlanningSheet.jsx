@@ -275,7 +275,11 @@ export default function RoutePlanningSheet({
   };
 
   useEffect(() => {
-    if (!opened) applyExpanded(false);
+    if (!opened) {
+      applyExpanded(false);
+      return;
+    }
+    applyExpanded(true);
   }, [opened, applyExpanded]);
 
   useEffect(() => {
