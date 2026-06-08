@@ -140,8 +140,8 @@
 }
 
 .locate-control .locate-btn {
-  width: 30px;
-  height: 30px;
+  width: 44px;
+  height: 44px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -177,8 +177,8 @@
 }
 
 .map-style-control__btn {
-  width: 30px;
-  height: 30px;
+  width: 44px;
+  height: 44px;
   padding: 0;
   border: none;
   background: #fff;
