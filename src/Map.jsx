@@ -60,7 +60,7 @@ async function fetchLocationInfo(lat, lng) {
   const wiki = await wikipedia.getCityLocationSummary(lat, lng, cityName);
 
   return {
-    placeName,
+    placeName: cityName ?? placeName,
     lat,
     lng,
     wikiSummary: wiki?.summary ?? null,
