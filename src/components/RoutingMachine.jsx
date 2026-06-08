@@ -3,16 +3,27 @@ import { useMap } from 'react-leaflet'
 import L from 'leaflet'
 import 'leaflet-routing-machine'
 
-export default function RoutingMachine({ waypoints, onRouteFound }) {
+// routing.openstreetmap.de has per-profile servers with correct data;
+// router.project-osrm.org only carries car data and ignores other profiles.
+const OSRM_ROUTER = {
+  car: { serviceUrl: 'https://routing.openstreetmap.de/routed-car/route/v1', profile: 'driving' },
+  foot: { serviceUrl: 'https://routing.openstreetmap.de/routed-foot/route/v1', profile: 'foot' },
+}
+
+export default function RoutingMachine({ waypoints, profile = 'car', onRouteFound }) {
   const map = useMap()
 
   useEffect(() => {
     if (!waypoints || waypoints.length < 2) return undefined
 
+    const { serviceUrl, profile: osrmProfile } = OSRM_ROUTER[profile] ?? OSRM_ROUTER.car
+
     const control = L.Routing.control({
       waypoints,
       router: L.Routing.osrmv1({
-        serviceUrl: 'https://router.project-osrm.org/route/v1',
+        serviceUrl,
+        profile: osrmProfile,
+        suppressDemoServerWarning: true,
       }),
       routeWhileDragging: false,
       addWaypoints: false,
@@ -29,8 +40,12 @@ export default function RoutingMachine({ waypoints, onRouteFound }) {
 
     control.on('routesfound', (e) => {
       const route = e.routes[0]
-      if (route && onRouteFound) {
+      if (!route) return
+      if (onRouteFound) {
         onRouteFound({ distance: route.summary.totalDistance, duration: route.summary.totalTime })
+      }
+      if (route.coordinates?.length > 1) {
+        map.flyToBounds(L.latLngBounds(route.coordinates), { padding: [50, 50], maxZoom: 15, duration: 1.2 })
       }
     })
 
@@ -41,7 +56,7 @@ export default function RoutingMachine({ waypoints, onRouteFound }) {
     return () => {
       map.removeControl(control)
     }
-  }, [map, waypoints])
+  }, [map, waypoints, profile])
 
   return null
 }
