@@ -323,15 +323,19 @@ function Map() {
 
     const controller = new AbortController();
     poiAbortRef.current = controller;
+    const timeoutId = setTimeout(() => controller.abort(), 12000);
 
     try {
       const pois = await fetchPois(center.lat, center.lng, filterId, controller.signal);
+      clearTimeout(timeoutId);
       if (activeFilterRef.current === filterId) {
         setPoiMarkers(pois);
         setPoiLoading(false);
       }
     } catch (err) {
-      if (err.name === 'AbortError') return;
+      clearTimeout(timeoutId);
+      // AbortError with a different active filter = user switched away, discard silently
+      if (err.name === 'AbortError' && activeFilterRef.current !== filterId) return;
       console.warn('Failed to fetch POIs:', err);
       if (activeFilterRef.current === filterId) {
         setPoiError(true);
