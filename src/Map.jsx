@@ -112,7 +112,7 @@ function Map() {
   useEffect(() => {
     try {
       const storedStyle = window.localStorage.getItem(MAP_STYLE_STORAGE_KEY);
-      if (storedStyle === 'standard' || storedStyle === 'satellite') {
+      if (storedStyle && Object.hasOwn(MAP_STYLES, storedStyle)) {
         setMapStyle(storedStyle);
       }
     } catch (error) {
@@ -197,8 +197,10 @@ function Map() {
     setRoutePlanningOpen(false);
   }, []);
 
-  const handleToggleMapStyle = useCallback(() => {
-    setMapStyle((currentStyle) => (currentStyle === 'standard' ? 'satellite' : 'standard'));
+  const handleSelectMapStyle = useCallback((nextStyle) => {
+    if (Object.hasOwn(MAP_STYLES, nextStyle)) {
+      setMapStyle(nextStyle);
+    }
   }, []);
 
   // Waypoints for RoutingMachine — only set after the user confirms a route.
@@ -227,7 +229,7 @@ function Map() {
           <ZoomToLocation position={position} />
           <LocationMarker position={position} onSelect={handlePositionSelect} placeName={locationInfo?.placeName} />
           <LocateControl onLocate={handleLocate} />
-          <MapStyleControl style={mapStyle} onToggle={handleToggleMapStyle} />
+          <MapStyleControl style={mapStyle} styles={MAP_STYLES} onSelect={handleSelectMapStyle} />
           {routingActive && waypoints && (
             <RoutingMachine
               waypoints={waypoints}
