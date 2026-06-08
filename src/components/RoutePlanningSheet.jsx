@@ -409,9 +409,8 @@ export default function RoutePlanningSheet({
         </div>
       </div>
 
-      <div className="route-planning-sheet__body">
-        {!routeActive && (
-          <>
+      {!routeActive && <div className="route-planning-sheet__body">
+        <>
             <AddressField
               label="From"
               query={startQuery}
@@ -473,8 +472,7 @@ export default function RoutePlanningSheet({
               Get Directions
             </button>
           </>
-        )}
-      </div>
+      </div>}
     </Sheet>
   );
 }

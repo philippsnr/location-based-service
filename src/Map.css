@@ -530,13 +530,13 @@
 
 .route-planning-sheet--active .sheet-modal-inner {
   background: #f0f7ff;
+  justify-content: center;
 }
 
 .route-planning-sheet__header--active {
   flex-direction: row;
   align-items: center;
   justify-content: flex-start;
-  flex: 1;
   padding: 0 16px;
   gap: 12px;
   padding-bottom: 0;
