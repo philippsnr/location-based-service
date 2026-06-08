@@ -84,12 +84,15 @@ function buildPoiAddress(tags) {
 async function fetchLocationInfo(lat, lng) {
   const { placeName, cityName } = await reverseGeocode(lat, lng);
   const wiki = await wikipedia.getCityLocationSummary(lat, lng, cityName).catch(() => null);
+  const rawThumb = wiki?.thumbnail ?? null;
+  const wikiThumbnail = rawThumb ? rawThumb.replace(/\/\d+px-/, '/800px-') : null;
   return {
     placeName: cityName ?? placeName,
     lat,
     lng,
     wikiSummary: wiki?.summary ?? null,
     wikiUrl: wiki?.url ?? null,
+    wikiThumbnail,
   };
 }
 

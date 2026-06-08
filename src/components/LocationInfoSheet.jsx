@@ -381,6 +381,14 @@ function LocationInfoSheet({ opened, onClosed, locationInfo, loading, onShowRout
           <div className="lis-toast">{shareMessage}</div>
         )}
 
+        {!loading && !locationInfo?.poi && locationInfo?.wikiThumbnail && (
+          <img
+            src={locationInfo.wikiThumbnail}
+            alt={locationInfo.placeName ?? ''}
+            className="lis-hero"
+          />
+        )}
+
         {loading ? (
           <div className="lis-weather-loading">Loading…</div>
         ) : locationInfo?.weatherInfo ? (
