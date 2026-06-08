@@ -45,7 +45,7 @@ export default function RoutingMachine({ waypoints, profile = 'car', onRouteFoun
         onRouteFound({ distance: route.summary.totalDistance, duration: route.summary.totalTime })
       }
       if (route.coordinates?.length > 1) {
-        map.flyToBounds(L.latLngBounds(route.coordinates), { padding: [50, 50], maxZoom: 15, duration: 0.6 })
+        map.flyToBounds(L.latLngBounds(route.coordinates), { padding: [50, 50], maxZoom: 15, duration: 1.2 })
       }
     })
 
