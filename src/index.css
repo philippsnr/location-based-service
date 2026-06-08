@@ -9,20 +9,11 @@ body,
 #root {
   margin: 0;
   padding: 0;
-  height: 100dvh;
+  height: 100%;
 }
 
-/* Make the Framework7 layout chain reach the top of the screen (behind the notch).
-   The map overlay controls use env(safe-area-inset-top) themselves. */
-.framework7-root,
-.views,
-.view,
-.page,
-.page-content {
-  height: 100dvh;
-}
-
+/* Remove Framework7's automatic status-bar padding — the map handles its own
+   overlay offsets via env(safe-area-inset-top) */
 .page-content {
   padding: 0 !important;
-  overflow: hidden;
 }
