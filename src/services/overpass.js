@@ -1,10 +1,9 @@
 const OVERPASS_URL = 'https://overpass-api.de/api/interpreter';
-const RADIUS_METERS = 1000;
 
 export const POI_FILTERS = [
-  { id: 'restaurant', label: 'Restaurants', emoji: '🍽️', color: '#ff6b35', tagKey: 'amenity', tagValue: 'restaurant' },
-  { id: 'cafe',       label: 'Cafés',        emoji: '☕',  color: '#8b5cf6', tagKey: 'amenity', tagValue: 'cafe' },
-  { id: 'supermarket', label: 'Supermarkets', emoji: '🛒', color: '#10b981', tagKey: 'shop',    tagValue: 'supermarket' },
+  { id: 'restaurant',  label: 'Restaurants',  emoji: '🍽️', color: '#ff6b35', tagKey: 'amenity', tagValue: 'restaurant',  radius: 1000 },
+  { id: 'cafe',        label: 'Cafés',         emoji: '☕',  color: '#8b5cf6', tagKey: 'amenity', tagValue: 'cafe',         radius: 1000 },
+  { id: 'supermarket', label: 'Supermarkets',  emoji: '🛒', color: '#10b981', tagKey: 'shop',    tagValue: 'supermarket', radius: 2000 },
 ];
 
 export async function fetchPois(lat, lng, filterId) {
@@ -12,7 +11,7 @@ export async function fetchPois(lat, lng, filterId) {
   if (!filter) return [];
 
   const tag = `["${filter.tagKey}"="${filter.tagValue}"]`;
-  const around = `(around:${RADIUS_METERS},${lat},${lng})`;
+  const around = `(around:${filter.radius},${lat},${lng})`;
   const query = `[out:json][timeout:15];(node${tag}${around};way${tag}${around};);out center;`;
 
   const response = await fetch(OVERPASS_URL, {
