@@ -524,10 +524,72 @@
   padding-bottom: 12px;
 }
 
+.route-planning-sheet--active {
+  background: #f0f7ff;
+}
+
+.route-planning-sheet--active .sheet-modal-inner {
+  background: #f0f7ff;
+}
+
 .route-planning-sheet__header--active {
-  justify-content: center;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
   flex: 1;
+  padding: 0 16px;
+  gap: 12px;
   padding-bottom: 0;
+}
+
+.route-sheet__active-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #007aff;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.route-sheet__active-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.route-sheet__active-label {
+  font-size: 10px;
+  font-weight: 700;
+  color: #007aff;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.route-sheet__active-metrics {
+  display: flex;
+  align-items: baseline;
+  gap: 5px;
+}
+
+.route-sheet__active-distance {
+  font-size: 19px;
+  font-weight: 700;
+  color: #111;
+}
+
+.route-sheet__active-sep {
+  font-size: 14px;
+  color: #bbb;
+}
+
+.route-sheet__active-duration {
+  font-size: 17px;
+  color: #555;
 }
 
 .route-planning-sheet__title-row {
@@ -752,12 +814,4 @@
 .route-sheet__confirm-btn:disabled {
   background: #b0c8f0;
   cursor: default;
-}
-
-.route-sheet__active-summary {
-  flex: 1;
-  font-size: 14px;
-  font-weight: 500;
-  color: #444;
-  text-align: center;
 }

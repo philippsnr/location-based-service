@@ -356,7 +356,7 @@ export default function RoutePlanningSheet({
 
   return (
     <Sheet
-      className={`route-planning-sheet${isExpanded ? ' route-planning-sheet--expanded' : ''}`}
+      className={`route-planning-sheet${isExpanded ? ' route-planning-sheet--expanded' : ''}${routeActive ? ' route-planning-sheet--active' : ''}`}
       opened={opened}
       onSheetClosed={handleClose}
       backdrop={false}
@@ -370,13 +370,30 @@ export default function RoutePlanningSheet({
       >
         {!routeActive && <div className="location-info-sheet__handle" />}
         <div className="route-planning-sheet__title-row">
-          <span className="route-planning-sheet__title">
-            {routeActive ? 'Active Route' : 'Plan Route'}
-          </span>
-          {routeActive && routePreview && (
-            <span className="route-sheet__active-summary">
-              {formatDistance(routePreview.distance)} · {formatDuration(routePreview.duration)}
-            </span>
+          {routeActive ? (
+            <>
+              <div className="route-sheet__active-icon">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <polygon points="3 11 22 2 13 21 11 13 3 11" />
+                </svg>
+              </div>
+              <div className="route-sheet__active-info">
+                <span className="route-sheet__active-label">Active Route</span>
+                {routePreview && (
+                  <div className="route-sheet__active-metrics">
+                    <span className="route-sheet__active-distance">
+                      {formatDistance(routePreview.distance)}
+                    </span>
+                    <span className="route-sheet__active-sep">·</span>
+                    <span className="route-sheet__active-duration">
+                      {formatDuration(routePreview.duration)}
+                    </span>
+                  </div>
+                )}
+              </div>
+            </>
+          ) : (
+            <span className="route-planning-sheet__title">Plan Route</span>
           )}
           <button
             className="location-info-sheet__close-btn"
