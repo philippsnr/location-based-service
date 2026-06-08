@@ -323,18 +323,6 @@
   overscroll-behavior: contain;
 }
 
-/* ── Hero image ─────────────────────────────────────────────────────────── */
-
-.lis-hero {
-  width: 100%;
-  height: 180px;
-  object-fit: cover;
-  display: block;
-}
-
-@media (max-height: 680px) {
-  .lis-hero { height: 120px; }
-}
 
 /* ── Weather strip ──────────────────────────────────────────────────────── */
 

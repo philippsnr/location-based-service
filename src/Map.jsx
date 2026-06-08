@@ -15,7 +15,6 @@ import { reverseGeocode } from './services/nominatim';
 import wikipedia from './services/wikipedia'
 import { fetchWeather } from './services/weather'
 import { POI_FILTERS, fetchPois } from './services/overpass'
-import { fetchWikidataImage } from './services/wikidata'
 
 const defaultPosition = [54.4047, 10.2256];
 const MAP_STYLE_STORAGE_KEY = 'map-style';
@@ -83,19 +82,13 @@ function buildPoiAddress(tags) {
 
 async function fetchLocationInfo(lat, lng) {
   const { placeName, cityName } = await reverseGeocode(lat, lng);
-
-  const [wiki, commonsPhoto] = await Promise.allSettled([
-    wikipedia.getCityLocationSummary(lat, lng, cityName),
-    wikipedia.getCommonsGeoPhoto(lat, lng, { cityName }),
-  ]);
-
+  const wiki = await wikipedia.getCityLocationSummary(lat, lng, cityName).catch(() => null);
   return {
     placeName: cityName ?? placeName,
     lat,
     lng,
-    wikiSummary: wiki.status === 'fulfilled' ? (wiki.value?.summary ?? null) : null,
-    wikiUrl: wiki.status === 'fulfilled' ? (wiki.value?.url ?? null) : null,
-    wikiThumbnail: commonsPhoto.status === 'fulfilled' ? commonsPhoto.value : null,
+    wikiSummary: wiki?.summary ?? null,
+    wikiUrl: wiki?.url ?? null,
   };
 }
 
@@ -190,12 +183,12 @@ function Map() {
       ]);
       const info = infoResult.status === 'fulfilled'
         ? infoResult.value
-        : { placeName: 'Unknown location', lat, lng, wikiSummary: null, wikiUrl: null, wikiThumbnail: null };
+        : { placeName: 'Unknown location', lat, lng, wikiSummary: null, wikiUrl: null };
       const weatherInfo = weatherResult.status === 'fulfilled' ? weatherResult.value : null;
       setLocationInfo({ ...info, weatherInfo });
     } catch (err) {
       console.warn('Failed to fetch location info:', err);
-      setLocationInfo({ placeName: 'Unknown location', lat, lng, wikiSummary: null, wikiUrl: null, wikiThumbnail: null, weatherInfo: null });
+      setLocationInfo({ placeName: 'Unknown location', lat, lng, wikiSummary: null, wikiUrl: null, weatherInfo: null });
     } finally {
       setInfoLoading(false);
     }
@@ -214,18 +207,13 @@ function Map() {
     setRoutePlanningOpen(false);
     try {
       const tags = poi.tags ?? {};
-      const qid = tags['brand:wikidata'] ?? tags['wikidata'] ?? null;
-      const [weatherResult, wikidataImage] = await Promise.all([
-        fetchWeather(poi.lat, poi.lng).catch(() => null),
-        tags.image ? Promise.resolve(tags.image) : qid ? fetchWikidataImage(qid).catch(() => null) : Promise.resolve(null),
-      ]);
+      const weatherResult = await fetchWeather(poi.lat, poi.lng).catch(() => null);
       setLocationInfo({
         placeName: poi.name,
         lat: poi.lat,
         lng: poi.lng,
         wikiSummary: null,
         wikiUrl: null,
-        wikiThumbnail: null,
         weatherInfo: weatherResult,
         poi: {
           type: poi.filterType,
@@ -234,7 +222,6 @@ function Map() {
           website: tags['website'] ?? tags['contact:website'] ?? null,
           phone: tags['phone'] ?? tags['contact:phone'] ?? null,
           cuisine: tags['cuisine'] ?? null,
-          image: wikidataImage,
         },
       });
     } catch (err) {
@@ -245,7 +232,6 @@ function Map() {
         lng: poi.lng,
         wikiSummary: null,
         wikiUrl: null,
-        wikiThumbnail: null,
         weatherInfo: null,
         poi: { type: poi.filterType },
       });
