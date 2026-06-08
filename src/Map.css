@@ -11,6 +11,36 @@
   height: 100dvh;
 }
 
+/* ── User location marker (blue dot + compass cone) ─────────────────────── */
+
+.ulm-wrapper {
+  width: 48px;
+  height: 48px;
+  position: relative;
+  transform-origin: center center;
+}
+
+.ulm-cone {
+  position: absolute;
+  top: 0;
+  left: 12px; /* centers the 24 px-wide SVG inside the 48 px wrapper */
+}
+
+.ulm-dot {
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #007aff;
+  border: 2.5px solid #fff;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+/* ── Search control ─────────────────────────────────────────────────────── */
+
 .search-control {
   position: absolute;
   top: calc(env(safe-area-inset-top) + 12px);

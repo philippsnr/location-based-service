@@ -5,6 +5,7 @@ import markerIconUrl from './assets/marker.png';
 import 'leaflet/dist/leaflet.css';
 import './Map.css';
 import LocateControl from './components/LocateControl';
+import UserLocationMarker from './components/UserLocationMarker';
 import MapStyleControl from './components/MapStyleControl';
 import LocationInfoSheet from './components/LocationInfoSheet';
 import RoutePlanningSheet from './components/RoutePlanningSheet';
@@ -373,6 +374,7 @@ function Map() {
           />
           <ZoomToLocation position={position} />
           <LocationMarker position={isPoiSheet ? null : position} onSelect={handlePositionSelect} placeName={locationInfo?.placeName} />
+          <UserLocationMarker position={userPosition} />
           <LocateControl onLocate={handleLocate} />
           <MapStyleControl style={mapStyle} onToggle={handleToggleMapStyle} />
           <MapCenterTracker centerRef={mapCenterRef} />
