@@ -19,12 +19,23 @@
 .search-control {
   position: absolute;
   top: 12px;
-  left: 60px;
+  left: 12px;
   /* Leaflet controls live at z-index 1000; sit just above so the dropdown
      overlays the locate button when results expand. */
   z-index: 1001;
-  width: min(360px, calc(100% - 72px));
+  width: min(360px, calc(100% - 24px));
   font-size: 14px;
+}
+
+.map-wrapper .leaflet-top.leaflet-left {
+  top: 68px;
+  left: 12px;
+}
+
+@media (max-width: 480px) {
+  .map-wrapper .leaflet-top.leaflet-left {
+    top: 64px;
+  }
 }
 
 .search-control__input-wrap {
