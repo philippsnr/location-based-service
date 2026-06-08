@@ -1,4 +1,4 @@
-import { useCallback, useState, useEffect, useMemo } from 'react';
+import { useCallback, useState, useEffect, useMemo, useRef } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMapEvents, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import markerIconUrl from './assets/marker.png';
@@ -6,6 +6,7 @@ import 'leaflet/dist/leaflet.css';
 import './Map.css';
 import LocateControl from './components/LocateControl';
 import LocationInfoSheet from './components/LocationInfoSheet';
+import RoutePlanningSheet from './components/RoutePlanningSheet';
 import RoutingMachine from './components/RoutingMachine';
 import SearchControl from './components/SearchControl';
 import { reverseGeocode } from './services/nominatim';
@@ -84,6 +85,12 @@ function Map() {
   const [infoLoading, setInfoLoading] = useState(false);
   const [routingActive, setRoutingActive] = useState(false);
   const [routeInfo, setRouteInfo] = useState(null);
+  const [routePlanningOpen, setRoutePlanningOpen] = useState(false);
+  const [routePlanningKey, setRoutePlanningKey] = useState(0);
+  const [confirmedRoute, setConfirmedRoute] = useState(null);
+  // Prevents onClosed of LocationInfoSheet from clearing position when the
+  // close was triggered by opening the route planning sheet.
+  const openingRoutePlanningRef = useRef(false);
 
   const handlePositionSelect = useCallback(async (latlng) => {
     const lat = latlng.lat ?? latlng[0];
@@ -94,6 +101,8 @@ function Map() {
     setLocationInfo(null);
     setRoutingActive(false);
     setRouteInfo(null);
+    setConfirmedRoute(null);
+    setRoutePlanningOpen(false);
     try {
       const [infoResult, weatherResult] = await Promise.allSettled([
         fetchLocationInfo(lat, lng),
@@ -139,15 +148,27 @@ function Map() {
     }
   }, []);
 
-  // Compute routing waypoints. Memoized so the RoutingMachine effect doesn't tear down
-  // and rebuild the OSRM control on unrelated re-renders.
+  const handleShowRoute = useCallback(() => {
+    openingRoutePlanningRef.current = true;
+    setRoutePlanningKey((k) => k + 1);
+    setSheetOpen(false);
+    setRoutePlanningOpen(true);
+  }, []);
+
+  const handleConfirmRoute = useCallback((start, end, profile) => {
+    setConfirmedRoute({ start, end, profile });
+    setRoutingActive(true);
+    setRoutePlanningOpen(false);
+  }, []);
+
+  // Waypoints for RoutingMachine — only set after the user confirms a route.
   const waypoints = useMemo(() => {
-    const start = toLatLng(userPosition);
-    const end = toLatLng(position);
+    if (!confirmedRoute) return null;
+    const { start, end } = confirmedRoute;
     if (!start || !end) return null;
     if (start.equals(end)) return null;
     return [start, end];
-  }, [userPosition, position]);
+  }, [confirmedRoute]);
 
   // Only render map when center position is determined
   if (!mapCenter) {
@@ -165,18 +186,43 @@ function Map() {
           <ZoomToLocation position={position} />
           <LocationMarker position={position} onSelect={handlePositionSelect} placeName={locationInfo?.placeName} />
           <LocateControl onLocate={handleLocate} />
-          {routingActive && waypoints && <RoutingMachine waypoints={waypoints} onRouteFound={setRouteInfo} />}
+          {routingActive && waypoints && (
+            <RoutingMachine
+              waypoints={waypoints}
+              profile={confirmedRoute?.profile ?? 'car'}
+              onRouteFound={setRouteInfo}
+            />
+          )}
         </MapContainer>
         <SearchControl onSelect={({ lat, lng }) => handlePositionSelect(L.latLng(lat, lng))} />
       </div>
       <LocationInfoSheet
         opened={sheetOpen}
-        onClosed={() => { setSheetOpen(false); setRoutingActive(false); setRouteInfo(null); setPosition(null); }}
+        onClosed={() => {
+          if (openingRoutePlanningRef.current) {
+            openingRoutePlanningRef.current = false;
+            setSheetOpen(false);
+            return;
+          }
+          setSheetOpen(false);
+          setRoutingActive(false);
+          setRouteInfo(null);
+          setConfirmedRoute(null);
+          setPosition(null);
+        }}
         locationInfo={locationInfo}
         loading={infoLoading}
-        onShowRoute={() => setRoutingActive(true)}
+        onShowRoute={handleShowRoute}
         routingActive={routingActive}
         routeInfo={routeInfo}
+      />
+      <RoutePlanningSheet
+        key={routePlanningKey}
+        opened={routePlanningOpen}
+        onClosed={() => setRoutePlanningOpen(false)}
+        destination={locationInfo}
+        userPosition={userPosition}
+        onConfirmRoute={handleConfirmRoute}
       />
     </>
   );
