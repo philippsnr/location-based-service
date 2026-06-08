@@ -59,7 +59,7 @@
 .map-wrapper .leaflet-bottom.leaflet-right .leaflet-control-scale {
   transform: rotate(-90deg);
   transform-origin: right bottom;
-  margin-bottom: 60px;
+  margin-bottom: 120px;
 }
 
 @media (max-width: 480px) {
