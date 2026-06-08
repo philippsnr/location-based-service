@@ -147,11 +147,19 @@
   justify-content: center;
   background: #fff;
   border: none;
+  border-radius: 0;
   cursor: pointer;
   font-size: 18px;
   line-height: 1;
   color: #333;
   padding: 0;
+}
+
+.locate-control {
+  border: none;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
+  border-radius: 6px;
+  overflow: hidden;
 }
 
 @media (hover: none) and (pointer: coarse) {
