@@ -364,16 +364,16 @@ export default function RoutePlanningSheet({
       closeByOutsideClick={false}
     >
       <div
-        className="route-planning-sheet__header sheet-modal-swipe-step"
-        onPointerDown={handlePointerDown}
-        onClick={handleClick}
+        className={`route-planning-sheet__header sheet-modal-swipe-step${routeActive ? ' route-planning-sheet__header--active' : ''}`}
+        onPointerDown={routeActive ? undefined : handlePointerDown}
+        onClick={routeActive ? undefined : handleClick}
       >
-        <div className="location-info-sheet__handle" />
+        {!routeActive && <div className="location-info-sheet__handle" />}
         <div className="route-planning-sheet__title-row">
           <span className="route-planning-sheet__title">
             {routeActive ? 'Active Route' : 'Plan Route'}
           </span>
-          {routeActive && !isExpanded && routePreview && (
+          {routeActive && routePreview && (
             <span className="route-sheet__active-summary">
               {formatDistance(routePreview.distance)} · {formatDuration(routePreview.duration)}
             </span>
@@ -393,20 +393,7 @@ export default function RoutePlanningSheet({
       </div>
 
       <div className="route-planning-sheet__body">
-        {routeActive ? (
-          <>
-            {routePreview && (
-              <div className="route-sheet__preview">
-                <span className="route-sheet__preview-distance">
-                  {formatDistance(routePreview.distance)}
-                </span>
-                <span className="route-sheet__preview-duration">
-                  {formatDuration(routePreview.duration)}
-                </span>
-              </div>
-            )}
-          </>
-        ) : (
+        {!routeActive && (
           <>
             <AddressField
               label="From"

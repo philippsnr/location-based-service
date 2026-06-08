@@ -524,6 +524,12 @@
   padding-bottom: 12px;
 }
 
+.route-planning-sheet__header--active {
+  justify-content: center;
+  flex: 1;
+  padding-bottom: 0;
+}
+
 .route-planning-sheet__title-row {
   width: 100%;
   display: flex;
