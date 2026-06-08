@@ -115,6 +115,18 @@ function PoiInfoSection({ poi }) {
 }
 
 
+function WeatherStrip({ weatherInfo }) {
+  const descText = weatherInfo.description.split(' ').slice(0, -1).join(' ');
+  return (
+    <div className="lis-weather">
+      <span className="lis-weather__icon">{weatherInfo.icon}</span>
+      <span className="lis-weather__temp">{Math.round(weatherInfo.temperature)}°</span>
+      <span className="lis-weather__desc">{descText}</span>
+      <span className="lis-weather__wind">💨 {Math.round(weatherInfo.windSpeed)} km/h</span>
+    </div>
+  );
+}
+
 function LocationInfoSheet({ opened, onClosed, locationInfo, loading, onShowRoute, routingActive, routeInfo }) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [shareMessage, setShareMessage] = useState('');
@@ -314,6 +326,12 @@ function LocationInfoSheet({ opened, onClosed, locationInfo, loading, onShowRout
         {shareMessage && (
           <div className="lis-share-msg">{shareMessage}</div>
         )}
+
+        {loading ? (
+          <div className="lis-weather lis-weather--loading">Loading weather…</div>
+        ) : locationInfo?.weatherInfo ? (
+          <WeatherStrip weatherInfo={locationInfo.weatherInfo} />
+        ) : null}
 
         {routeInfo && (
           <div className="lis-route-summary">
