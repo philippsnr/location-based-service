@@ -165,6 +165,17 @@ function LocationInfoSheet({ opened, onClosed, locationInfo, loading, onShowRout
         </div>
       </div>
       <div className="location-info-sheet__scroll">
+        {loading ? (
+          <div className="location-info-sheet__weather location-info-sheet__weather--loading">
+            Weather loading…
+          </div>
+        ) : locationInfo?.weatherInfo ? (
+          <div className="location-info-sheet__weather">
+            <span className="location-info-sheet__weather-temp">{locationInfo.weatherInfo.temperature}°C</span>
+            <span className="location-info-sheet__weather-desc">{locationInfo.weatherInfo.description}</span>
+            <span className="location-info-sheet__weather-wind">💨 {locationInfo.weatherInfo.windSpeed} km/h</span>
+          </div>
+        ) : null}
         {!loading && locationInfo?.wikiThumbnail && (
           <img
             src={locationInfo.wikiThumbnail}

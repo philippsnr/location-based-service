@@ -304,3 +304,35 @@
   color: #666;
   word-break: break-word;
 }
+
+.location-info-sheet__weather {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding: 10px 16px;
+  background: #f0f7ff;
+  border-bottom: 1px solid #e0e9f5;
+  font-size: 14px;
+}
+
+.location-info-sheet__weather--loading {
+  color: #aaa;
+  font-style: italic;
+}
+
+.location-info-sheet__weather-temp {
+  font-weight: 600;
+  font-size: 18px;
+  color: #333;
+  white-space: nowrap;
+}
+
+.location-info-sheet__weather-desc {
+  flex: 1;
+  color: #555;
+}
+
+.location-info-sheet__weather-wind {
+  color: #666;
+  white-space: nowrap;
+}
