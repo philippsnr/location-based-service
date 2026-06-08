@@ -301,8 +301,8 @@
   padding: 0;
   border: none;
   border-radius: 50%;
-  background: rgba(0, 0, 0, 0.07);
-  color: #555;
+  background: rgba(255, 59, 48, 0.12);
+  color: #ff3b30;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -311,7 +311,7 @@
 }
 
 .location-info-sheet__close-btn:hover {
-  background: rgba(0, 0, 0, 0.13);
+  background: rgba(255, 59, 48, 0.22);
 }
 
 .location-info-sheet__scroll {
