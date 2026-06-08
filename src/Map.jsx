@@ -54,11 +54,10 @@ const customMarkerIcon = new L.Icon({
   popupAnchor: [0, -32],
 });
 
-//Updated: now uses wikipedia.js service
 async function fetchLocationInfo(lat, lng) {
-  const { placeName } = await reverseGeocode(lat, lng);
+  const { placeName, cityName } = await reverseGeocode(lat, lng);
 
-  const wiki = await wikipedia.getLocationSummary(placeName);
+  const wiki = await wikipedia.getCityLocationSummary(lat, lng, cityName);
 
   return {
     placeName,
