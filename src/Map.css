@@ -324,45 +324,6 @@
 }
 
 
-/* ── Weather strip ──────────────────────────────────────────────────────── */
-
-.lis-weather {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 16px;
-  border-bottom: 1px solid #f0f0f0;
-}
-
-.lis-weather--loading {
-  color: #aaa;
-  font-style: italic;
-  font-size: 13px;
-}
-
-.lis-weather__icon {
-  font-size: 22px;
-  line-height: 1;
-}
-
-.lis-weather__temp {
-  font-size: 22px;
-  font-weight: 700;
-  color: #111;
-  letter-spacing: -0.5px;
-}
-
-.lis-weather__desc {
-  flex: 1;
-  font-size: 13px;
-  color: #666;
-}
-
-.lis-weather__wind {
-  font-size: 13px;
-  color: #888;
-  white-space: nowrap;
-}
 
 /* ── Inline action buttons (in header row) ──────────────────────────────── */
 

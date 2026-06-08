@@ -13,7 +13,6 @@ import SearchControl from './components/SearchControl';
 import PoiFilterBar from './components/PoiFilterBar';
 import { reverseGeocode } from './services/nominatim';
 import wikipedia from './services/wikipedia'
-import { fetchWeather } from './services/weather'
 import { POI_FILTERS, fetchPois } from './services/overpass'
 
 const defaultPosition = [54.4047, 10.2256];
@@ -177,24 +176,17 @@ function Map() {
     setConfirmedRoute(null);
     setRoutePlanningOpen(false);
     try {
-      const [infoResult, weatherResult] = await Promise.allSettled([
-        fetchLocationInfo(lat, lng),
-        fetchWeather(lat, lng),
-      ]);
-      const info = infoResult.status === 'fulfilled'
-        ? infoResult.value
-        : { placeName: 'Unknown location', lat, lng, wikiSummary: null, wikiUrl: null };
-      const weatherInfo = weatherResult.status === 'fulfilled' ? weatherResult.value : null;
-      setLocationInfo({ ...info, weatherInfo });
+      const info = await fetchLocationInfo(lat, lng);
+      setLocationInfo(info);
     } catch (err) {
       console.warn('Failed to fetch location info:', err);
-      setLocationInfo({ placeName: 'Unknown location', lat, lng, wikiSummary: null, wikiUrl: null, weatherInfo: null });
+      setLocationInfo({ placeName: 'Unknown location', lat, lng, wikiSummary: null, wikiUrl: null });
     } finally {
       setInfoLoading(false);
     }
   }, []);
 
-  const handlePoiSelect = useCallback(async (poi) => {
+  const handlePoiSelect = useCallback((poi) => {
     const latlng = L.latLng(poi.lat, poi.lng);
     setIsPoiSheet(true);
     setPosition(latlng);
@@ -205,39 +197,23 @@ function Map() {
     setRouteInfo(null);
     setConfirmedRoute(null);
     setRoutePlanningOpen(false);
-    try {
-      const tags = poi.tags ?? {};
-      const weatherResult = await fetchWeather(poi.lat, poi.lng).catch(() => null);
-      setLocationInfo({
-        placeName: poi.name,
-        lat: poi.lat,
-        lng: poi.lng,
-        wikiSummary: null,
-        wikiUrl: null,
-        weatherInfo: weatherResult,
-        poi: {
-          type: poi.filterType,
-          address: buildPoiAddress(tags),
-          openingHours: tags['opening_hours'] ?? null,
-          website: tags['website'] ?? tags['contact:website'] ?? null,
-          phone: tags['phone'] ?? tags['contact:phone'] ?? null,
-          cuisine: tags['cuisine'] ?? null,
-        },
-      });
-    } catch (err) {
-      console.warn('Failed to load POI info:', err);
-      setLocationInfo({
-        placeName: poi.name,
-        lat: poi.lat,
-        lng: poi.lng,
-        wikiSummary: null,
-        wikiUrl: null,
-        weatherInfo: null,
-        poi: { type: poi.filterType },
-      });
-    } finally {
-      setInfoLoading(false);
-    }
+    const tags = poi.tags ?? {};
+    setLocationInfo({
+      placeName: poi.name,
+      lat: poi.lat,
+      lng: poi.lng,
+      wikiSummary: null,
+      wikiUrl: null,
+      poi: {
+        type: poi.filterType,
+        address: buildPoiAddress(tags),
+        openingHours: tags['opening_hours'] ?? null,
+        website: tags['website'] ?? tags['contact:website'] ?? null,
+        phone: tags['phone'] ?? tags['contact:phone'] ?? null,
+        cuisine: tags['cuisine'] ?? null,
+      },
+    });
+    setInfoLoading(false);
   }, []);
 
   const handleLocate = useCallback((latlng) => {
