@@ -93,9 +93,10 @@ export async function getCityLocationSummary(lat, lng, cityName) {
   return getSummary(match.title);
 }
 
-// Fetch the first geotagged .jpg photo from Wikimedia Commons near the given coordinates.
+// Fetch a representative .jpg photo from Wikimedia Commons near the given coordinates.
+// Prefers landscape images whose filename contains the city name, sorted by resolution.
 // Returns the photo URL string, or null if none found.
-export async function getCommonsGeoPhoto(lat, lng, { radius = 10000, limit = 10 } = {}) {
+export async function getCommonsGeoPhoto(lat, lng, { radius = 10000, limit = 50, cityName = null } = {}) {
   const url = new URL('https://commons.wikimedia.org/w/api.php');
   Object.entries({
     action: 'query',
@@ -105,7 +106,7 @@ export async function getCommonsGeoPhoto(lat, lng, { radius = 10000, limit = 10 
     ggslimit: limit,
     ggsnamespace: 6,
     prop: 'imageinfo',
-    iiprop: 'url',
+    iiprop: 'url|size',
     iiurlwidth: 600,
     format: 'json',
     origin: '*',
@@ -115,10 +116,36 @@ export async function getCommonsGeoPhoto(lat, lng, { radius = 10000, limit = 10 
   if (!response.ok) throw new Error(`Commons API failed: ${response.status}`);
   const data = await response.json();
 
+  const cityLower = cityName?.toLowerCase() ?? '';
   const pages = Object.values(data?.query?.pages ?? {});
-  const jpgPage = pages.find((p) => /\.(jpe?g)$/i.test(p.title));
-  const info = jpgPage?.imageinfo?.[0];
-  return info?.thumburl ?? info?.url ?? null;
+
+  const candidates = pages
+    .filter((p) => /\.(jpe?g)$/i.test(p.title))
+    .map((p) => {
+      const info = p.imageinfo?.[0] ?? {};
+      const w = info.width ?? 0;
+      const h = info.height ?? 0;
+      const ratio = h > 0 ? w / h : 0;
+      return {
+        info,
+        pixels: w * h,
+        landscape: w > h && ratio >= 1.2 && ratio <= 3.5,
+        cityMatch: cityLower.length > 0 && p.title.toLowerCase().includes(cityLower),
+      };
+    })
+    .filter((c) => c.landscape);
+
+  if (candidates.length === 0) return null;
+
+  // Prefer candidates whose filename contains the city name; fall back to all landscape
+  const pool = candidates.some((c) => c.cityMatch)
+    ? candidates.filter((c) => c.cityMatch)
+    : candidates;
+
+  pool.sort((a, b) => b.pixels - a.pixels);
+
+  const best = pool[0].info;
+  return best.thumburl ?? best.url ?? null;
 }
 
 // FOR FUTURE: returns page metadata
