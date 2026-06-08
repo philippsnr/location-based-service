@@ -328,7 +328,8 @@
   }
 }
 
-.location-info-sheet__route-btn {
+.location-info-sheet__route-btn,
+.location-info-sheet__share-btn {
   width: 100%;
   padding: 12px;
   color: #fff;
@@ -338,11 +339,28 @@
   min-height: 44px;
 }
 
+.location-info-sheet__share-btn {
+  margin-top: 12px;
+  background: #28a745;
+  cursor: pointer;
+}
+
+.location-info-sheet__share-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 .location-info-sheet__route-info {
   margin-top: 10px;
   display: flex;
   flex-wrap: wrap;
   gap: 8px 16px;
+  font-size: 14px;
+  color: #333;
+}
+
+.location-info-sheet__share-message {
+  margin-top: 10px;
   font-size: 14px;
   color: #333;
 }
