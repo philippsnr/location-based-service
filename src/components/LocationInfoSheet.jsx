@@ -352,7 +352,10 @@ function LocationInfoSheet({ opened, onClosed, locationInfo, loading, onShowRout
                   {lngLabel && <span className="lis-coords__chip">{lngLabel}</span>}
                   {locationInfo?.elevation != null && (
                     <span className="lis-coords__chip lis-coords__chip--elevation">
-                      ▲ {locationInfo.elevation} m
+                      <svg viewBox="0 0 20 14" width="13" height="9" fill="currentColor" aria-hidden="true">
+                        <path d="M0 14 L7 2 L11 8 L14 4 L20 14 Z" />
+                      </svg>
+                      {locationInfo.elevation} m
                     </span>
                   )}
                 </div>

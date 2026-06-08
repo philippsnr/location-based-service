@@ -456,6 +456,12 @@
   padding: 4px 10px;
 }
 
+.lis-coords__chip--elevation {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
 /* ── POI details (in info sheet) ───────────────────────────────────────── */
 
 .lis-poi {
