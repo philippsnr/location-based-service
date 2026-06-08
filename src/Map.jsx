@@ -5,6 +5,7 @@ import markerIconUrl from './assets/marker.png';
 import 'leaflet/dist/leaflet.css';
 import './Map.css';
 import LocateControl from './components/LocateControl';
+import MapStyleControl from './components/MapStyleControl';
 import LocationInfoSheet from './components/LocationInfoSheet';
 import RoutePlanningSheet from './components/RoutePlanningSheet';
 import RoutingMachine from './components/RoutingMachine';
@@ -14,6 +15,21 @@ import wikipedia from './services/wikipedia'
 import { fetchWeather } from './services/weather'
 
 const defaultPosition = [54.4047, 10.2256];
+const MAP_STYLE_STORAGE_KEY = 'map-style';
+
+const MAP_STYLES = {
+  standard: {
+    label: 'Standard',
+    url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+  },
+  satellite: {
+    label: 'Satellite',
+    url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+    attribution:
+      'Tiles &copy; Esri &mdash; Source: Esri, Maxar, Earthstar Geographics, and the GIS User Community',
+  },
+};
 
 // Normalize {lat,lng} objects, [lat,lng] arrays, and L.LatLng instances to L.LatLng.
 function toLatLng(v) {
@@ -80,6 +96,7 @@ function Map() {
   const [position, setPosition] = useState(null);
   const [userPosition, setUserPosition] = useState(null);
   const [mapCenter, setMapCenter] = useState(null);
+  const [mapStyle, setMapStyle] = useState('standard');
   const [sheetOpen, setSheetOpen] = useState(false);
   const [locationInfo, setLocationInfo] = useState(null);
   const [infoLoading, setInfoLoading] = useState(false);
@@ -91,6 +108,25 @@ function Map() {
   // Prevents onClosed of LocationInfoSheet from clearing position when the
   // close was triggered by opening the route planning sheet.
   const openingRoutePlanningRef = useRef(false);
+
+  useEffect(() => {
+    try {
+      const storedStyle = window.localStorage.getItem(MAP_STYLE_STORAGE_KEY);
+      if (storedStyle === 'standard' || storedStyle === 'satellite') {
+        setMapStyle(storedStyle);
+      }
+    } catch (error) {
+      console.warn('Failed to read map style from localStorage:', error);
+    }
+  }, []);
+
+  useEffect(() => {
+    try {
+      window.localStorage.setItem(MAP_STYLE_STORAGE_KEY, mapStyle);
+    } catch (error) {
+      console.warn('Failed to save map style to localStorage:', error);
+    }
+  }, [mapStyle]);
 
   const handlePositionSelect = useCallback(async (latlng) => {
     const lat = latlng.lat ?? latlng[0];
@@ -161,6 +197,10 @@ function Map() {
     setRoutePlanningOpen(false);
   }, []);
 
+  const handleToggleMapStyle = useCallback(() => {
+    setMapStyle((currentStyle) => (currentStyle === 'standard' ? 'satellite' : 'standard'));
+  }, []);
+
   // Waypoints for RoutingMachine — only set after the user confirms a route.
   const waypoints = useMemo(() => {
     if (!confirmedRoute) return null;
@@ -180,12 +220,14 @@ function Map() {
       <div className="map-wrapper">
         <MapContainer center={mapCenter} zoom={15} scrollWheelZoom={true} className="map-container">
           <TileLayer
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            key={mapStyle}
+            attribution={MAP_STYLES[mapStyle].attribution}
+            url={MAP_STYLES[mapStyle].url}
           />
           <ZoomToLocation position={position} />
           <LocationMarker position={position} onSelect={handlePositionSelect} placeName={locationInfo?.placeName} />
           <LocateControl onLocate={handleLocate} />
+          <MapStyleControl style={mapStyle} onToggle={handleToggleMapStyle} />
           {routingActive && waypoints && (
             <RoutingMachine
               waypoints={waypoints}
