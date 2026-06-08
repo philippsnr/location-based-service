@@ -53,7 +53,7 @@ async function fetchLocationInfo(lat, lng) {
 
   const [wiki, commonsPhoto] = await Promise.allSettled([
     wikipedia.getCityLocationSummary(lat, lng, cityName),
-    wikipedia.getCommonsGeoPhoto(lat, lng),
+    wikipedia.getCommonsGeoPhoto(lat, lng, { cityName }),
   ]);
 
   return {
