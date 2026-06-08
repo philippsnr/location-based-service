@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { flushSync } from 'react-dom';
-import { Sheet, Block, Link } from 'framework7-react';
+import { Sheet } from 'framework7-react';
 
 const PEEK_HEIGHT = 80;
 const FULL_HEIGHT_RATIO = 0.67;
@@ -32,15 +32,27 @@ function snapTo(sheetEl, targetHeight, onDone) {
 }
 
 function formatDistance(meters) {
-  if (meters >= 1000) return `${(meters / 1000).toFixed(1)} km`
-  return `${Math.round(meters)} m`
+  if (meters >= 1000) return `${(meters / 1000).toFixed(1)} km`;
+  return `${Math.round(meters)} m`;
 }
 
 function formatDuration(seconds) {
-  const h = Math.floor(seconds / 3600)
-  const m = Math.floor((seconds % 3600) / 60)
-  if (h > 0) return `${h} h ${m} min`
-  return `${m} min`
+  const h = Math.floor(seconds / 3600);
+  const m = Math.floor((seconds % 3600) / 60);
+  if (h > 0) return `${h} h ${m} min`;
+  return `${m} min`;
+}
+
+function WeatherStrip({ weatherInfo }) {
+  const descText = weatherInfo.description.split(' ').slice(0, -1).join(' ');
+  return (
+    <div className="lis-weather">
+      <span className="lis-weather__icon">{weatherInfo.icon}</span>
+      <span className="lis-weather__temp">{Math.round(weatherInfo.temperature)}°</span>
+      <span className="lis-weather__desc">{descText}</span>
+      <span className="lis-weather__wind">💨 {Math.round(weatherInfo.windSpeed)} km/h</span>
+    </div>
+  );
 }
 
 function LocationInfoSheet({ opened, onClosed, locationInfo, loading, onShowRoute, routingActive, routeInfo }) {
@@ -85,7 +97,7 @@ function LocationInfoSheet({ opened, onClosed, locationInfo, loading, onShowRout
       document.removeEventListener('pointermove', onMove);
       document.removeEventListener('pointerup', onUp);
 
-      const totalDrag = startY - ev.clientY; // positive = dragged up
+      const totalDrag = startY - ev.clientY;
       if (Math.abs(totalDrag) > DRAG_THRESHOLD) dragRef.current.dragged = true;
 
       const fullH = getFullHeight();
@@ -93,7 +105,7 @@ function LocationInfoSheet({ opened, onClosed, locationInfo, loading, onShowRout
       if (Math.abs(totalDrag) > SNAP_THRESHOLD) {
         shouldExpand = totalDrag > 0;
       } else {
-        shouldExpand = isExpandedRef.current; // not enough drag → stay in current state
+        shouldExpand = isExpandedRef.current;
       }
       const targetH = shouldExpand ? fullH : PEEK_HEIGHT;
 
@@ -124,58 +136,47 @@ function LocationInfoSheet({ opened, onClosed, locationInfo, loading, onShowRout
     });
   };
 
-  const getOsmUrl = useCallback((lat, lng) => {
-    return `https://www.openstreetmap.org/?mlat=${lat}&mlon=${lng}#map=18/${lat}/${lng}`;
-  }, []);
+  const getOsmUrl = useCallback((lat, lng) =>
+    `https://www.openstreetmap.org/?mlat=${lat}&mlon=${lng}#map=18/${lat}/${lng}`,
+  []);
 
   const handleShare = useCallback(async () => {
-    if (!locationInfo?.lat || !locationInfo?.lng) {
-      return;
-    }
-
+    if (!locationInfo?.lat || !locationInfo?.lng) return;
     const title = locationInfo.placeName || 'Selected location';
     const url = getOsmUrl(locationInfo.lat, locationInfo.lng);
-
     try {
       if (navigator.share) {
-        await navigator.share({
-          title,
-          url,
-        });
-        setShareMessage('Shared successfully.');
+        await navigator.share({ title, url });
       } else if (navigator.clipboard?.writeText) {
         await navigator.clipboard.writeText(`${title} - ${url}`);
-        setShareMessage('Location link copied to clipboard.');
+        setShareMessage('Link copied to clipboard.');
       } else {
         window.prompt('Copy this location URL', url);
-        setShareMessage('Use the prompt to copy the link.');
       }
     } catch (err) {
       console.warn('Share failed:', err);
       if (navigator.clipboard?.writeText) {
         try {
           await navigator.clipboard.writeText(`${title} - ${url}`);
-          setShareMessage('Location link copied to clipboard.');
-          return;
-        } catch (copyError) {
-          console.warn('Clipboard fallback failed:', copyError);
+          setShareMessage('Link copied to clipboard.');
+        } catch {
+          setShareMessage('Unable to share location.');
         }
       }
-      setShareMessage('Unable to share or copy the location.');
     }
   }, [getOsmUrl, locationInfo]);
 
   useEffect(() => {
-    if (!shareMessage) {
-      return;
-    }
-
-    const timeout = window.setTimeout(() => {
-      setShareMessage('');
-    }, 3000);
-
-    return () => window.clearTimeout(timeout);
+    if (!shareMessage) return;
+    const t = window.setTimeout(() => setShareMessage(''), 3000);
+    return () => window.clearTimeout(t);
   }, [shareMessage]);
+
+  const lat = locationInfo?.lat;
+  const lng = locationInfo?.lng;
+  const latLabel = lat != null ? `${Math.abs(lat).toFixed(5)}° ${lat >= 0 ? 'N' : 'S'}` : null;
+  const lngLabel = lng != null ? `${Math.abs(lng).toFixed(5)}° ${lng >= 0 ? 'E' : 'W'}` : null;
+  const canShare = !loading && lat != null;
 
   return (
     <Sheet
@@ -186,119 +187,129 @@ function LocationInfoSheet({ opened, onClosed, locationInfo, loading, onShowRout
       closeByBackdropClick={false}
       closeByOutsideClick={false}
     >
+      {/* Fixed header — drag handle + single title row with all actions */}
       <div
         className="sheet-modal-swipe-step"
         onPointerDown={handlePointerDown}
         onClick={handleClick}
       >
         <div className="location-info-sheet__handle" />
-        <div className="location-info-sheet__header-container">
+        <div className="location-info-sheet__header">
           <div className="location-info-sheet__place-name">
             {loading ? 'Loading…' : locationInfo?.placeName ?? 'Unknown location'}
           </div>
+
+          {/* Directions */}
           <button
-            className="location-info-sheet__reset-btn"
-            onClick={handleClose}
-            aria-label="Close"
-            title="Close"
+            className="lis-action-btn"
+            disabled={loading || routingActive}
+            aria-label="Get Directions"
+            onClick={(e) => {
+              e.stopPropagation();
+              const sheetEl = sheetElRef.current ?? document.querySelector('.location-info-sheet');
+              if (sheetEl) {
+                sheetElRef.current = sheetEl;
+                snapTo(sheetEl, PEEK_HEIGHT, () => { flushSync(() => applyExpanded(false)); });
+              }
+              onShowRoute();
+            }}
           >
-            <svg
-              viewBox="0 0 24 24"
-              width="20"
-              height="20"
-              stroke="white"
-              strokeWidth="2"
-              fill="none"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true">
+              <polygon points="12,2 22,22 12,17 2,22" />
+            </svg>
+          </button>
+
+          {/* Share */}
+          <button
+            className="lis-action-btn"
+            disabled={!canShare}
+            aria-label="Share location"
+            onClick={(e) => { e.stopPropagation(); handleShare(); }}
+          >
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" />
+              <polyline points="16 6 12 2 8 6" />
+              <line x1="12" y1="2" x2="12" y2="15" />
+            </svg>
+          </button>
+
+          {/* Close */}
+          <button
+            className="location-info-sheet__close-btn"
+            onClick={(e) => { e.stopPropagation(); handleClose(); }}
+            aria-label="Close"
+          >
+            <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" strokeWidth="2.5" fill="none" strokeLinecap="round" aria-hidden="true">
               <line x1="18" y1="6" x2="6" y2="18" />
               <line x1="6" y1="6" x2="18" y2="18" />
             </svg>
           </button>
         </div>
       </div>
+
+      {/* Scrollable body */}
       <div className="location-info-sheet__scroll">
-        {loading ? (
-          <div className="location-info-sheet__weather location-info-sheet__weather--loading">
-            Weather loading…
-          </div>
-        ) : locationInfo?.weatherInfo ? (
-          <div className="location-info-sheet__weather">
-            <span className="location-info-sheet__weather-temp">{locationInfo.weatherInfo.temperature}°C</span>
-            <span className="location-info-sheet__weather-desc">{locationInfo.weatherInfo.description}</span>
-            <span className="location-info-sheet__weather-wind">💨 {locationInfo.weatherInfo.windSpeed} km/h</span>
-          </div>
-        ) : null}
+
+        {shareMessage && (
+          <div className="lis-share-msg">{shareMessage}</div>
+        )}
+
         {!loading && locationInfo?.wikiThumbnail && (
           <img
             src={locationInfo.wikiThumbnail}
             alt={locationInfo.placeName}
-            className="location-info-sheet__thumb"
+            className="lis-hero"
           />
         )}
-        <Block>
-          <button
-            onClick={() => {
-              const sheetEl = sheetElRef.current ?? document.querySelector('.location-info-sheet');
-              if (sheetEl) {
-                sheetElRef.current = sheetEl;
-                snapTo(sheetEl, PEEK_HEIGHT, () => {
-                  flushSync(() => applyExpanded(false));
-                });
-              }
-              onShowRoute();
-            }}
-            disabled={loading || routingActive}
-            className="location-info-sheet__route-btn"
-            style={{
-              background: routingActive ? '#aaa' : '#007aff',
-              cursor: routingActive ? 'default' : 'pointer',
-            }}
-          >
-            {routingActive ? 'Route active' : 'Show route'}
-          </button>
-          <button
-            onClick={handleShare}
-            disabled={loading || !locationInfo?.lat || !locationInfo?.lng}
-            className="location-info-sheet__share-btn"
-          >
-            Share location
-          </button>
-          {shareMessage && (
-            <div className="location-info-sheet__share-message">{shareMessage}</div>
-          )}
-          {routeInfo && (
-            <div className="location-info-sheet__route-info">
-              <span><strong>Distance:</strong> {formatDistance(routeInfo.distance)}</span>
-              <span><strong>Duration:</strong> {formatDuration(routeInfo.duration)}</span>
-            </div>
-          )}
-        </Block>
-        <Block>
+
+        {loading ? (
+          <div className="lis-weather lis-weather--loading">Loading weather…</div>
+        ) : locationInfo?.weatherInfo ? (
+          <WeatherStrip weatherInfo={locationInfo.weatherInfo} />
+        ) : null}
+
+        {routeInfo && (
+          <div className="lis-route-summary">
+            <span className="lis-route-summary__distance">{formatDistance(routeInfo.distance)}</span>
+            <span className="lis-route-summary__sep">·</span>
+            <span className="lis-route-summary__duration">{formatDuration(routeInfo.duration)}</span>
+          </div>
+        )}
+
+        <div className="lis-details">
           {loading ? (
-            <p>Fetching information…</p>
+            <p className="lis-details__loading">Fetching information…</p>
           ) : (
             <>
-              <div className="location-info-sheet__coords">
-                <div><strong>Latitude:</strong> {locationInfo?.lat?.toFixed(6)}</div>
-                <div><strong>Longitude:</strong> {locationInfo?.lng?.toFixed(6)}</div>
-              </div>
-              {locationInfo?.wikiSummary ? (
-                <>
-                  <p>{locationInfo.wikiSummary}</p>
+              {(latLabel || lngLabel) && (
+                <div className="lis-coords">
+                  {latLabel && <span className="lis-coords__chip">{latLabel}</span>}
+                  {lngLabel && <span className="lis-coords__chip">{lngLabel}</span>}
+                </div>
+              )}
+              {locationInfo?.wikiSummary && (
+                <div className="lis-wiki">
+                  <p className="lis-wiki__text">{locationInfo.wikiSummary}</p>
                   {locationInfo.wikiUrl && (
-                    <Link external href={locationInfo.wikiUrl} target="_blank">
+                    <a
+                      href={locationInfo.wikiUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="lis-wiki__link"
+                    >
                       Read more on Wikipedia
-                    </Link>
+                      <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                        <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+                        <polyline points="15 3 21 3 21 9" />
+                        <line x1="10" y1="14" x2="21" y2="3" />
+                      </svg>
+                    </a>
                   )}
-                </>
-              ) : (
-                <p>No Wikipedia information found for this location.</p>
+                </div>
               )}
             </>
           )}
-        </Block>
+        </div>
       </div>
     </Sheet>
   );

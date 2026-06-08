@@ -30,7 +30,14 @@ export async function reverseGeocode(lat, lng) {
     data.display_name?.split(',')[0] ||
     'Unknown location';
 
-  return { placeName };
+  const cityName =
+    addr.city ??
+    addr.town ??
+    addr.village ??
+    addr.municipality ??
+    null;
+
+  return { placeName, cityName };
 }
 
 export async function forwardGeocode(query, { limit = 5, signal } = {}) {
