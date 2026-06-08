@@ -166,6 +166,15 @@ function Map() {
   }, []);
 
   useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const lat = parseFloat(params.get('lat'));
+    const lng = parseFloat(params.get('lng'));
+    if (!isNaN(lat) && !isNaN(lng)) {
+      handlePositionSelect(L.latLng(lat, lng));
+    }
+  }, [handlePositionSelect]);
+
+  useEffect(() => {
     // Request user's geolocation on component mount
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
