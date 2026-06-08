@@ -23,6 +23,12 @@ const MAP_STYLES = {
     url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
   },
+  dark: {
+    label: 'Dark',
+    url: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
+    attribution:
+      '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+  },
   satellite: {
     label: 'Satellite',
     url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
@@ -112,7 +118,7 @@ function Map() {
   useEffect(() => {
     try {
       const storedStyle = window.localStorage.getItem(MAP_STYLE_STORAGE_KEY);
-      if (storedStyle === 'standard' || storedStyle === 'satellite') {
+      if (storedStyle && Object.hasOwn(MAP_STYLES, storedStyle)) {
         setMapStyle(storedStyle);
       }
     } catch (error) {
@@ -197,8 +203,10 @@ function Map() {
     setRoutePlanningOpen(false);
   }, []);
 
-  const handleToggleMapStyle = useCallback(() => {
-    setMapStyle((currentStyle) => (currentStyle === 'standard' ? 'satellite' : 'standard'));
+  const handleSelectMapStyle = useCallback((nextStyle) => {
+    if (Object.hasOwn(MAP_STYLES, nextStyle)) {
+      setMapStyle(nextStyle);
+    }
   }, []);
 
   // Waypoints for RoutingMachine — only set after the user confirms a route.
@@ -227,7 +235,11 @@ function Map() {
           <ZoomToLocation position={position} />
           <LocationMarker position={position} onSelect={handlePositionSelect} placeName={locationInfo?.placeName} />
           <LocateControl onLocate={handleLocate} />
-          <MapStyleControl style={mapStyle} onToggle={handleToggleMapStyle} />
+          <MapStyleControl
+            style={mapStyle}
+            styles={MAP_STYLES}
+            onSelect={handleSelectMapStyle}
+          />
           {routingActive && waypoints && (
             <RoutingMachine
               waypoints={waypoints}
