@@ -19,12 +19,23 @@
 .search-control {
   position: absolute;
   top: 12px;
-  left: 60px;
+  left: 12px;
   /* Leaflet controls live at z-index 1000; sit just above so the dropdown
      overlays the locate button when results expand. */
   z-index: 1001;
-  width: min(360px, calc(100% - 72px));
+  width: min(360px, calc(100% - 24px));
   font-size: 14px;
+}
+
+.map-wrapper .leaflet-top.leaflet-left {
+  top: 68px;
+  left: 12px;
+}
+
+@media (max-width: 480px) {
+  .map-wrapper .leaflet-top.leaflet-left {
+    top: 64px;
+  }
 }
 
 .search-control__input-wrap {
@@ -129,18 +140,26 @@
 }
 
 .locate-control .locate-btn {
-  width: 30px;
-  height: 30px;
+  width: 44px;
+  height: 44px;
   display: flex;
   align-items: center;
   justify-content: center;
   background: #fff;
   border: none;
+  border-radius: 0;
   cursor: pointer;
   font-size: 18px;
   line-height: 1;
   color: #333;
   padding: 0;
+}
+
+.locate-control {
+  border: none;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
+  border-radius: 6px;
+  overflow: hidden;
 }
 
 @media (hover: none) and (pointer: coarse) {
@@ -166,8 +185,8 @@
 }
 
 .map-style-control__btn {
-  width: 30px;
-  height: 30px;
+  width: 44px;
+  height: 44px;
   padding: 0;
   border: none;
   background: #fff;
