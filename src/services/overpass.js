@@ -29,6 +29,8 @@ export async function fetchPois(lat, lng, filterId) {
       lat: el.lat ?? el.center?.lat,
       lng: el.lon ?? el.center?.lon,
       name: el.tags?.name ?? filter.label,
+      filterType: filterId,
+      tags: el.tags ?? {},
     }))
     .filter(poi => poi.lat != null && poi.lng != null);
 }

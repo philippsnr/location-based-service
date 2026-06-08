@@ -69,6 +69,17 @@ function MapCenterTracker({ centerRef }) {
   return null;
 }
 
+function buildPoiAddress(tags) {
+  const street = tags['addr:street'];
+  const num = tags['addr:housenumber'];
+  const post = tags['addr:postcode'];
+  const city = tags['addr:city'];
+  const parts = [];
+  if (street) parts.push(num ? `${street} ${num}` : street);
+  if (post || city) parts.push([post, city].filter(Boolean).join(' '));
+  return parts.join(', ') || null;
+}
+
 async function fetchLocationInfo(lat, lng) {
   const { placeName, cityName } = await reverseGeocode(lat, lng);
 
@@ -132,6 +143,7 @@ function Map() {
   const [poiMarkers, setPoiMarkers] = useState([]);
   const [poiLoading, setPoiLoading] = useState(false);
   const [poiError, setPoiError] = useState(false);
+  const [isPoiSheet, setIsPoiSheet] = useState(false);
   const mapCenterRef = useRef(null);
   const activeFilterRef = useRef(null);
   // Prevents onClosed of LocationInfoSheet from clearing position when the
@@ -160,6 +172,7 @@ function Map() {
   const handlePositionSelect = useCallback(async (latlng) => {
     const lat = latlng.lat ?? latlng[0];
     const lng = latlng.lng ?? latlng[1];
+    setIsPoiSheet(false);
     setPosition(latlng);
     setSheetOpen(true);
     setInfoLoading(true);
@@ -181,6 +194,54 @@ function Map() {
     } catch (err) {
       console.warn('Failed to fetch location info:', err);
       setLocationInfo({ placeName: 'Unknown location', lat, lng, wikiSummary: null, wikiUrl: null, wikiThumbnail: null, weatherInfo: null });
+    } finally {
+      setInfoLoading(false);
+    }
+  }, []);
+
+  const handlePoiSelect = useCallback(async (poi) => {
+    const latlng = L.latLng(poi.lat, poi.lng);
+    setIsPoiSheet(true);
+    setPosition(latlng);
+    setSheetOpen(true);
+    setInfoLoading(true);
+    setLocationInfo(null);
+    setRoutingActive(false);
+    setRouteInfo(null);
+    setConfirmedRoute(null);
+    setRoutePlanningOpen(false);
+    try {
+      const weatherResult = await fetchWeather(poi.lat, poi.lng).catch(() => null);
+      const tags = poi.tags ?? {};
+      setLocationInfo({
+        placeName: poi.name,
+        lat: poi.lat,
+        lng: poi.lng,
+        wikiSummary: null,
+        wikiUrl: null,
+        wikiThumbnail: null,
+        weatherInfo: weatherResult,
+        poi: {
+          type: poi.filterType,
+          address: buildPoiAddress(tags),
+          openingHours: tags['opening_hours'] ?? null,
+          website: tags['website'] ?? tags['contact:website'] ?? null,
+          phone: tags['phone'] ?? tags['contact:phone'] ?? null,
+          cuisine: tags['cuisine'] ?? null,
+        },
+      });
+    } catch (err) {
+      console.warn('Failed to load POI info:', err);
+      setLocationInfo({
+        placeName: poi.name,
+        lat: poi.lat,
+        lng: poi.lng,
+        wikiSummary: null,
+        wikiUrl: null,
+        wikiThumbnail: null,
+        weatherInfo: null,
+        poi: { type: poi.filterType },
+      });
     } finally {
       setInfoLoading(false);
     }
@@ -305,7 +366,7 @@ function Map() {
             url={MAP_STYLES[mapStyle].url}
           />
           <ZoomToLocation position={position} />
-          <LocationMarker position={position} onSelect={handlePositionSelect} placeName={locationInfo?.placeName} />
+          <LocationMarker position={isPoiSheet ? null : position} onSelect={handlePositionSelect} placeName={locationInfo?.placeName} />
           <LocateControl onLocate={handleLocate} />
           <MapStyleControl style={mapStyle} onToggle={handleToggleMapStyle} />
           <MapCenterTracker centerRef={mapCenterRef} />
@@ -314,7 +375,7 @@ function Map() {
               key={poi.id}
               position={[poi.lat, poi.lng]}
               icon={poiIconByFilter[activeFilter] ?? poiIconByFilter.restaurant}
-              eventHandlers={{ click: () => handlePositionSelect(L.latLng(poi.lat, poi.lng)) }}
+              eventHandlers={{ click: (e) => { e.originalEvent?.stopPropagation(); handlePoiSelect(poi); } }}
             >
               <Tooltip direction="top" offset={[0, -8]}>{poi.name}</Tooltip>
             </Marker>
@@ -339,6 +400,7 @@ function Map() {
             return;
           }
           setSheetOpen(false);
+          setIsPoiSheet(false);
           setRoutingActive(false);
           setRouteInfo(null);
           setConfirmedRoute(null);

@@ -467,6 +467,54 @@
   padding: 4px 10px;
 }
 
+/* ── POI details (in info sheet) ───────────────────────────────────────── */
+
+.lis-poi {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.lis-poi__type {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #1a73e8;
+  background: #e8f0fe;
+  border-radius: 6px;
+  padding: 3px 8px;
+  align-self: flex-start;
+}
+
+.lis-poi__row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 14px;
+  color: #3c4043;
+  line-height: 1.45;
+}
+
+.lis-poi__icon {
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  color: #5f6368;
+  margin-top: 1px;
+}
+
+.lis-poi__link {
+  color: #1a73e8;
+  text-decoration: none;
+  word-break: break-all;
+}
+
+.lis-poi__link:hover {
+  text-decoration: underline;
+}
+
 /* ── Wikipedia ──────────────────────────────────────────────────────────── */
 
 .lis-wiki__text {
