@@ -4,16 +4,11 @@
   min-height: 0;
 }
 
-.app-shell {
-  height: 100vh;
-  height: 100dvh;
-}
-
 .map-wrapper {
   position: relative;
   display: flex;
-  flex: 1;
-  min-height: 0;
+  height: 100vh;
+  height: 100dvh;
 }
 
 .search-control {
