@@ -327,12 +327,29 @@
 
 /* ── Weather strip ──────────────────────────────────────────────────────── */
 
+.lis-weather-block {
+  border-bottom: 1px solid #f0f0f0;
+}
+
 .lis-weather {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 10px 16px;
-  border-bottom: 1px solid #f0f0f0;
+  padding: 10px 16px 8px;
+}
+
+.lis-sun-times {
+  display: flex;
+  gap: 20px;
+  padding: 0 16px 10px;
+}
+
+.lis-sun-times__item {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 13px;
+  color: #666;
 }
 
 .lis-weather--loading {

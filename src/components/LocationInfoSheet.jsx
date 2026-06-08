@@ -117,12 +117,47 @@ function PoiInfoSection({ poi }) {
 
 function WeatherStrip({ weatherInfo }) {
   const descText = weatherInfo.description.split(' ').slice(0, -1).join(' ');
+  const { sunrise, sunset } = weatherInfo;
   return (
-    <div className="lis-weather">
-      <span className="lis-weather__icon">{weatherInfo.icon}</span>
-      <span className="lis-weather__temp">{Math.round(weatherInfo.temperature)}°</span>
-      <span className="lis-weather__desc">{descText}</span>
-      <span className="lis-weather__wind">💨 {Math.round(weatherInfo.windSpeed)} km/h</span>
+    <div className="lis-weather-block">
+      <div className="lis-weather">
+        <span className="lis-weather__icon">{weatherInfo.icon}</span>
+        <span className="lis-weather__temp">{Math.round(weatherInfo.temperature)}°</span>
+        <span className="lis-weather__desc">{descText}</span>
+        <span className="lis-weather__wind">💨 {Math.round(weatherInfo.windSpeed)} km/h</span>
+      </div>
+      {(sunrise || sunset) && (
+        <div className="lis-sun-times">
+          {sunrise && (
+            <span className="lis-sun-times__item">
+              <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M17 18a5 5 0 0 0-10 0"/>
+                <line x1="12" y1="2" x2="12" y2="9"/>
+                <line x1="4.22" y1="10.22" x2="5.64" y2="11.64"/>
+                <line x1="2" y1="18" x2="4" y2="18"/>
+                <line x1="20" y1="18" x2="22" y2="18"/>
+                <line x1="18.36" y1="11.64" x2="19.78" y2="10.22"/>
+                <polyline points="8 6 12 2 16 6"/>
+              </svg>
+              {sunrise}
+            </span>
+          )}
+          {sunset && (
+            <span className="lis-sun-times__item">
+              <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M17 18a5 5 0 0 0-10 0"/>
+                <line x1="12" y1="9" x2="12" y2="2"/>
+                <line x1="4.22" y1="10.22" x2="5.64" y2="11.64"/>
+                <line x1="2" y1="18" x2="4" y2="18"/>
+                <line x1="20" y1="18" x2="22" y2="18"/>
+                <line x1="18.36" y1="11.64" x2="19.78" y2="10.22"/>
+                <polyline points="16 5 12 9 8 5"/>
+              </svg>
+              {sunset}
+            </span>
+          )}
+        </div>
+      )}
     </div>
   );
 }
@@ -328,7 +363,7 @@ function LocationInfoSheet({ opened, onClosed, locationInfo, loading, onShowRout
         )}
 
         {loading ? (
-          <div className="lis-weather lis-weather--loading">Loading weather…</div>
+          <div className="lis-weather-block lis-weather lis-weather--loading">Loading weather…</div>
         ) : locationInfo?.weatherInfo ? (
           <WeatherStrip weatherInfo={locationInfo.weatherInfo} />
         ) : null}
