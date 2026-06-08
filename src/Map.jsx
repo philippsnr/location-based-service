@@ -147,6 +147,7 @@ function Map() {
   const [isPoiSheet, setIsPoiSheet] = useState(false);
   const mapCenterRef = useRef(null);
   const activeFilterRef = useRef(null);
+  const poiAbortRef = useRef(null);
   // Prevents onClosed of LocationInfoSheet from clearing position when the
   // close was triggered by opening the route planning sheet.
   const openingRoutePlanningRef = useRef(false);
@@ -315,11 +316,15 @@ function Map() {
   }, []);
 
   const handleFilterToggle = useCallback(async (filterId) => {
+    poiAbortRef.current?.abort();
+    poiAbortRef.current = null;
+
     if (activeFilterRef.current === filterId) {
       activeFilterRef.current = null;
       setActiveFilter(null);
       setPoiMarkers([]);
       setPoiError(false);
+      setPoiLoading(false);
       return;
     }
     activeFilterRef.current = filterId;
@@ -329,16 +334,23 @@ function Map() {
     const center = mapCenterRef.current;
     if (!center) return;
     setPoiLoading(true);
+
+    const controller = new AbortController();
+    poiAbortRef.current = controller;
+
     try {
-      const pois = await fetchPois(center.lat, center.lng, filterId);
+      const pois = await fetchPois(center.lat, center.lng, filterId, controller.signal);
       if (activeFilterRef.current === filterId) {
         setPoiMarkers(pois);
+        setPoiLoading(false);
       }
     } catch (err) {
+      if (err.name === 'AbortError') return;
       console.warn('Failed to fetch POIs:', err);
-      if (activeFilterRef.current === filterId) setPoiError(true);
-    } finally {
-      setPoiLoading(false);
+      if (activeFilterRef.current === filterId) {
+        setPoiError(true);
+        setPoiLoading(false);
+      }
     }
   }, []);
 
