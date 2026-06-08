@@ -3,7 +3,7 @@ import { useMap } from 'react-leaflet'
 import L from 'leaflet'
 import 'leaflet-routing-machine'
 
-export default function RoutingMachine({ waypoints, onRouteFound }) {
+export default function RoutingMachine({ waypoints, profile = 'car', onRouteFound }) {
   const map = useMap()
 
   useEffect(() => {
@@ -13,6 +13,7 @@ export default function RoutingMachine({ waypoints, onRouteFound }) {
       waypoints,
       router: L.Routing.osrmv1({
         serviceUrl: 'https://router.project-osrm.org/route/v1',
+        profile,
       }),
       routeWhileDragging: false,
       addWaypoints: false,
@@ -41,7 +42,7 @@ export default function RoutingMachine({ waypoints, onRouteFound }) {
     return () => {
       map.removeControl(control)
     }
-  }, [map, waypoints])
+  }, [map, waypoints, profile])
 
   return null
 }
