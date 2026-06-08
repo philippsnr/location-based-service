@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { useMap } from 'react-leaflet'
 import L from 'leaflet'
+import { requestOrientationPermission } from './UserLocationMarker'
 
 export default function LocateControl({ onLocate }) {
   const map = useMap()
@@ -21,6 +22,7 @@ export default function LocateControl({ onLocate }) {
       L.DomEvent.disableClickPropagation(container)
       L.DomEvent.on(btn, 'click', (e) => {
         L.DomEvent.stop(e)
+        requestOrientationPermission()
         map.locate({ setView: true, maxZoom: 16, enableHighAccuracy: true })
       })
       return container
