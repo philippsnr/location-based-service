@@ -12,6 +12,7 @@ import RoutePlanningSheet from './components/RoutePlanningSheet';
 import RoutingMachine from './components/RoutingMachine';
 import SearchControl from './components/SearchControl';
 import PoiFilterBar from './components/PoiFilterBar';
+import PoiResultsSheet from './components/PoiResultsSheet';
 import ScaleControl from './components/ScaleControl';
 import { reverseGeocode } from './services/nominatim';
 import wikipedia from './services/wikipedia'
@@ -160,6 +161,7 @@ function Map() {
   const [poiMarkers, setPoiMarkers] = useState([]);
   const [poiLoading, setPoiLoading] = useState(false);
   const [poiError, setPoiError] = useState(false);
+  const [poiListOpen, setPoiListOpen] = useState(false);
   const [isPoiSheet, setIsPoiSheet] = useState(false);
   const mapCenterRef = useRef(null);
   const activeFilterRef = useRef(null);
@@ -353,6 +355,21 @@ function Map() {
     }
   }, []);
 
+  useEffect(() => {
+    if (poiMarkers.length > 0 && activeFilter) {
+      setPoiListOpen(true);
+    } else {
+      setPoiListOpen(false);
+    }
+  }, [poiMarkers.length, activeFilter]);
+
+  const handlePoiListClose = useCallback(() => {
+    setPoiListOpen(false);
+    if (activeFilterRef.current) {
+      handleFilterToggle(activeFilterRef.current);
+    }
+  }, [handleFilterToggle]);
+
   const distanceToUser = useMemo(() => {
     if (!userPosition || !position) return null;
     return userPosition.distanceTo(position);
@@ -429,6 +446,15 @@ function Map() {
         <SearchControl onSelect={({ lat, lng }) => handlePositionSelect(L.latLng(lat, lng))} />
         <PoiFilterBar activeFilter={activeFilter} loading={poiLoading} error={poiError} onToggle={handleFilterToggle} />
       </div>
+      <PoiResultsSheet
+        opened={poiListOpen}
+        onClosed={handlePoiListClose}
+        pois={poiMarkers}
+        userPosition={userPosition}
+        activeFilter={activeFilter}
+        onSelectPoi={handlePoiSelect}
+        obscured={sheetOpen}
+      />
       <LocationInfoSheet
         opened={sheetOpen}
         onClosed={() => {
