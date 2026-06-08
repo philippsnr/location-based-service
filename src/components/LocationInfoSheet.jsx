@@ -346,10 +346,15 @@ function LocationInfoSheet({ opened, onClosed, locationInfo, loading, onShowRout
             <p className="lis-details__loading">Fetching information…</p>
           ) : (
             <>
-              {(latLabel || lngLabel) && (
+              {(latLabel || lngLabel || locationInfo?.elevation != null) && (
                 <div className="lis-coords">
                   {latLabel && <span className="lis-coords__chip">{latLabel}</span>}
                   {lngLabel && <span className="lis-coords__chip">{lngLabel}</span>}
+                  {locationInfo?.elevation != null && (
+                    <span className="lis-coords__chip lis-coords__chip--elevation">
+                      ▲ {locationInfo.elevation} m
+                    </span>
+                  )}
                 </div>
               )}
               {locationInfo?.poi ? (
