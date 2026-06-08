@@ -331,6 +331,11 @@ function Map() {
     }
   }, []);
 
+  const distanceToUser = useMemo(() => {
+    if (!userPosition || !position) return null;
+    return userPosition.distanceTo(position);
+  }, [userPosition, position]);
+
   // Waypoints for RoutingMachine — only set after the user confirms a route.
   const waypoints = useMemo(() => {
     if (!confirmedRoute) return null;
@@ -406,6 +411,7 @@ function Map() {
         onShowRoute={handleShowRoute}
         routingActive={routingActive}
         routeInfo={routeInfo}
+        distanceToUser={distanceToUser}
       />
       <RoutePlanningSheet
         key={routePlanningKey}
