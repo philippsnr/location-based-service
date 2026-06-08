@@ -197,10 +197,8 @@ function Map() {
     setRoutePlanningOpen(false);
   }, []);
 
-  const handleSelectMapStyle = useCallback((nextStyle) => {
-    if (Object.hasOwn(MAP_STYLES, nextStyle)) {
-      setMapStyle(nextStyle);
-    }
+  const handleToggleMapStyle = useCallback(() => {
+    setMapStyle((currentStyle) => (currentStyle === 'standard' ? 'satellite' : 'standard'));
   }, []);
 
   // Waypoints for RoutingMachine — only set after the user confirms a route.
@@ -229,7 +227,7 @@ function Map() {
           <ZoomToLocation position={position} />
           <LocationMarker position={position} onSelect={handlePositionSelect} placeName={locationInfo?.placeName} />
           <LocateControl onLocate={handleLocate} />
-          <MapStyleControl style={mapStyle} styles={MAP_STYLES} onSelect={handleSelectMapStyle} />
+          <MapStyleControl style={mapStyle} onToggle={handleToggleMapStyle} />
           {routingActive && waypoints && (
             <RoutingMachine
               waypoints={waypoints}

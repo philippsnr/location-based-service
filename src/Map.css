@@ -165,11 +165,6 @@
   overflow: hidden;
 }
 
-.map-style-control__group {
-  display: flex;
-  flex-direction: column;
-}
-
 .map-style-control__btn {
   width: 30px;
   height: 30px;
@@ -182,7 +177,6 @@
   align-items: center;
   justify-content: center;
   transition: background-color 0.2s ease, color 0.2s ease;
-  border-bottom: 1px solid #d8d8d8;
 }
 
 .map-style-control__btn:hover {
@@ -191,10 +185,6 @@
 
 .map-style-control__btn:active {
   background: #e9e9e9;
-}
-
-.map-style-control__btn:last-child {
-  border-bottom: none;
 }
 
 .map-style-control__icon {
