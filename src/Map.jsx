@@ -14,6 +14,7 @@ import PoiFilterBar from './components/PoiFilterBar';
 import { reverseGeocode } from './services/nominatim';
 import wikipedia from './services/wikipedia'
 import { fetchWeather } from './services/weather'
+import { fetchElevation } from './services/elevation'
 import { POI_FILTERS, fetchPois } from './services/overpass'
 
 const defaultPosition = [54.4047, 10.2256];
@@ -177,15 +178,17 @@ function Map() {
     setConfirmedRoute(null);
     setRoutePlanningOpen(false);
     try {
-      const [infoResult, weatherResult] = await Promise.allSettled([
+      const [infoResult, weatherResult, elevationResult] = await Promise.allSettled([
         fetchLocationInfo(lat, lng),
         fetchWeather(lat, lng),
+        fetchElevation(lat, lng),
       ]);
       const info = infoResult.status === 'fulfilled'
         ? infoResult.value
         : { placeName: 'Unknown location', lat, lng, wikiSummary: null, wikiUrl: null };
       const weatherInfo = weatherResult.status === 'fulfilled' ? weatherResult.value : null;
-      setLocationInfo({ ...info, weatherInfo });
+      const elevation = elevationResult.status === 'fulfilled' ? elevationResult.value : null;
+      setLocationInfo({ ...info, weatherInfo, elevation });
     } catch (err) {
       console.warn('Failed to fetch location info:', err);
       setLocationInfo({ placeName: 'Unknown location', lat, lng, wikiSummary: null, wikiUrl: null, weatherInfo: null });
