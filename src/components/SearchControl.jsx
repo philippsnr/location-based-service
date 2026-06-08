@@ -12,10 +12,6 @@ export default function SearchControl({ onSelect }) {
   const [open, setOpen] = useState(false);
   const containerRef = useRef(null);
   const abortRef = useRef(null);
-  // Suppresses the next debounced search after a selection. Without this,
-  // keeping the chosen name in the input would re-trigger the search effect
-  // and re-open the dropdown after the debounce window.
-  const suppressSearchRef = useRef(false);
 
   // Stop Leaflet from interpreting clicks/wheels in the search container
   // as map interactions. Without this, typing or scrolling the dropdown
@@ -42,13 +38,6 @@ export default function SearchControl({ onSelect }) {
   // the user types again, so a slow earlier response can't overwrite a
   // newer one (race-condition guard).
   useEffect(() => {
-    // Skip exactly one cycle right after a selection: the input still
-    // shows the selected name but we don't want to re-fetch it.
-    if (suppressSearchRef.current) {
-      suppressSearchRef.current = false;
-      return;
-    }
-
     const trimmed = query.trim();
     if (trimmed.length < MIN_QUERY_LENGTH) {
       setResults([]);
@@ -83,12 +72,9 @@ export default function SearchControl({ onSelect }) {
   }, [query]);
 
   const handleSelect = (item) => {
-    // Keep input + results around so re-clicking the input re-opens the
-    // dropdown with the same list. Suppress the next debounced search so
-    // setting query to item.name doesn't re-fire it.
     if (abortRef.current) abortRef.current.abort();
-    suppressSearchRef.current = true;
-    setQuery(item.name);
+    setQuery('');
+    setResults([]);
     setOpen(false);
     onSelect({ lat: item.lat, lng: item.lng, name: item.name });
   };
@@ -97,7 +83,6 @@ export default function SearchControl({ onSelect }) {
     setQuery('');
     setResults([]);
     setOpen(false);
-    suppressSearchRef.current = false;
     if (abortRef.current) abortRef.current.abort();
   };
 
@@ -109,12 +94,7 @@ export default function SearchControl({ onSelect }) {
           className="search-control__input"
           placeholder="Search for a place…"
           value={query}
-          onChange={(e) => {
-            // Real user input: re-enable searching even if a selection
-            // had set the suppression flag for an upcoming cycle.
-            suppressSearchRef.current = false;
-            setQuery(e.target.value);
-          }}
+          onChange={(e) => setQuery(e.target.value)}
           onFocus={() => {
             if (results.length > 0 || loading) setOpen(true);
           }}

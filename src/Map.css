@@ -28,6 +28,12 @@
 }
 
 @media (max-width: 480px) {
+  .search-control {
+    left: 12px;
+    right: 12px;
+    width: auto;
+  }
+
   .map-wrapper .leaflet-top.leaflet-left {
     top: calc(env(safe-area-inset-top) + 108px);
   }
