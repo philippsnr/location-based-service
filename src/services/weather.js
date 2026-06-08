@@ -106,6 +106,7 @@ export async function fetchWeather(lat, lng) {
       sunset,
       humidity,
       uvIndex,
+      timezone: data.timezone ?? null,
     };
   }
 
