@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import L from 'leaflet';
 import { useMap } from 'react-leaflet';
 
-export default function MapStyleControl({ style, styles, onSelect }) {
+export default function MapStyleControl({ style, onToggle }) {
   const map = useMap();
 
   useEffect(() => {
@@ -13,26 +13,18 @@ export default function MapStyleControl({ style, styles, onSelect }) {
         'div',
         'leaflet-bar leaflet-control map-style-control'
       );
-
-      const buttonGroup = L.DomUtil.create('div', 'map-style-control__group', container);
-      Object.entries(styles).forEach(([styleKey, styleConfig]) => {
-        const btn = L.DomUtil.create('button', 'map-style-control__btn', buttonGroup);
-        const isActive = styleKey === style;
-        btn.type = 'button';
-        btn.title = `Switch to ${styleConfig.label.toLowerCase()} view`;
-        btn.setAttribute('aria-label', btn.title);
-        btn.setAttribute('aria-pressed', String(isActive));
-        btn.dataset.active = String(isActive);
-        btn.textContent = styleConfig.label;
-
-        L.DomEvent.on(btn, 'click', (event) => {
-          L.DomEvent.stop(event);
-          onSelect(styleKey);
-        });
-      });
+      const btn = L.DomUtil.create('button', 'map-style-control__btn', container);
+      btn.type = 'button';
+      btn.title = style === 'standard' ? 'Switch to satellite view' : 'Switch to standard view';
+      btn.setAttribute('aria-label', btn.title);
+      btn.textContent = style === 'standard' ? 'Satellite' : 'Standard';
 
       L.DomEvent.disableClickPropagation(container);
       L.DomEvent.disableScrollPropagation(container);
+      L.DomEvent.on(btn, 'click', (event) => {
+        L.DomEvent.stop(event);
+        onToggle();
+      });
 
       return container;
     };
@@ -42,7 +34,7 @@ export default function MapStyleControl({ style, styles, onSelect }) {
     return () => {
       map.removeControl(control);
     };
-  }, [map, onSelect, style, styles]);
+  }, [map, onToggle, style]);
 
   return null;
 }
