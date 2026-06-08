@@ -166,7 +166,10 @@ function AddressField({ label, query, setQuery, coords, setCoords, placeholder }
                 className="route-sheet__result-item"
                 onClick={() => handleSelect(r)}
               >
-                <div className="route-sheet__result-name">{r.name}</div>
+                <div className="route-sheet__result-name">
+                  <span className="route-sheet__result-name-text">{r.name}</span>
+                  {r.type && <span className="place-type-badge">{r.type}</span>}
+                </div>
                 {r.country && (
                   <div className="route-sheet__result-country">{r.country}</div>
                 )}

@@ -53,14 +53,16 @@ export async function forwardGeocode(query, { limit = 5, signal } = {}) {
 
   return data.map((r) => {
     const addr = r.address ?? {};
-    const state = addr.state ?? addr.county ?? null;
+    const county = addr.county ?? null;
+    const state = addr.state ?? null;
     const country = addr.country ?? null;
-    const subtitle = state && country
-      ? `${state}, ${country}`
-      : country ?? state ?? null;
+    const parts = [county, state, country].filter(Boolean);
+    const deduped = parts.filter((p, i) => p !== parts[i - 1]);
+    const subtitle = deduped.length > 0 ? deduped.join(', ') : null;
     return {
       displayName: r.display_name,
       name: r.name || r.display_name?.split(',')[0] || 'Unknown',
+      type: r.type ?? null,
       country: subtitle,
       lat: parseFloat(r.lat),
       lng: parseFloat(r.lon),

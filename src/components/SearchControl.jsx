@@ -126,7 +126,10 @@ export default function SearchControl({ onSelect }) {
                 role="option"
                 onClick={() => handleSelect(r)}
               >
-                <div className="search-control__item-name">{r.name}</div>
+                <div className="search-control__item-name">
+                  <span className="search-control__item-name-text">{r.name}</span>
+                  {r.type && <span className="place-type-badge">{r.type}</span>}
+                </div>
                 {r.country && (
                   <div className="search-control__item-country">{r.country}</div>
                 )}
