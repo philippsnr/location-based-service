@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { flushSync } from 'react-dom';
 import { Sheet, Block, Link } from 'framework7-react';
 
@@ -45,6 +45,7 @@ function formatDuration(seconds) {
 
 function LocationInfoSheet({ opened, onClosed, locationInfo, loading, onShowRoute, routingActive, routeInfo }) {
   const [isExpanded, setIsExpanded] = useState(false);
+  const [shareMessage, setShareMessage] = useState('');
   const isExpandedRef = useRef(false);
   const dragRef = useRef({ dragged: false });
   const sheetElRef = useRef(null);
@@ -122,6 +123,59 @@ function LocationInfoSheet({ opened, onClosed, locationInfo, loading, onShowRout
       flushSync(() => applyExpanded(newExpanded));
     });
   };
+
+  const getOsmUrl = useCallback((lat, lng) => {
+    return `https://www.openstreetmap.org/?mlat=${lat}&mlon=${lng}#map=18/${lat}/${lng}`;
+  }, []);
+
+  const handleShare = useCallback(async () => {
+    if (!locationInfo?.lat || !locationInfo?.lng) {
+      return;
+    }
+
+    const title = locationInfo.placeName || 'Selected location';
+    const url = getOsmUrl(locationInfo.lat, locationInfo.lng);
+
+    try {
+      if (navigator.share) {
+        await navigator.share({
+          title,
+          url,
+        });
+        setShareMessage('Shared successfully.');
+      } else if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(`${title} - ${url}`);
+        setShareMessage('Location link copied to clipboard.');
+      } else {
+        window.prompt('Copy this location URL', url);
+        setShareMessage('Use the prompt to copy the link.');
+      }
+    } catch (err) {
+      console.warn('Share failed:', err);
+      if (navigator.clipboard?.writeText) {
+        try {
+          await navigator.clipboard.writeText(`${title} - ${url}`);
+          setShareMessage('Location link copied to clipboard.');
+          return;
+        } catch (copyError) {
+          console.warn('Clipboard fallback failed:', copyError);
+        }
+      }
+      setShareMessage('Unable to share or copy the location.');
+    }
+  }, [getOsmUrl, locationInfo]);
+
+  useEffect(() => {
+    if (!shareMessage) {
+      return;
+    }
+
+    const timeout = window.setTimeout(() => {
+      setShareMessage('');
+    }, 3000);
+
+    return () => window.clearTimeout(timeout);
+  }, [shareMessage]);
 
   return (
     <Sheet
@@ -204,6 +258,16 @@ function LocationInfoSheet({ opened, onClosed, locationInfo, loading, onShowRout
           >
             {routingActive ? 'Route active' : 'Show route'}
           </button>
+          <button
+            onClick={handleShare}
+            disabled={loading || !locationInfo?.lat || !locationInfo?.lng}
+            className="location-info-sheet__share-btn"
+          >
+            Share location
+          </button>
+          {shareMessage && (
+            <div className="location-info-sheet__share-message">{shareMessage}</div>
+          )}
           {routeInfo && (
             <div className="location-info-sheet__route-info">
               <span><strong>Distance:</strong> {formatDistance(routeInfo.distance)}</span>
