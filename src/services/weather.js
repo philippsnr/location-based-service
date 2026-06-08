@@ -50,6 +50,8 @@ export async function fetchWeather(lat, lng) {
     url.searchParams.set('latitude', lat);
     url.searchParams.set('longitude', lng);
     url.searchParams.set('current', currentParam);
+    url.searchParams.set('daily', 'sunrise,sunset');
+    url.searchParams.set('timezone', 'auto');
 
     let response;
     try {
@@ -87,12 +89,18 @@ export async function fetchWeather(lat, lng) {
     const weatherCode = current.weathercode ?? current.weather_code;
     const weatherMeta = getWeatherMeta(weatherCode);
 
+    const parseTime = (iso) => iso ? iso.split('T')[1]?.slice(0, 5) : null;
+    const sunrise = parseTime(data?.daily?.sunrise?.[0]);
+    const sunset  = parseTime(data?.daily?.sunset?.[0]);
+
     return {
       temperature: current.temperature_2m,
       weatherCode,
       windSpeed: current.windspeed_10m ?? current.wind_speed_10m,
       description: `${weatherMeta.description} ${weatherMeta.icon}`,
       icon: weatherMeta.icon,
+      sunrise,
+      sunset,
     };
   }
 
