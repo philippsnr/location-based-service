@@ -12,6 +12,7 @@ import RoutePlanningSheet from './components/RoutePlanningSheet';
 import RoutingMachine from './components/RoutingMachine';
 import SearchControl from './components/SearchControl';
 import PoiFilterBar from './components/PoiFilterBar';
+import ScaleControl from './components/ScaleControl';
 import { reverseGeocode } from './services/nominatim';
 import wikipedia from './services/wikipedia'
 import { fetchWeather } from './services/weather'
@@ -395,6 +396,7 @@ function Map() {
           <LocationMarker position={isPoiSheet ? null : position} onSelect={handlePositionSelect} placeName={locationInfo?.placeName} />
           <UserLocationMarker position={userPosition} />
           <LocateControl onLocate={handleLocate} />
+          <ScaleControl />
           <MapStyleControl style={mapStyle} onToggle={handleToggleMapStyle} />
           <MapCenterTracker centerRef={mapCenterRef} />
           <FitBoundsOnPoi poiMarkers={poiMarkers} />
