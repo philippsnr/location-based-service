@@ -372,6 +372,13 @@ function Map() {
             attribution={MAP_STYLES[mapStyle].attribution}
             url={MAP_STYLES[mapStyle].url}
           />
+          {mapStyle === 'satellite' && (
+            <TileLayer
+              url="https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}"
+              attribution=""
+              zIndex={2}
+            />
+          )}
           <ZoomToLocation position={position} />
           <LocationMarker position={isPoiSheet ? null : position} onSelect={handlePositionSelect} placeName={locationInfo?.placeName} />
           <UserLocationMarker position={userPosition} />
