@@ -112,9 +112,16 @@ function PoiInfoSection({ poi }) {
   );
 }
 
+function uvIndexLabel(uv) {
+  if (uv <= 2) return { text: 'low',      color: '#4caf50' };
+  if (uv <= 5) return { text: 'moderate', color: '#ffc107' };
+  if (uv <= 7) return { text: 'high',     color: '#ff9800' };
+  return             { text: 'very high', color: '#f44336' };
+}
+
 function WeatherStrip({ weatherInfo }) {
   const descText = weatherInfo.description.split(' ').slice(0, -1).join(' ');
-  const { sunrise, sunset } = weatherInfo;
+  const { sunrise, sunset, humidity, uvIndex } = weatherInfo;
   return (
     <div className="lis-weather-block">
       <div className="lis-weather-row">
@@ -161,6 +168,19 @@ function WeatherStrip({ weatherInfo }) {
                 {sunset}
               </span>
             )}
+            {humidity != null && (
+              <span className="lis-weather-meta__item">
+                💧 {humidity}%
+              </span>
+            )}
+            {uvIndex != null && (() => {
+              const { text, color } = uvIndexLabel(uvIndex);
+              return (
+                <span className="lis-weather-meta__item" style={{ color }}>
+                  UV {uvIndex} <span style={{ fontSize: '0.75em', opacity: 0.85 }}>{text}</span>
+                </span>
+              );
+            })()}
           </div>
         </div>
       </div>

@@ -1,7 +1,7 @@
 const WEATHER_API_BASE = 'https://api.open-meteo.com/v1/forecast';
 const CURRENT_PARAM_CANDIDATES = [
-  'temperature_2m,weathercode,windspeed_10m',
-  'temperature_2m,weather_code,wind_speed_10m',
+  'temperature_2m,weathercode,windspeed_10m,relative_humidity_2m,uv_index',
+  'temperature_2m,weather_code,wind_speed_10m,relative_humidity_2m,uv_index',
 ];
 
 const WMO_WEATHER_MAP = {
@@ -93,6 +93,9 @@ export async function fetchWeather(lat, lng) {
     const sunrise = parseTime(data?.daily?.sunrise?.[0]);
     const sunset  = parseTime(data?.daily?.sunset?.[0]);
 
+    const humidity = current.relative_humidity_2m ?? null;
+    const uvIndex = current.uv_index != null ? Math.round(current.uv_index) : null;
+
     return {
       temperature: current.temperature_2m,
       weatherCode,
@@ -101,6 +104,8 @@ export async function fetchWeather(lat, lng) {
       icon: weatherMeta.icon,
       sunrise,
       sunset,
+      humidity,
+      uvIndex,
     };
   }
 
