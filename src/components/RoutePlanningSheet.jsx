@@ -52,6 +52,7 @@ function formatDuration(seconds) {
 const OSRM_BASE = {
   car: 'https://routing.openstreetmap.de/routed-car/route/v1/driving',
   foot: 'https://routing.openstreetmap.de/routed-foot/route/v1/foot',
+  bike: 'https://routing.openstreetmap.de/routed-bike/route/v1/bike',
 };
 
 async function fetchRoutePreview(start, end, profile, signal) {
@@ -440,6 +441,12 @@ export default function RoutePlanningSheet({
                 onClick={() => setTravelMode('foot')}
               >
                 Walk
+              </button>
+              <button
+                className={`route-sheet__mode-btn${travelMode === 'bike' ? ' route-sheet__mode-btn--active' : ''}`}
+                onClick={() => setTravelMode('bike')}
+              >
+                Bike
               </button>
             </div>
 

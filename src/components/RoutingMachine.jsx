@@ -8,6 +8,7 @@ import 'leaflet-routing-machine'
 const OSRM_ROUTER = {
   car: { serviceUrl: 'https://routing.openstreetmap.de/routed-car/route/v1', profile: 'driving' },
   foot: { serviceUrl: 'https://routing.openstreetmap.de/routed-foot/route/v1', profile: 'foot' },
+  bike: { serviceUrl: 'https://routing.openstreetmap.de/routed-bike/route/v1', profile: 'bike' },
 }
 
 export default function RoutingMachine({ waypoints, profile = 'car', onRouteFound }) {
