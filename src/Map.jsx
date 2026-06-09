@@ -166,9 +166,10 @@ function Map() {
   const mapCenterRef = useRef(null);
   const activeFilterRef = useRef(null);
   const poiAbortRef = useRef(null);
-  // Prevents onClosed of LocationInfoSheet from clearing position when the
-  // close was triggered by opening the route planning sheet.
   const openingRoutePlanningRef = useRef(false);
+  // Set to true before closing PoiResultsSheet programmatically so onSheetClosed
+  // doesn't mistake it for a user dismissal and deactivate the filter.
+  const closingPoiListProgramRef = useRef(false);
 
   useEffect(() => {
     try {
@@ -356,14 +357,25 @@ function Map() {
   }, []);
 
   useEffect(() => {
-    if (poiMarkers.length > 0 && activeFilter) {
+    const hasResults = poiMarkers.length > 0 && !!activeFilter;
+    const overlayOpen = sheetOpen || routePlanningOpen;
+    if (hasResults && !overlayOpen) {
+      closingPoiListProgramRef.current = false;
       setPoiListOpen(true);
     } else {
+      if (hasResults && overlayOpen) {
+        // Another sheet is covering the map — close list without deactivating filter.
+        closingPoiListProgramRef.current = true;
+      }
       setPoiListOpen(false);
     }
-  }, [poiMarkers.length, activeFilter]);
+  }, [poiMarkers.length, activeFilter, sheetOpen, routePlanningOpen]);
 
   const handlePoiListClose = useCallback(() => {
+    if (closingPoiListProgramRef.current) {
+      closingPoiListProgramRef.current = false;
+      return;
+    }
     setPoiListOpen(false);
     if (activeFilterRef.current) {
       handleFilterToggle(activeFilterRef.current);
@@ -453,7 +465,6 @@ function Map() {
         userPosition={userPosition}
         activeFilter={activeFilter}
         onSelectPoi={handlePoiSelect}
-        obscured={sheetOpen}
       />
       <LocationInfoSheet
         opened={sheetOpen}
