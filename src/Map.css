@@ -1110,6 +1110,8 @@
   transition-property: transform;
   transition-duration: var(--f7-sheet-transition-duration);
   transition-timing-function: var(--f7-sheet-transition-timing-function);
+  /* Sits below LocationInfoSheet and RoutePlanningSheet (both at F7's default 12500)
+     regardless of DOM insertion order, which F7 controls at runtime. */
   z-index: 12400;
 }
 
