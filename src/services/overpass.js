@@ -12,6 +12,8 @@ export const POI_FILTERS = [
   { id: 'bar',         label: 'Bars',          emoji: '🍸', color: '#d946ef', tagKey: 'amenity', tagValue: 'bar',         radius: 1000, nodesOnly: true },
   { id: 'hotel',       label: 'Hotels',        emoji: '🏨', color: '#f59e0b', tagKey: 'tourism', tagValue: 'hotel',       radius: 2000, nodesOnly: false },
   { id: 'museum',      label: 'Museums',       emoji: '🏛️', color: '#0d9488', tagKey: 'tourism', tagValue: 'museum',      radius: 3000, nodesOnly: false },
+  { id: 'bus_stop',      label: 'Bus Stops',      emoji: '🚌', color: '#2563eb', tagKey: 'highway', tagValue: 'bus_stop', radius: 500,  nodesOnly: true },
+  { id: 'train_station', label: 'Train Stations', emoji: '🚆', color: '#1d4ed8', tagKey: 'railway', tagValue: 'station',  radius: 5000, nodesOnly: false },
 ];
 
 // Keyed by `${filterId}_${lat.toFixed(2)}_${lng.toFixed(2)}` (~1 km grid)
