@@ -1329,3 +1329,254 @@
   animation: poi-spin 0.8s linear infinite;
   transform-origin: center;
 }
+
+/* ── Favourite (star) button in info sheet ──────────────────────────────── */
+
+.lis-fav-btn {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: #f1f3f5;
+  color: #8a8f98;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.lis-fav-btn:hover:not(:disabled) {
+  background: #e7eaee;
+  color: #555;
+}
+
+.lis-fav-btn--active {
+  background: #fff5d6;
+  color: #f5a623;
+}
+
+.lis-fav-btn--active:hover:not(:disabled) {
+  background: #ffeab0;
+  color: #d68910;
+}
+
+.lis-fav-btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+/* ── Saved places FAB ───────────────────────────────────────────────────── */
+
+.saved-places-fab {
+  position: absolute;
+  top: calc(env(safe-area-inset-top) + 12px);
+  right: 12px;
+  z-index: 1001;
+  width: 44px;
+  height: 44px;
+  border: none;
+  border-radius: 50%;
+  background: #fff;
+  color: #8a8f98;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s, color 0.15s;
+}
+
+.saved-places-fab:hover {
+  background: #f4f4f4;
+}
+
+.saved-places-fab--has-items {
+  color: #f5a623;
+}
+
+.saved-places-fab__badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 9px;
+  background: #ff3b30;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 18px;
+  text-align: center;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+}
+
+/* ── Saved places sheet ─────────────────────────────────────────────────── */
+
+.saved-places-sheet {
+  height: 80px;
+  transition-property: transform;
+  transition-duration: var(--f7-sheet-transition-duration);
+  transition-timing-function: var(--f7-sheet-transition-timing-function);
+  z-index: 12500;
+}
+
+.saved-places-sheet--expanded {
+  height: 67vh;
+  height: 67dvh;
+}
+
+.saved-places-sheet .sheet-modal-inner {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.saved-places-sheet .sheet-modal-swipe-step {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-bottom: 10px;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+}
+
+.saved-places-sheet__handle {
+  width: 36px;
+  height: 4px;
+  border-radius: 2px;
+  background: #d0d0d5;
+  margin: 10px 0 8px;
+}
+
+.saved-places-sheet__header {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  padding: 0 14px 0 16px;
+  gap: 8px;
+}
+
+.saved-places-sheet__title {
+  flex: 1;
+  font-size: 17px;
+  font-weight: 600;
+  color: #111;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.saved-places-sheet__close-btn {
+  flex-shrink: 0;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: rgba(255, 59, 48, 0.12);
+  color: #ff3b30;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.saved-places-sheet__close-btn:hover {
+  background: rgba(255, 59, 48, 0.22);
+}
+
+.saved-places-sheet__scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding-bottom: 24px;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+}
+
+.saved-places-sheet__empty {
+  padding: 24px 16px;
+  font-size: 14px;
+  color: #888;
+  text-align: center;
+}
+
+.saved-places-item {
+  display: flex;
+  align-items: stretch;
+  width: 100%;
+}
+
+.saved-places-item + .saved-places-item {
+  border-top: 1px solid #f0f0f0;
+}
+
+.saved-places-item__main {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 8px 12px 16px;
+  border: none;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+  min-width: 0;
+  transition: background 0.15s;
+}
+
+.saved-places-item__main:hover,
+.saved-places-item__main:active {
+  background: #f4f4f8;
+}
+
+.saved-places-item__icon {
+  flex-shrink: 0;
+  color: #f5a623;
+}
+
+.saved-places-item__name {
+  flex: 1;
+  min-width: 0;
+  font-size: 14px;
+  font-weight: 500;
+  color: #222;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.saved-places-item__dist {
+  flex-shrink: 0;
+  font-size: 12px;
+  color: #888;
+}
+
+.saved-places-item__remove {
+  flex-shrink: 0;
+  width: 32px;
+  margin: 8px 12px 8px 4px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: #999;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s, color 0.15s;
+}
+
+.saved-places-item__remove:hover {
+  background: rgba(255, 59, 48, 0.12);
+  color: #ff3b30;
+}
+
