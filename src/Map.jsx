@@ -14,11 +14,18 @@ import SearchControl from './components/SearchControl';
 import PoiFilterBar from './components/PoiFilterBar';
 import PoiResultsSheet from './components/PoiResultsSheet';
 import ScaleControl from './components/ScaleControl';
+import SavedPlacesSheet from './components/SavedPlacesSheet';
 import { reverseGeocode } from './services/nominatim';
 import wikipedia from './services/wikipedia'
 import { fetchWeather } from './services/weather'
 import { fetchElevation } from './services/elevation'
 import { POI_FILTERS, fetchPois } from './services/overpass'
+import {
+  getFavourites,
+  toggleFavourite,
+  removeFavourite,
+  subscribe as subscribeFavourites,
+} from './services/favourites'
 
 const defaultPosition = [54.4047, 10.2256];
 const MAP_STYLE_STORAGE_KEY = 'map-style';
@@ -163,6 +170,8 @@ function Map() {
   const [poiError, setPoiError] = useState(false);
   const [poiListOpen, setPoiListOpen] = useState(false);
   const [isPoiSheet, setIsPoiSheet] = useState(false);
+  const [favourites, setFavourites] = useState(() => getFavourites());
+  const [savedPlacesOpen, setSavedPlacesOpen] = useState(false);
   const mapCenterRef = useRef(null);
   const activeFilterRef = useRef(null);
   const poiAbortRef = useRef(null);
@@ -189,6 +198,10 @@ function Map() {
       console.warn('Failed to save map style to localStorage:', error);
     }
   }, [mapStyle]);
+
+  useEffect(() => {
+    return subscribeFavourites(() => setFavourites(getFavourites()));
+  }, []);
 
   const handlePositionSelect = useCallback(async (latlng) => {
     const lat = latlng.lat ?? latlng[0];
@@ -387,6 +400,33 @@ function Map() {
     return userPosition.distanceTo(position);
   }, [userPosition, position]);
 
+  const currentIsFavourite = useMemo(() => {
+    if (!locationInfo?.lat || !locationInfo?.lng) return false;
+    return favourites.some(
+      (f) =>
+        Math.abs(f.lat - locationInfo.lat) < 1e-5 &&
+        Math.abs(f.lng - locationInfo.lng) < 1e-5
+    );
+  }, [locationInfo?.lat, locationInfo?.lng, favourites]);
+
+  const handleToggleFavourite = useCallback(() => {
+    if (!locationInfo?.lat || !locationInfo?.lng) return;
+    toggleFavourite({
+      placeName: locationInfo.placeName,
+      lat: locationInfo.lat,
+      lng: locationInfo.lng,
+    });
+  }, [locationInfo]);
+
+  const handleSelectFavourite = useCallback((fav) => {
+    setSavedPlacesOpen(false);
+    handlePositionSelect(L.latLng(fav.lat, fav.lng));
+  }, [handlePositionSelect]);
+
+  const handleRemoveFavourite = useCallback((fav) => {
+    removeFavourite(fav.lat, fav.lng);
+  }, []);
+
   // Waypoints for RoutingMachine — only set after the user confirms a route.
   const waypoints = useMemo(() => {
     if (!confirmedRoute) return null;
@@ -457,6 +497,20 @@ function Map() {
         </MapContainer>
         <SearchControl onSelect={({ lat, lng }) => handlePositionSelect(L.latLng(lat, lng))} />
         <PoiFilterBar activeFilter={activeFilter} loading={poiLoading} error={poiError} onToggle={handleFilterToggle} />
+        <button
+          type="button"
+          className={`saved-places-fab${favourites.length > 0 ? ' saved-places-fab--has-items' : ''}`}
+          onClick={() => setSavedPlacesOpen(true)}
+          aria-label="Open saved places"
+          title="Saved places"
+        >
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" aria-hidden="true">
+            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+          </svg>
+          {favourites.length > 0 && (
+            <span className="saved-places-fab__badge">{favourites.length}</span>
+          )}
+        </button>
       </div>
       <PoiResultsSheet
         opened={poiListOpen}
@@ -487,6 +541,8 @@ function Map() {
         routingActive={routingActive}
         routeInfo={routeInfo}
         distanceToUser={distanceToUser}
+        isFavourite={currentIsFavourite}
+        onToggleFavourite={handleToggleFavourite}
       />
       <RoutePlanningSheet
         key={routePlanningKey}
@@ -496,6 +552,14 @@ function Map() {
         userPosition={userPosition}
         onConfirmRoute={handleConfirmRoute}
         onCancelRoute={handleCancelRoute}
+      />
+      <SavedPlacesSheet
+        opened={savedPlacesOpen}
+        onClosed={() => setSavedPlacesOpen(false)}
+        favourites={favourites}
+        userPosition={userPosition}
+        onSelect={handleSelectFavourite}
+        onRemove={handleRemoveFavourite}
       />
     </>
   );
