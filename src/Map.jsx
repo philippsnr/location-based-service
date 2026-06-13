@@ -260,6 +260,8 @@ function Map() {
         website: tags['website'] ?? tags['contact:website'] ?? null,
         phone: tags['phone'] ?? tags['contact:phone'] ?? null,
         cuisine: tags['cuisine'] ?? null,
+        operator: tags['operator'] ?? null,
+        wheelchair: tags['wheelchair'] ?? null,
       },
     });
     setInfoLoading(false);

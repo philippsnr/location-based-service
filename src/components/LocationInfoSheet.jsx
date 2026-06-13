@@ -52,6 +52,14 @@ const POI_TYPE_LABEL = {
   bar: 'Bar',
   hotel: 'Hotel',
   museum: 'Museum',
+  bus_stop: 'Bus Stop',
+  train_station: 'Train Station',
+};
+
+const WHEELCHAIR_LABEL = {
+  yes: 'Wheelchair accessible',
+  limited: 'Limited wheelchair access',
+  no: 'Not wheelchair accessible',
 };
 
 function formatWebsiteLabel(url) {
@@ -111,6 +119,24 @@ function PoiInfoSection({ poi }) {
             <path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/>
           </svg>
           <a href={`tel:${poi.phone}`} className="lis-poi__link">{poi.phone}</a>
+        </div>
+      )}
+
+      {poi.operator && (
+        <div className="lis-poi__row">
+          <svg className="lis-poi__icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M12 7V3H2v18h20V7H12zM6 19H4v-2h2v2zm0-4H4v-2h2v2zm0-4H4V9h2v2zm0-4H4V5h2v2zm4 12H8v-2h2v2zm0-4H8v-2h2v2zm0-4H8V9h2v2zm0-4H8V5h2v2zm10 12h-8v-2h2v-2h-2v-2h2v-2h-2V9h8v10zm-2-8h-2v2h2v-2zm0 4h-2v2h2v-2z"/>
+          </svg>
+          <span>{poi.operator}</span>
+        </div>
+      )}
+
+      {poi.wheelchair && (
+        <div className="lis-poi__row">
+          <svg className="lis-poi__icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M13 4c0-1.1-.9-2-2-2s-2 .9-2 2 .9 2 2 2 2-.9 2-2zm-1.95 9H14v6h2v-6.28c0-1.06-.84-1.93-1.91-1.96l-1.57-.04L11 8.4l3.46 2.07.99-1.71-3.95-2.35a1.991 1.991 0 0 0-2.6.45L7.34 9.45l-3.6 1.04.55 1.93 4.18-1.21 1.06-1.27L10.5 14H7v6h2v-4.51l3.05-1.49z"/>
+          </svg>
+          <span>{WHEELCHAIR_LABEL[poi.wheelchair] ?? `Wheelchair: ${poi.wheelchair}`}</span>
         </div>
       )}
     </div>
