@@ -7,6 +7,11 @@ export const POI_FILTERS = [
   { id: 'restaurant',  label: 'Restaurants',  emoji: '🍽️', color: '#ff6b35', tagKey: 'amenity', tagValue: 'restaurant',  radius: 1000, nodesOnly: true },
   { id: 'cafe',        label: 'Cafés',         emoji: '☕',  color: '#8b5cf6', tagKey: 'amenity', tagValue: 'cafe',         radius: 1000, nodesOnly: true },
   { id: 'supermarket', label: 'Supermarkets',  emoji: '🛒', color: '#10b981', tagKey: 'shop',    tagValue: 'supermarket', radius: 2000, nodesOnly: false },
+  { id: 'pharmacy',    label: 'Pharmacy',      emoji: '💊', color: '#ef4444', tagKey: 'amenity', tagValue: 'pharmacy',    radius: 1000, nodesOnly: true },
+  { id: 'atm',         label: 'ATM',           emoji: '🏧', color: '#0ea5e9', tagKey: 'amenity', tagValue: 'atm',         radius: 500,  nodesOnly: true },
+  { id: 'bar',         label: 'Bars',          emoji: '🍸', color: '#d946ef', tagKey: 'amenity', tagValue: 'bar',         radius: 1000, nodesOnly: true },
+  { id: 'hotel',       label: 'Hotels',        emoji: '🏨', color: '#f59e0b', tagKey: 'tourism', tagValue: 'hotel',       radius: 2000, nodesOnly: false },
+  { id: 'museum',      label: 'Museums',       emoji: '🏛️', color: '#0d9488', tagKey: 'tourism', tagValue: 'museum',      radius: 3000, nodesOnly: false },
 ];
 
 // Keyed by `${filterId}_${lat.toFixed(2)}_${lng.toFixed(2)}` (~1 km grid)

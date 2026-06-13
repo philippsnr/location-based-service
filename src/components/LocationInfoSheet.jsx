@@ -47,6 +47,11 @@ const POI_TYPE_LABEL = {
   restaurant: 'Restaurant',
   cafe: 'Café',
   supermarket: 'Supermarket',
+  pharmacy: 'Pharmacy',
+  atm: 'ATM',
+  bar: 'Bar',
+  hotel: 'Hotel',
+  museum: 'Museum',
 };
 
 function formatWebsiteLabel(url) {
