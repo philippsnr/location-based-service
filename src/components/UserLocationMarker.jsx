@@ -22,7 +22,9 @@ export default function UserLocationMarker({ position, accuracy }) {
     const circle = L.circle([0, 0], {
       radius: 0,
       interactive: false,
-      stroke: false,
+      color: '#007aff',
+      weight: 1,
+      opacity: 0.35,
       fillColor: '#007aff',
       fillOpacity: 0.12,
     });
