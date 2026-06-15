@@ -113,13 +113,13 @@ async function resolveWikiSummary(lat, lng, hint, cityName) {
   return wikipedia.getCityLocationSummary(lat, lng, cityName).catch(() => null);
 }
 
-// Hero photo, same hint-first / city-fallback strategy.
-async function resolveHeroPhoto(lat, lng, hint, cityName) {
+// Hero photos, same hint-first / city-fallback strategy. Returns an array.
+async function resolveHeroPhotos(lat, lng, hint, cityName) {
   if (hint) {
-    const named = await wikipedia.getCommonsGeoPhoto(lat, lng, { cityName: hint }).catch(() => null);
-    if (named) return named;
+    const named = await wikipedia.getCommonsGeoPhotos(lat, lng, { cityName: hint }).catch(() => []);
+    if (named.length) return named;
   }
-  return wikipedia.getCommonsGeoPhoto(lat, lng, { cityName }).catch(() => null);
+  return wikipedia.getCommonsGeoPhotos(lat, lng, { cityName }).catch(() => []);
 }
 
 // `hint` is the name of a selected search result. When present it drives the
@@ -130,17 +130,17 @@ async function fetchLocationInfo(lat, lng, hint = null) {
   const searchName = hint?.split(',')[0].trim() || null;
   const [wikiResult, heroResult] = await Promise.allSettled([
     resolveWikiSummary(lat, lng, searchName, cityName),
-    resolveHeroPhoto(lat, lng, searchName, cityName),
+    resolveHeroPhotos(lat, lng, searchName, cityName),
   ]);
   const wiki = wikiResult.status === 'fulfilled' ? wikiResult.value : null;
-  const wikiThumbnail = heroResult.status === 'fulfilled' ? heroResult.value : null;
+  const wikiPhotos = heroResult.status === 'fulfilled' ? heroResult.value : [];
   return {
     placeName: searchName ?? cityName ?? placeName,
     lat,
     lng,
     wikiSummary: wiki?.summary ?? null,
     wikiUrl: wiki?.url ?? null,
-    wikiThumbnail,
+    wikiPhotos,
     country,
     countryCode,
   };

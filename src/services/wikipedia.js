@@ -154,7 +154,9 @@ async function searchCommonsJpgs(query, limit = 15) {
   return Object.values(data?.query?.pages ?? {});
 }
 
-function pickBestLandscape(pages) {
+// Pick up to `max` distinct landscape JPEG URLs from Commons pages, best
+// resolution first.
+function pickLandscapes(pages, max = 4) {
   const candidates = pages
     .filter((p) => /\.(jpe?g)$/i.test(p.title))
     .map((p) => {
@@ -164,20 +166,25 @@ function pickBestLandscape(pages) {
       const ratio = h > 0 ? w / h : 0;
       return { info, pixels: w * h, ok: w > h && ratio >= 1.2 && ratio <= 3.5 };
     })
-    .filter((c) => c.ok);
+    .filter((c) => c.ok)
+    .sort((a, b) => b.pixels - a.pixels);
 
-  if (candidates.length === 0) return null;
-  candidates.sort((a, b) => b.pixels - a.pixels);
-  const best = candidates[0].info;
-  return best.thumburl ?? best.url ?? null;
+  const urls = [];
+  for (const c of candidates) {
+    const url = c.info.thumburl ?? c.info.url ?? null;
+    if (url && !urls.includes(url)) urls.push(url);
+    if (urls.length >= max) break;
+  }
+  return urls;
 }
 
-// Fetch a scenic .jpg photo of the city from Wikimedia Commons.
-// Searches by city name so the result is consistent regardless of where in the city was clicked.
-// Prefers panorama/skyline shots; falls back to any city photo.
-// Returns the photo URL string, or null if none found.
-export async function getCommonsGeoPhoto(lat, lng, { cityName = null } = {}) {
-  if (!cityName) return null;
+// Fetch up to `max` scenic .jpg photos of the city from Wikimedia Commons.
+// Searches by city name so the results are consistent regardless of where in
+// the city was clicked. Prefers panorama/skyline shots; tops up with any city
+// photos if scenic searches don't yield enough. Returns an array of URLs
+// (empty if none found).
+export async function getCommonsGeoPhotos(lat, lng, { cityName = null, max = 4 } = {}) {
+  if (!cityName) return [];
 
   const [panoramaResult, skylineResult] = await Promise.allSettled([
     searchCommonsJpgs(`${cityName} panorama`),
@@ -189,12 +196,23 @@ export async function getCommonsGeoPhoto(lat, lng, { cityName = null } = {}) {
     ...(skylineResult.status === 'fulfilled' ? skylineResult.value : []),
   ];
 
-  const scenicPick = pickBestLandscape(scenicPages);
-  if (scenicPick) return scenicPick;
+  const urls = pickLandscapes(scenicPages, max);
+  if (urls.length >= max) return urls;
 
-  // Fallback: any landscape photo of the city
+  // Top up with any landscape photos of the city.
   const fallbackPages = await searchCommonsJpgs(cityName, 30).catch(() => []);
-  return pickBestLandscape(fallbackPages);
+  for (const url of pickLandscapes(fallbackPages, max)) {
+    if (!urls.includes(url)) urls.push(url);
+    if (urls.length >= max) break;
+  }
+  return urls;
+}
+
+// Single-photo convenience wrapper around getCommonsGeoPhotos.
+// Returns the best photo URL, or null if none found.
+export async function getCommonsGeoPhoto(lat, lng, opts = {}) {
+  const urls = await getCommonsGeoPhotos(lat, lng, { ...opts, max: 1 });
+  return urls[0] ?? null;
 }
 
 // FOR FUTURE: returns page metadata
@@ -214,5 +232,6 @@ export default {
   getNamedLocationSummary,
   getCityLocationSummary,
   getCommonsGeoPhoto,
+  getCommonsGeoPhotos,
   getPage,
 };

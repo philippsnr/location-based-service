@@ -453,12 +453,25 @@ function LocationInfoSheet({ opened, onClosed, locationInfo, loading, onShowRout
           <div className="lis-toast">{shareMessage}</div>
         )}
 
-        {!loading && !locationInfo?.poi && locationInfo?.wikiThumbnail && (
-          <img
-            src={locationInfo.wikiThumbnail}
-            alt={locationInfo.placeName ?? ''}
-            className="lis-hero"
-          />
+        {!loading && !locationInfo?.poi && locationInfo?.wikiPhotos?.length > 0 && (
+          locationInfo.wikiPhotos.length === 1 ? (
+            <img
+              src={locationInfo.wikiPhotos[0]}
+              alt={locationInfo.placeName ?? ''}
+              className="lis-hero"
+            />
+          ) : (
+            <div className="lis-carousel">
+              {locationInfo.wikiPhotos.map((src, i) => (
+                <img
+                  key={src}
+                  src={src}
+                  alt={`${locationInfo.placeName ?? 'Location'} photo ${i + 1}`}
+                  className="lis-carousel__img"
+                />
+              ))}
+            </div>
+          )
         )}
 
         {loading ? (
