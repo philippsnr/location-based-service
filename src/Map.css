@@ -438,6 +438,10 @@
 /* ── Photo carousel ─────────────────────────────────────────────────────── */
 
 .lis-carousel {
+  position: relative;
+}
+
+.lis-carousel__track {
   display: flex;
   overflow-x: auto;
   scroll-snap-type: x mandatory;
@@ -445,7 +449,7 @@
   scrollbar-width: none;
 }
 
-.lis-carousel::-webkit-scrollbar {
+.lis-carousel__track::-webkit-scrollbar {
   display: none;
 }
 
@@ -460,6 +464,33 @@
 
 @media (max-height: 680px) {
   .lis-carousel__img { height: 120px; }
+}
+
+/* Pagination dots: hint that more photos exist; active dot expands to a pill. */
+.lis-carousel__dots {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 8px;
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  pointer-events: none;
+}
+
+.lis-carousel__dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.6);
+  box-shadow: 0 0 2px rgba(0, 0, 0, 0.45);
+  transition: width 0.2s ease, background-color 0.2s ease;
+}
+
+.lis-carousel__dot--active {
+  width: 16px;
+  border-radius: 3px;
+  background: #fff;
 }
 
 /* ── Weather block ──────────────────────────────────────────────────────── */

@@ -67,6 +67,42 @@ function formatWebsiteLabel(url) {
   catch { return url; }
 }
 
+// Horizontal photo carousel with pagination dots. The dots hint that more
+// photos exist and track which one is in view (active dot expands to a pill).
+function PhotoCarousel({ photos, placeName }) {
+  const [active, setActive] = useState(0);
+  const trackRef = useRef(null);
+
+  const handleScroll = () => {
+    const el = trackRef.current;
+    if (!el) return;
+    setActive(Math.round(el.scrollLeft / el.clientWidth));
+  };
+
+  return (
+    <div className="lis-carousel">
+      <div className="lis-carousel__track" ref={trackRef} onScroll={handleScroll}>
+        {photos.map((src, i) => (
+          <img
+            key={src}
+            src={src}
+            alt={`${placeName ?? 'Location'} photo ${i + 1}`}
+            className="lis-carousel__img"
+          />
+        ))}
+      </div>
+      <div className="lis-carousel__dots" aria-hidden="true">
+        {photos.map((src, i) => (
+          <span
+            key={src}
+            className={`lis-carousel__dot${i === active ? ' lis-carousel__dot--active' : ''}`}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function PoiInfoSection({ poi }) {
   const typeLabel = POI_TYPE_LABEL[poi.type] ?? poi.type;
   const cuisine = poi.cuisine ? poi.cuisine.split(/[;,]/)[0].trim() : null;
@@ -461,16 +497,10 @@ function LocationInfoSheet({ opened, onClosed, locationInfo, loading, onShowRout
               className="lis-hero"
             />
           ) : (
-            <div className="lis-carousel">
-              {locationInfo.wikiPhotos.map((src, i) => (
-                <img
-                  key={src}
-                  src={src}
-                  alt={`${locationInfo.placeName ?? 'Location'} photo ${i + 1}`}
-                  className="lis-carousel__img"
-                />
-              ))}
-            </div>
+            <PhotoCarousel
+              photos={locationInfo.wikiPhotos}
+              placeName={locationInfo.placeName}
+            />
           )
         )}
 
