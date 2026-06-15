@@ -251,7 +251,7 @@ function WeatherStrip({ weatherInfo }) {
   );
 }
 
-function LocationInfoSheet({ opened, onClosed, locationInfo, loading, onShowRoute, routingActive, routeInfo, distanceToUser, isFavourite, onToggleFavourite }) {
+function LocationInfoSheet({ opened, onClosed, locationInfo, loading, onShowRoute, routingActive, routeInfo, distanceToUser, isFavourite, onToggleFavourite, initialCollapsed = false }) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [shareMessage, setShareMessage] = useState('');
   const [coordsCopied, setCoordsCopied] = useState(false);
@@ -335,8 +335,8 @@ function LocationInfoSheet({ opened, onClosed, locationInfo, loading, onShowRout
 
   useEffect(() => {
     if (!opened) return;
-    applyExpanded(true);
-  }, [opened, locationInfo?.lat, locationInfo?.lng, applyExpanded]);
+    applyExpanded(!initialCollapsed);
+  }, [opened, locationInfo?.lat, locationInfo?.lng, applyExpanded, initialCollapsed]);
 
   const handleShare = useCallback(async () => {
     if (!locationInfo?.lat || !locationInfo?.lng) return;
