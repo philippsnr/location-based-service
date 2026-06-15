@@ -11,9 +11,27 @@ export function requestOrientationPermission() {
   }
 }
 
-export default function UserLocationMarker({ position }) {
+export default function UserLocationMarker({ position, accuracy }) {
   const map = useMap();
   const markerRef = useRef(null);
+  const circleRef = useRef(null);
+
+  // Create the GPS accuracy circle once; it sits in the overlay pane beneath
+  // the location dot. Radius (in meters) is driven by the reported accuracy.
+  useEffect(() => {
+    const circle = L.circle([0, 0], {
+      radius: 0,
+      interactive: false,
+      stroke: false,
+      fillColor: '#007aff',
+      fillOpacity: 0.12,
+    });
+    circleRef.current = circle;
+    return () => {
+      circle.remove();
+      circleRef.current = null;
+    };
+  }, []);
 
   // Create marker object once; add/remove from map based on position.
   useEffect(() => {
@@ -39,14 +57,23 @@ export default function UserLocationMarker({ position }) {
 
   useEffect(() => {
     const marker = markerRef.current;
-    if (!marker) return;
+    const circle = circleRef.current;
+    if (!marker || !circle) return;
     if (position) {
       marker.setLatLng(position);
       if (!map.hasLayer(marker)) marker.addTo(map);
+      if (accuracy != null && accuracy > 0) {
+        circle.setLatLng(position);
+        circle.setRadius(accuracy);
+        if (!map.hasLayer(circle)) circle.addTo(map);
+      } else {
+        circle.remove();
+      }
     } else {
       marker.remove();
+      circle.remove();
     }
-  }, [position, map]);
+  }, [position, accuracy, map]);
 
   // DeviceOrientation → rotate the cone in real time without React re-renders.
   useEffect(() => {

@@ -30,7 +30,7 @@ export default function LocateControl({ onLocate }) {
 
     control.addTo(map)
 
-    const handleFound = (e) => onLocate(e.latlng)
+    const handleFound = (e) => onLocate(e.latlng, e.accuracy)
     const handleError = (e) => {
       alert(e.message)
     }

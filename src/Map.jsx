@@ -197,6 +197,7 @@ function FitBoundsOnPoi({ poiMarkers }) {
 function Map() {
   const [position, setPosition] = useState(null);
   const [userPosition, setUserPosition] = useState(null);
+  const [userAccuracy, setUserAccuracy] = useState(null);
   const [mapCenter, setMapCenter] = useState(null);
   const [mapStyle, setMapStyle] = useState('standard');
   const [sheetOpen, setSheetOpen] = useState(false);
@@ -310,10 +311,11 @@ function Map() {
     setInfoLoading(false);
   }, []);
 
-  const handleLocate = useCallback((latlng) => {
+  const handleLocate = useCallback((latlng, accuracy) => {
     // Refresh the route origin only; do not change the selected target or open the info sheet.
     const ll = toLatLng(latlng);
     if (ll) setUserPosition(ll);
+    if (accuracy != null) setUserAccuracy(accuracy);
   }, []);
 
   useEffect(() => {
@@ -330,9 +332,10 @@ function Map() {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (pos) => {
-          const { latitude, longitude } = pos.coords;
+          const { latitude, longitude, accuracy } = pos.coords;
           setMapCenter([latitude, longitude]);
           setUserPosition(L.latLng(latitude, longitude));
+          setUserAccuracy(accuracy);
         },
         (error) => {
           console.warn('Geolocation error:', error);
@@ -520,7 +523,7 @@ function Map() {
           )}
           <ZoomToLocation position={position} />
           <LocationMarker position={isPoiSheet ? null : position} onSelect={handlePositionSelect} placeName={locationInfo?.placeName} />
-          <UserLocationMarker position={userPosition} />
+          <UserLocationMarker position={userPosition} accuracy={userAccuracy} />
           <LocateControl onLocate={handleLocate} />
           <ScaleControl />
           <MapStyleControl style={mapStyle} onToggle={handleToggleMapStyle} />
