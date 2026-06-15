@@ -79,6 +79,46 @@ async function geosearch(lat, lng, { radius = 10000, limit = 10 } = {}) {
   return data?.query?.geosearch ?? [];
 }
 
+// Great-circle distance in meters between two coordinates.
+function haversineMeters(lat1, lon1, lat2, lon2) {
+  const R = 6371000;
+  const toRad = (d) => (d * Math.PI) / 180;
+  const dLat = toRad(lat2 - lat1);
+  const dLon = toRad(lon2 - lon1);
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) ** 2;
+  return 2 * R * Math.asin(Math.sqrt(a));
+}
+
+// A search hit further than this from the searched coordinate is treated as a
+// same-name article somewhere else and rejected.
+const MAX_NAMED_DISTANCE_M = 75000;
+
+// Resolve a Wikipedia summary for a user-typed place name (e.g. a search
+// result like "Bodensee") near a coordinate. Uses free-text search so the
+// returned article reflects the search term rather than the nearest city, and
+// rejects a top hit that sits far from the coordinate (guards against
+// unrelated same-name articles). Returns null if nothing suitable is found,
+// so callers can fall back to a city-level lookup.
+export async function getNamedLocationSummary(lat, lng, name) {
+  if (!name) return null;
+
+  const results = await search(name);
+  const first = results[0];
+  if (!first) return null;
+
+  const summary = await getSummary(first.title);
+  const coords = summary.coordinates;
+  if (
+    coords &&
+    haversineMeters(lat, lng, coords.lat, coords.lon) > MAX_NAMED_DISTANCE_M
+  ) {
+    return null;
+  }
+  return summary;
+}
+
 // Fetch city-level Wikipedia summary using coordinate search + city name matching.
 // Returns null if no geographically matching city article is found.
 export async function getCityLocationSummary(lat, lng, cityName) {
@@ -171,6 +211,7 @@ export default {
   search,
   getSummary,
   getLocationSummary,
+  getNamedLocationSummary,
   getCityLocationSummary,
   getCommonsGeoPhoto,
   getPage,
