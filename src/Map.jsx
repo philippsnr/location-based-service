@@ -207,10 +207,13 @@ function Map() {
   const [isPoiSheet, setIsPoiSheet] = useState(false);
   const [favourites, setFavourites] = useState(() => getFavourites());
   const [savedPlacesOpen, setSavedPlacesOpen] = useState(false);
+  const [autoOpenCollapsed, setAutoOpenCollapsed] = useState(false);
   const mapCenterRef = useRef(null);
   const activeFilterRef = useRef(null);
   const poiAbortRef = useRef(null);
   const openingRoutePlanningRef = useRef(false);
+  // Issue #133: ensure the on-mount current-city auto-open fires at most once.
+  const autoOpenedRef = useRef(false);
   // Set to true before closing PoiResultsSheet programmatically so onSheetClosed
   // doesn't mistake it for a user dismissal and deactivate the filter.
   const closingPoiListProgramRef = useRef(false);
@@ -238,11 +241,12 @@ function Map() {
     return subscribeFavourites(() => setFavourites(getFavourites()));
   }, []);
 
-  const handlePositionSelect = useCallback(async (latlng, hint = null) => {
+  const handlePositionSelect = useCallback(async (latlng, hint = null, { collapsed = false } = {}) => {
     const lat = latlng.lat ?? latlng[0];
     const lng = latlng.lng ?? latlng[1];
     setIsPoiSheet(false);
     setPosition(latlng);
+    setAutoOpenCollapsed(collapsed);
     setSheetOpen(true);
     setInfoLoading(true);
     setLocationInfo(null);
@@ -274,6 +278,7 @@ function Map() {
     const latlng = L.latLng(poi.lat, poi.lng);
     setIsPoiSheet(true);
     setPosition(latlng);
+    setAutoOpenCollapsed(false);
     setSheetOpen(true);
     setInfoLoading(true);
     setLocationInfo(null);
@@ -323,8 +328,20 @@ function Map() {
       navigator.geolocation.getCurrentPosition(
         (pos) => {
           const { latitude, longitude } = pos.coords;
+          const userLatLng = L.latLng(latitude, longitude);
           setMapCenter([latitude, longitude]);
-          setUserPosition(L.latLng(latitude, longitude));
+          setUserPosition(userLatLng);
+          // Issue #133: auto-open the info sheet (collapsed) for the user's
+          // current city on first load — but only if the user hasn't already
+          // arrived via a ?lat=&lng= deep link, and only once per mount.
+          if (!autoOpenedRef.current) {
+            const params = new URLSearchParams(window.location.search);
+            const hasDeepLink = !isNaN(parseFloat(params.get('lat'))) && !isNaN(parseFloat(params.get('lng')));
+            if (!hasDeepLink) {
+              autoOpenedRef.current = true;
+              handlePositionSelect(userLatLng, null, { collapsed: true });
+            }
+          }
         },
         (error) => {
           console.warn('Geolocation error:', error);
@@ -336,7 +353,7 @@ function Map() {
       console.warn('Geolocation is not supported by this browser');
       setMapCenter(defaultPosition);
     }
-  }, []);
+  }, [handlePositionSelect]);
 
   const handleShowRoute = useCallback(() => {
     openingRoutePlanningRef.current = true;
@@ -584,6 +601,7 @@ function Map() {
         distanceToUser={distanceToUser}
         isFavourite={currentIsFavourite}
         onToggleFavourite={handleToggleFavourite}
+        initialCollapsed={autoOpenCollapsed}
       />
       <RoutePlanningSheet
         key={routePlanningKey}
