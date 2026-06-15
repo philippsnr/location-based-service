@@ -103,16 +103,39 @@ function buildPoiAddress(tags) {
   return parts.join(', ') || null;
 }
 
-async function fetchLocationInfo(lat, lng) {
+// Resolve a Wikipedia summary, preferring a user-typed search name (hint) and
+// falling back to the reverse-geocoded city so the sheet is never empty.
+async function resolveWikiSummary(lat, lng, hint, cityName) {
+  if (hint) {
+    const named = await wikipedia.getNamedLocationSummary(lat, lng, hint).catch(() => null);
+    if (named) return named;
+  }
+  return wikipedia.getCityLocationSummary(lat, lng, cityName).catch(() => null);
+}
+
+// Hero photo, same hint-first / city-fallback strategy.
+async function resolveHeroPhoto(lat, lng, hint, cityName) {
+  if (hint) {
+    const named = await wikipedia.getCommonsGeoPhoto(lat, lng, { cityName: hint }).catch(() => null);
+    if (named) return named;
+  }
+  return wikipedia.getCommonsGeoPhoto(lat, lng, { cityName }).catch(() => null);
+}
+
+// `hint` is the name of a selected search result. When present it drives the
+// Wikipedia/photo lookup and the displayed place name, so searching "Bodensee"
+// shows Bodensee rather than the nearest reverse-geocoded city.
+async function fetchLocationInfo(lat, lng, hint = null) {
   const { placeName, cityName, country, countryCode } = await reverseGeocode(lat, lng);
+  const searchName = hint?.split(',')[0].trim() || null;
   const [wikiResult, heroResult] = await Promise.allSettled([
-    wikipedia.getCityLocationSummary(lat, lng, cityName),
-    wikipedia.getCommonsGeoPhoto(lat, lng, { cityName }),
+    resolveWikiSummary(lat, lng, searchName, cityName),
+    resolveHeroPhoto(lat, lng, searchName, cityName),
   ]);
   const wiki = wikiResult.status === 'fulfilled' ? wikiResult.value : null;
   const wikiThumbnail = heroResult.status === 'fulfilled' ? heroResult.value : null;
   return {
-    placeName: cityName ?? placeName,
+    placeName: searchName ?? cityName ?? placeName,
     lat,
     lng,
     wikiSummary: wiki?.summary ?? null,
@@ -215,7 +238,7 @@ function Map() {
     return subscribeFavourites(() => setFavourites(getFavourites()));
   }, []);
 
-  const handlePositionSelect = useCallback(async (latlng) => {
+  const handlePositionSelect = useCallback(async (latlng, hint = null) => {
     const lat = latlng.lat ?? latlng[0];
     const lng = latlng.lng ?? latlng[1];
     setIsPoiSheet(false);
@@ -229,19 +252,19 @@ function Map() {
     setRoutePlanningOpen(false);
     try {
       const [infoResult, weatherResult, elevationResult] = await Promise.allSettled([
-        fetchLocationInfo(lat, lng),
+        fetchLocationInfo(lat, lng, hint),
         fetchWeather(lat, lng),
         fetchElevation(lat, lng),
       ]);
       const info = infoResult.status === 'fulfilled'
         ? infoResult.value
-        : { placeName: 'Unknown location', lat, lng, wikiSummary: null, wikiUrl: null };
+        : { placeName: hint ?? 'Unknown location', lat, lng, wikiSummary: null, wikiUrl: null };
       const weatherInfo = weatherResult.status === 'fulfilled' ? weatherResult.value : null;
       const elevation = elevationResult.status === 'fulfilled' ? elevationResult.value : null;
       setLocationInfo({ ...info, weatherInfo, elevation });
     } catch (err) {
       console.warn('Failed to fetch location info:', err);
-      setLocationInfo({ placeName: 'Unknown location', lat, lng, wikiSummary: null, wikiUrl: null, weatherInfo: null });
+      setLocationInfo({ placeName: hint ?? 'Unknown location', lat, lng, wikiSummary: null, wikiUrl: null, weatherInfo: null });
     } finally {
       setInfoLoading(false);
     }
@@ -513,7 +536,7 @@ function Map() {
             />
           )}
         </MapContainer>
-        <SearchControl onSelect={({ lat, lng }) => handlePositionSelect(L.latLng(lat, lng))} />
+        <SearchControl onSelect={({ lat, lng, name }) => handlePositionSelect(L.latLng(lat, lng), name)} />
         <PoiFilterBar activeFilter={activeFilter} loading={poiLoading} error={poiError} onToggle={handleFilterToggle} />
         <button
           type="button"
