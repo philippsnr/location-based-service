@@ -3,10 +3,21 @@ import L from 'leaflet';
 import { useMap } from 'react-leaflet';
 import mapStyleIcon from '../assets/map-style-map.png';
 import satelliteStyleIcon from '../assets/map-style-satellite.png';
+import topoStyleIcon from '../assets/map-style-topo.png';
 
-const NEXT_STYLE_ICON = {
-  standard: satelliteStyleIcon,
-  satellite: mapStyleIcon,
+// Order the toggle button cycles through.
+const STYLE_CYCLE = ['standard', 'satellite', 'topo'];
+
+const STYLE_ICON = {
+  standard: mapStyleIcon,
+  satellite: satelliteStyleIcon,
+  topo: topoStyleIcon,
+};
+
+const STYLE_LABEL = {
+  standard: 'standard',
+  satellite: 'satellite',
+  topo: 'topographic',
 };
 
 export default function MapStyleControl({ style, onToggle }) {
@@ -22,13 +33,15 @@ export default function MapStyleControl({ style, onToggle }) {
       );
       const btn = L.DomUtil.create('button', 'map-style-control__btn', container);
       const icon = L.DomUtil.create('img', 'map-style-control__icon', btn);
-      const nextStyle = style === 'standard' ? 'satellite' : 'standard';
+      const currentIndex = STYLE_CYCLE.indexOf(style);
+      const nextStyle = STYLE_CYCLE[(currentIndex + 1) % STYLE_CYCLE.length];
 
       btn.type = 'button';
-      btn.title = `Switch to ${nextStyle} view`;
+      btn.title = `Switch to ${STYLE_LABEL[nextStyle]} view`;
       btn.setAttribute('aria-label', btn.title);
       btn.setAttribute('aria-pressed', 'false');
-      icon.src = NEXT_STYLE_ICON[style] ?? satelliteStyleIcon;
+      // Preview the style the button will switch to.
+      icon.src = STYLE_ICON[nextStyle] ?? satelliteStyleIcon;
       icon.alt = '';
       icon.setAttribute('aria-hidden', 'true');
 
