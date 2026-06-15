@@ -47,6 +47,9 @@ const MAP_STYLES = {
     url: 'https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',
     attribution:
       'Map data: &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, SRTM | Map style: &copy; <a href="https://opentopomap.org">OpenTopoMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>)',
+    // OpenTopoMap only serves tiles up to zoom 17; upscale them beyond that
+    // instead of showing blank tiles.
+    maxNativeZoom: 17,
   },
 };
 
@@ -475,6 +478,7 @@ function Map() {
             key={mapStyle}
             attribution={MAP_STYLES[mapStyle].attribution}
             url={MAP_STYLES[mapStyle].url}
+            maxNativeZoom={MAP_STYLES[mapStyle].maxNativeZoom}
           />
           {mapStyle === 'satellite' && (
             <TileLayer
