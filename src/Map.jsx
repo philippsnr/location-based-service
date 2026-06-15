@@ -42,7 +42,19 @@ const MAP_STYLES = {
     attribution:
       'Tiles &copy; Esri &mdash; Source: Esri, Maxar, Earthstar Geographics, and the GIS User Community',
   },
+  topo: {
+    label: 'Topographic',
+    url: 'https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',
+    attribution:
+      'Map data: &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, SRTM | Map style: &copy; <a href="https://opentopomap.org">OpenTopoMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>)',
+    // OpenTopoMap only serves tiles up to zoom 17; upscale them beyond that
+    // instead of showing blank tiles.
+    maxNativeZoom: 17,
+  },
 };
+
+// Cycle order for the map style toggle button.
+const MAP_STYLE_CYCLE = ['standard', 'satellite', 'topo'];
 
 // Normalize {lat,lng} objects, [lat,lng] arrays, and L.LatLng instances to L.LatLng.
 function toLatLng(v) {
@@ -325,7 +337,10 @@ function Map() {
   }, []);
 
   const handleToggleMapStyle = useCallback(() => {
-    setMapStyle((currentStyle) => (currentStyle === 'standard' ? 'satellite' : 'standard'));
+    setMapStyle((currentStyle) => {
+      const currentIndex = MAP_STYLE_CYCLE.indexOf(currentStyle);
+      return MAP_STYLE_CYCLE[(currentIndex + 1) % MAP_STYLE_CYCLE.length];
+    });
   }, []);
 
   const handleFilterToggle = useCallback(async (filterId) => {
@@ -463,6 +478,7 @@ function Map() {
             key={mapStyle}
             attribution={MAP_STYLES[mapStyle].attribution}
             url={MAP_STYLES[mapStyle].url}
+            maxNativeZoom={MAP_STYLES[mapStyle].maxNativeZoom}
           />
           {mapStyle === 'satellite' && (
             <TileLayer
