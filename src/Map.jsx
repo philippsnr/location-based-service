@@ -65,9 +65,12 @@ function toLatLng(v) {
   return null;
 }
 
-const customMarkerIcon = new L.Icon({
-  iconUrl: markerIconUrl,
-  iconRetinaUrl: markerIconUrl,
+// DivIcon (rather than a plain L.Icon) so the marker image can carry a CSS
+// drop-in animation. The image is re-mounted on each placement via a position
+// key on <Marker>, which replays the animation.
+const customMarkerIcon = new L.DivIcon({
+  html: `<img src="${markerIconUrl}" width="32" height="32" alt="" class="map-marker__img" />`,
+  className: 'map-marker',
   iconSize: [32, 32],
   iconAnchor: [16, 32],
   popupAnchor: [0, -32],
@@ -153,8 +156,13 @@ function LocationMarker({ position, onSelect, placeName }) {
     },
   });
 
-  return position === null ? null : (
-    <Marker position={position} icon={customMarkerIcon}>
+  if (position === null) return null;
+  // Re-mount the marker whenever the target moves so the drop-in animation
+  // replays on each new placement.
+  const ll = toLatLng(position);
+  const key = ll ? `${ll.lat},${ll.lng}` : 'marker';
+  return (
+    <Marker key={key} position={position} icon={customMarkerIcon}>
       <Popup>{placeName ?? 'Loading…'}</Popup>
     </Marker>
   );
@@ -189,6 +197,7 @@ function FitBoundsOnPoi({ poiMarkers }) {
 function Map() {
   const [position, setPosition] = useState(null);
   const [userPosition, setUserPosition] = useState(null);
+  const [userAccuracy, setUserAccuracy] = useState(null);
   const [mapCenter, setMapCenter] = useState(null);
   const [mapStyle, setMapStyle] = useState('standard');
   const [sheetOpen, setSheetOpen] = useState(false);
@@ -307,10 +316,11 @@ function Map() {
     setInfoLoading(false);
   }, []);
 
-  const handleLocate = useCallback((latlng) => {
+  const handleLocate = useCallback((latlng, accuracy) => {
     // Refresh the route origin only; do not change the selected target or open the info sheet.
     const ll = toLatLng(latlng);
     if (ll) setUserPosition(ll);
+    if (accuracy != null) setUserAccuracy(accuracy);
   }, []);
 
   useEffect(() => {
@@ -327,10 +337,11 @@ function Map() {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (pos) => {
-          const { latitude, longitude } = pos.coords;
+          const { latitude, longitude, accuracy } = pos.coords;
           const userLatLng = L.latLng(latitude, longitude);
           setMapCenter([latitude, longitude]);
           setUserPosition(userLatLng);
+          setUserAccuracy(accuracy);
           // Issue #133: auto-open the info sheet (collapsed) for the user's
           // current city on first load — but only if the user hasn't already
           // arrived via a ?lat=&lng= deep link, and only once per mount.
@@ -529,7 +540,7 @@ function Map() {
           )}
           <ZoomToLocation position={position} />
           <LocationMarker position={isPoiSheet ? null : position} onSelect={handlePositionSelect} placeName={locationInfo?.placeName} />
-          <UserLocationMarker position={userPosition} />
+          <UserLocationMarker position={userPosition} accuracy={userAccuracy} />
           <LocateControl onLocate={handleLocate} />
           <ScaleControl />
           <MapStyleControl style={mapStyle} onToggle={handleToggleMapStyle} />

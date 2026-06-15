@@ -54,6 +54,38 @@
   display: flex;
 }
 
+/* ── Placed location marker (drop-in animation) ─────────────────────────── */
+
+/* Strip the default DivIcon white box/border so only the image shows. */
+.map-marker {
+  background: none;
+  border: none;
+}
+
+.map-marker__img {
+  display: block;
+  transform-origin: center bottom;
+  /* Slight ease-out overshoot gives a subtle bounce as the pin lands. */
+  animation: marker-drop 300ms cubic-bezier(0.34, 1.4, 0.64, 1) both;
+}
+
+@keyframes marker-drop {
+  from {
+    transform: translateY(-20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .map-marker__img {
+    animation: none;
+  }
+}
+
 /* ── User location marker (blue dot + compass cone) ─────────────────────── */
 
 .ulm-wrapper {
@@ -500,12 +532,68 @@
   border-bottom: 1px solid #f0f0f0;
 }
 
-.lis-weather-loading {
+/* ── Loading skeletons ──────────────────────────────────────────────────── */
+
+@keyframes skeleton-shimmer {
+  from { background-position: -200px 0; }
+  to   { background-position: 200px 0; }
+}
+
+.lis-skeleton {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e4e4e4 50%, #f0f0f0 75%);
+  background-size: 400px 100%;
+  animation: skeleton-shimmer 1.2s infinite linear;
+  border-radius: 6px;
+}
+
+/* Place-name bar in the header. */
+.lis-skeleton--title {
+  display: block;
+  width: 60%;
+  height: 18px;
+  margin: 3px 0 4px;
+}
+
+/* Hero image placeholder — matches .lis-hero dimensions. */
+.lis-skeleton--hero {
+  width: 100%;
+  height: 180px;
+  border-radius: 0;
+}
+
+@media (max-height: 680px) {
+  .lis-skeleton--hero { height: 120px; }
+}
+
+/* Weather strip placeholder — mirrors .lis-weather-block padding/border. */
+.lis-skeleton-weather {
   padding: 14px 16px;
-  font-size: 13px;
-  color: #bbb;
-  font-style: italic;
   border-bottom: 1px solid #f0f0f0;
+}
+
+.lis-skeleton--weather {
+  height: 44px;
+  border-radius: 8px;
+}
+
+/* Wikipedia text lines of varying width. */
+.lis-skeleton-text {
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+}
+
+.lis-skeleton--line {
+  height: 13px;
+  width: 100%;
+}
+
+.lis-skeleton--line-short {
+  width: 65%;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lis-skeleton { animation: none; }
 }
 
 .lis-weather-row {
@@ -728,13 +816,6 @@
 }
 
 /* ── Content wrapper ────────────────────────────────────────────────────── */
-
-.lis-content-loading {
-  padding: 14px 16px;
-  font-size: 13px;
-  color: #bbb;
-  font-style: italic;
-}
 
 .lis-content {
   padding: 14px 16px 4px;

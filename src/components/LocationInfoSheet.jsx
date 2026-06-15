@@ -408,7 +408,11 @@ function LocationInfoSheet({ opened, onClosed, locationInfo, loading, onShowRout
         <div className="location-info-sheet__header">
           <div className="location-info-sheet__title-group">
             <div className="location-info-sheet__place-name">
-              {loading ? 'Loading…' : locationInfo?.placeName ?? 'Unknown location'}
+              {loading ? (
+                <span className="lis-skeleton lis-skeleton--title" aria-label="Loading" />
+              ) : (
+                locationInfo?.placeName ?? 'Unknown location'
+              )}
             </div>
             {!loading && locationInfo?.country && (
               <div className="location-info-sheet__country">
@@ -489,7 +493,9 @@ function LocationInfoSheet({ opened, onClosed, locationInfo, loading, onShowRout
           <div className="lis-toast">{shareMessage}</div>
         )}
 
-        {!loading && !locationInfo?.poi && locationInfo?.wikiPhotos?.length > 0 && (
+        {loading ? (
+          <div className="lis-skeleton lis-skeleton--hero" />
+        ) : !locationInfo?.poi && locationInfo?.wikiPhotos?.length > 0 ? (
           locationInfo.wikiPhotos.length === 1 ? (
             <img
               src={locationInfo.wikiPhotos[0]}
@@ -502,10 +508,12 @@ function LocationInfoSheet({ opened, onClosed, locationInfo, loading, onShowRout
               placeName={locationInfo.placeName}
             />
           )
-        )}
+        ) : null}
 
         {loading ? (
-          <div className="lis-weather-loading">Loading…</div>
+          <div className="lis-skeleton-weather">
+            <div className="lis-skeleton lis-skeleton--weather" />
+          </div>
         ) : locationInfo?.weatherInfo ? (
           <WeatherStrip weatherInfo={locationInfo.weatherInfo} />
         ) : null}
@@ -583,7 +591,11 @@ function LocationInfoSheet({ opened, onClosed, locationInfo, loading, onShowRout
         )}
 
         {loading ? (
-          <div className="lis-content-loading">Fetching information…</div>
+          <div className="lis-content lis-skeleton-text" aria-label="Fetching information">
+            <div className="lis-skeleton lis-skeleton--line" />
+            <div className="lis-skeleton lis-skeleton--line" />
+            <div className="lis-skeleton lis-skeleton--line lis-skeleton--line-short" />
+          </div>
         ) : locationInfo?.poi ? (
           <div className="lis-content">
             <PoiInfoSection poi={locationInfo.poi} />

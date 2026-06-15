@@ -23,14 +23,22 @@ export default function LocateControl({ onLocate }) {
       L.DomEvent.on(btn, 'click', (e) => {
         L.DomEvent.stop(e)
         requestOrientationPermission()
-        map.locate({ setView: true, maxZoom: 16, enableHighAccuracy: true })
+        // setView:false so we can animate to the location ourselves via flyTo
+        // in the locationfound handler instead of snapping there instantly.
+        map.locate({ setView: false, maxZoom: 16, enableHighAccuracy: true })
       })
       return container
     }
 
     control.addTo(map)
 
-    const handleFound = (e) => onLocate(e.latlng)
+    const handleFound = (e) => {
+      // Smoothly animate to the user's location instead of jumping. flyTo
+      // scales the animation to the distance, so nearby targets stay quick.
+      const zoom = Math.max(map.getZoom(), 16)
+      map.flyTo(e.latlng, zoom, { duration: 1.2 })
+      onLocate(e.latlng, e.accuracy)
+    }
     const handleError = (e) => {
       alert(e.message)
     }
