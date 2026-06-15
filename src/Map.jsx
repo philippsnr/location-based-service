@@ -65,9 +65,12 @@ function toLatLng(v) {
   return null;
 }
 
-const customMarkerIcon = new L.Icon({
-  iconUrl: markerIconUrl,
-  iconRetinaUrl: markerIconUrl,
+// DivIcon (rather than a plain L.Icon) so the marker image can carry a CSS
+// drop-in animation. The image is re-mounted on each placement via a position
+// key on <Marker>, which replays the animation.
+const customMarkerIcon = new L.DivIcon({
+  html: `<img src="${markerIconUrl}" width="32" height="32" alt="" class="map-marker__img" />`,
+  className: 'map-marker',
   iconSize: [32, 32],
   iconAnchor: [16, 32],
   popupAnchor: [0, -32],
@@ -153,8 +156,13 @@ function LocationMarker({ position, onSelect, placeName }) {
     },
   });
 
-  return position === null ? null : (
-    <Marker position={position} icon={customMarkerIcon}>
+  if (position === null) return null;
+  // Re-mount the marker whenever the target moves so the drop-in animation
+  // replays on each new placement.
+  const ll = toLatLng(position);
+  const key = ll ? `${ll.lat},${ll.lng}` : 'marker';
+  return (
+    <Marker key={key} position={position} icon={customMarkerIcon}>
       <Popup>{placeName ?? 'Loading…'}</Popup>
     </Marker>
   );
