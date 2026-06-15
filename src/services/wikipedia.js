@@ -1,9 +1,13 @@
-const WIKI_API_BASE = "https://en.wikipedia.org/w/api.php";
-const WIKI_REST_BASE = "https://en.wikipedia.org/api/rest_v1";
+//Get language code from browser
+const lang = navigator.language?.split('-')[0] ?? 'en'
+
+//Build Wikipedia API/REST base URLs for a given language code
+const apiBase = (language) => `https://${language}.wikipedia.org/w/api.php`;
+const restBase = (language) => `https://${language}.wikipedia.org/api/rest_v1`;
 
 //Helper for MediaWiki API requests
-async function query(params) {
-  const url = new URL(WIKI_API_BASE);
+async function query(params, language = lang) {
+  const url = new URL(apiBase(language));
 
   Object.entries({
     format: "json",
@@ -23,23 +27,27 @@ async function query(params) {
 }
 
 //Search Wikipedia pages by title/content
-export async function search(queryText) {
+export async function search(queryText, language = lang) {
   const data = await query({
     action: "query",
     list: "search",
     srsearch: queryText,
-  });
+  }, language);
 
   return data?.query?.search ?? [];
 }
 
-//Get page summary by title
-export async function getSummary(title) {
+//Get page summary by title. Falls back to the English Wikipedia if the page
+//does not exist in the requested language (HTTP 404).
+export async function getSummary(title, language = lang) {
   const response = await fetch(
-    `${WIKI_REST_BASE}/page/summary/${encodeURIComponent(title)}`
+    `${restBase(language)}/page/summary/${encodeURIComponent(title)}`
   );
 
   if (!response.ok) {
+    if (response.status === 404 && language !== 'en') {
+      return getSummary(title, 'en');
+    }
     throw new Error(`Wikipedia summary request failed: ${response.status}`);
   }
 
@@ -52,30 +60,38 @@ export async function getSummary(title) {
     thumbnail: data.thumbnail?.source ?? null,
     description: data.description ?? null,
     coordinates: data.coordinates ?? null,
+    language,
   };
 }
 
-//Search for place and return summary
+//Search for place and return summary. Falls back to an English-language
+//search if the place name has no results in the user's language.
 export async function getLocationSummary(placeName) {
-  const results = await search(placeName);
-  const firstResult = results[0];
+  let results = await search(placeName);
+  let language = lang;
 
+  if (results.length === 0 && lang !== 'en') {
+    results = await search(placeName, 'en');
+    language = 'en';
+  }
+
+  const firstResult = results[0];
   if (!firstResult) {
     return null;
   }
 
-  return getSummary(firstResult.title);
+  return getSummary(firstResult.title, language);
 }
 
 // Find Wikipedia articles near a coordinate
-async function geosearch(lat, lng, { radius = 10000, limit = 10 } = {}) {
+async function geosearch(lat, lng, { radius = 10000, limit = 10 } = {}, language = lang) {
   const data = await query({
     action: 'query',
     list: 'geosearch',
     gscoord: `${lat}|${lng}`,
     gsradius: radius,
     gslimit: limit,
-  });
+  }, language);
   return data?.query?.geosearch ?? [];
 }
 
@@ -99,16 +115,24 @@ const MAX_NAMED_DISTANCE_M = 75000;
 // result like "Bodensee") near a coordinate. Uses free-text search so the
 // returned article reflects the search term rather than the nearest city, and
 // rejects a top hit that sits far from the coordinate (guards against
-// unrelated same-name articles). Returns null if nothing suitable is found,
-// so callers can fall back to a city-level lookup.
+// unrelated same-name articles). Falls back to the English Wikipedia if the
+// name has no results in the user's language. Returns null if nothing
+// suitable is found, so callers can fall back to a city-level lookup.
 export async function getNamedLocationSummary(lat, lng, name) {
   if (!name) return null;
 
-  const results = await search(name);
+  let results = await search(name);
+  let language = lang;
+
+  if (results.length === 0 && lang !== 'en') {
+    results = await search(name, 'en');
+    language = 'en';
+  }
+
   const first = results[0];
   if (!first) return null;
 
-  const summary = await getSummary(first.title);
+  const summary = await getSummary(first.title, language);
   const coords = summary.coordinates;
   if (
     coords &&
@@ -120,17 +144,27 @@ export async function getNamedLocationSummary(lat, lng, name) {
 }
 
 // Fetch city-level Wikipedia summary using coordinate search + city name matching.
-// Returns null if no geographically matching city article is found.
+// Falls back to an English-language geosearch if no matching article exists
+// in the user's language. Returns null if no geographically matching city
+// article is found.
 export async function getCityLocationSummary(lat, lng, cityName) {
   if (!cityName) return null;
 
-  const candidates = await geosearch(lat, lng);
   const cityLower = cityName.toLowerCase();
-  const match = candidates.find((c) => c.title.toLowerCase() === cityLower);
+
+  let candidates = await geosearch(lat, lng);
+  let match = candidates.find((c) => c.title.toLowerCase() === cityLower);
+  let language = lang;
+
+  if (!match && lang !== 'en') {
+    candidates = await geosearch(lat, lng, {}, 'en');
+    match = candidates.find((c) => c.title.toLowerCase() === cityLower);
+    language = 'en';
+  }
 
   if (!match) return null;
 
-  return getSummary(match.title);
+  return getSummary(match.title, language);
 }
 
 async function searchCommonsJpgs(query, limit = 15) {
