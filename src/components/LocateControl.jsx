@@ -37,7 +37,7 @@ export default function LocateControl({ onLocate }) {
       // scales the animation to the distance, so nearby targets stay quick.
       const zoom = Math.max(map.getZoom(), 16)
       map.flyTo(e.latlng, zoom, { duration: 1.2 })
-      onLocate(e.latlng)
+      onLocate(e.latlng, e.accuracy)
     }
     const handleError = (e) => {
       alert(e.message)
