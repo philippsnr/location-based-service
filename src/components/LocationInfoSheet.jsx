@@ -229,6 +229,16 @@ function uvIndexLabel(uv) {
   return             { text: 'very high', color: '#f44336' };
 }
 
+// European Air Quality Index bands (label + dot colour).
+function airQualityLabel(aqi) {
+  if (aqi <= 20)  return { text: 'Good',           color: '#50ccb0' };
+  if (aqi <= 50)  return { text: 'Fair',           color: '#a8c84a' };
+  if (aqi <= 100) return { text: 'Moderate',       color: '#f0c020' };
+  if (aqi <= 150) return { text: 'Poor',           color: '#ff9800' };
+  if (aqi <= 200) return { text: 'Very Poor',      color: '#f44336' };
+  return             { text: 'Extremely Poor', color: '#960032' };
+}
+
 function toMinutes(hhmm) {
   const [h, m] = hhmm.split(':').map(Number);
   return h * 60 + m;
@@ -254,7 +264,7 @@ function DaylightBar({ sunrise, sunset }) {
 
 function WeatherStrip({ weatherInfo }) {
   const descText = weatherInfo.description.split(' ').slice(0, -1).join(' ');
-  const { sunrise, sunset, humidity, uvIndex, apparentTemperature } = weatherInfo;
+  const { sunrise, sunset, humidity, uvIndex, apparentTemperature, airQuality } = weatherInfo;
   const temp = Math.round(weatherInfo.temperature);
   // Show "feels like" whenever the rounded value differs from the actual temp.
   const feelsLike = apparentTemperature != null ? Math.round(apparentTemperature) : null;
@@ -296,6 +306,16 @@ function WeatherStrip({ weatherInfo }) {
           </div>
         </div>
       </div>
+      {airQuality?.aqi != null && (() => {
+        const { text, color } = airQualityLabel(airQuality.aqi);
+        return (
+          <div className="lis-aqi-row">
+            <span className="lis-aqi-dot" style={{ background: color }} aria-hidden="true" />
+            <span className="lis-aqi-label">AQI {text}</span>
+            <span className="lis-aqi-value">{airQuality.aqi}</span>
+          </div>
+        );
+      })()}
       {sunrise && sunset && <DaylightBar sunrise={sunrise} sunset={sunset} />}
     </div>
   );

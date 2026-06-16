@@ -19,6 +19,7 @@ import { reverseGeocode } from './services/nominatim';
 import wikipedia from './services/wikipedia'
 import { fetchWeather } from './services/weather'
 import { fetchElevation } from './services/elevation'
+import { fetchAirQuality } from './services/airquality'
 import { fetchWikidataFacts } from './services/wikidata'
 import { POI_FILTERS, fetchPois } from './services/overpass'
 import {
@@ -271,16 +272,19 @@ function Map() {
     setConfirmedRoute(null);
     setRoutePlanningOpen(false);
     try {
-      const [infoResult, weatherResult, elevationResult] = await Promise.allSettled([
+      const [infoResult, weatherResult, elevationResult, airQualityResult] = await Promise.allSettled([
         fetchLocationInfo(lat, lng, hint),
         fetchWeather(lat, lng),
         fetchElevation(lat, lng),
+        fetchAirQuality(lat, lng),
       ]);
       const info = infoResult.status === 'fulfilled'
         ? infoResult.value
         : { placeName: hint ?? 'Unknown location', lat, lng, wikiSummary: null, wikiUrl: null };
-      const weatherInfo = weatherResult.status === 'fulfilled' ? weatherResult.value : null;
+      const baseWeather = weatherResult.status === 'fulfilled' ? weatherResult.value : null;
       const elevation = elevationResult.status === 'fulfilled' ? elevationResult.value : null;
+      const airQuality = airQualityResult.status === 'fulfilled' ? airQualityResult.value : null;
+      const weatherInfo = baseWeather ? { ...baseWeather, airQuality } : null;
       setLocationInfo({ ...info, weatherInfo, elevation });
     } catch (err) {
       console.warn('Failed to fetch location info:', err);
