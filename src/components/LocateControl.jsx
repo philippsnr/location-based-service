@@ -2,8 +2,13 @@ import { useEffect } from 'react'
 import { useMap } from 'react-leaflet'
 import L from 'leaflet'
 import { requestOrientationPermission } from './UserLocationMarker'
+import {
+  GEO_DENIED_MESSAGE,
+  geolocationErrorMessage,
+  getGeolocationPermissionState,
+} from '../services/geolocation'
 
-export default function LocateControl({ onLocate }) {
+export default function LocateControl({ onLocate, onError }) {
   const map = useMap()
 
   useEffect(() => {
@@ -23,9 +28,17 @@ export default function LocateControl({ onLocate }) {
       L.DomEvent.on(btn, 'click', (e) => {
         L.DomEvent.stop(e)
         requestOrientationPermission()
-        // setView:false so we can animate to the location ourselves via flyTo
-        // in the locationfound handler instead of snapping there instantly.
-        map.locate({ setView: false, maxZoom: 16, enableHighAccuracy: true })
+        // Detect an already-denied permission up front: the browser won't
+        // re-prompt, so explain how to recover instead of failing silently.
+        getGeolocationPermissionState().then((state) => {
+          if (state === 'denied') {
+            onError?.(GEO_DENIED_MESSAGE)
+            return
+          }
+          // setView:false so we can animate to the location ourselves via flyTo
+          // in the locationfound handler instead of snapping there instantly.
+          map.locate({ setView: false, maxZoom: 16, enableHighAccuracy: true })
+        })
       })
       return container
     }
@@ -40,7 +53,9 @@ export default function LocateControl({ onLocate }) {
       onLocate(e.latlng, e.accuracy)
     }
     const handleError = (e) => {
-      alert(e.message)
+      // Leaflet's locationerror carries the same numeric `code` as a
+      // GeolocationPositionError; surface a clear, actionable message.
+      onError?.(geolocationErrorMessage(e))
     }
     map.on('locationfound', handleFound)
     map.on('locationerror', handleError)
@@ -50,7 +65,7 @@ export default function LocateControl({ onLocate }) {
       map.off('locationerror', handleError)
       map.removeControl(control)
     }
-  }, [map, onLocate])
+  }, [map, onLocate, onError])
 
   return null
 }
