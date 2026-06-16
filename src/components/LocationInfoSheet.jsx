@@ -179,6 +179,49 @@ function PoiInfoSection({ poi }) {
   );
 }
 
+function formatFounded(year) {
+  return year < 0 ? `${Math.abs(year)} BC` : `${year}`;
+}
+
+// Structured city facts from Wikidata. Each row is rendered only when the
+// corresponding field has data; the whole section is hidden when empty.
+function FactsSection({ facts }) {
+  const rows = [
+    facts.population != null && {
+      key: 'population',
+      icon: '👥',
+      label: 'Population',
+      value: facts.population.toLocaleString(),
+    },
+    facts.area != null && {
+      key: 'area',
+      icon: '📐',
+      label: 'Area',
+      value: `${facts.area.toLocaleString(undefined, { maximumFractionDigits: 1 })} km²`,
+    },
+    facts.founded != null && {
+      key: 'founded',
+      icon: '📅',
+      label: 'Founded',
+      value: formatFounded(facts.founded),
+    },
+  ].filter(Boolean);
+
+  if (rows.length === 0) return null;
+
+  return (
+    <div className="lis-facts">
+      {rows.map((row) => (
+        <div key={row.key} className="lis-fact">
+          <span className="lis-fact__icon" aria-hidden="true">{row.icon}</span>
+          <span className="lis-fact__label">{row.label}</span>
+          <span className="lis-fact__value">{row.value}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 function uvIndexLabel(uv) {
   if (uv <= 2) return { text: 'low',      color: '#4caf50' };
   if (uv <= 5) return { text: 'moderate', color: '#ffc107' };
@@ -588,6 +631,10 @@ function LocationInfoSheet({ opened, onClosed, locationInfo, loading, onShowRout
               </div>
             )}
           </div>
+        )}
+
+        {!loading && !locationInfo?.poi && locationInfo?.facts && (
+          <FactsSection facts={locationInfo.facts} />
         )}
 
         {loading ? (

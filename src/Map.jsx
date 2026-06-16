@@ -19,6 +19,7 @@ import { reverseGeocode } from './services/nominatim';
 import wikipedia from './services/wikipedia'
 import { fetchWeather } from './services/weather'
 import { fetchElevation } from './services/elevation'
+import { fetchWikidataFacts } from './services/wikidata'
 import { POI_FILTERS, fetchPois } from './services/overpass'
 import {
   getFavourites,
@@ -137,6 +138,11 @@ async function fetchLocationInfo(lat, lng, hint = null) {
   ]);
   const wiki = wikiResult.status === 'fulfilled' ? wikiResult.value : null;
   const wikiPhotos = heroResult.status === 'fulfilled' ? heroResult.value : [];
+  // Structured city facts from Wikidata, looked up by the resolved Wikipedia
+  // page title. Depends on that title, so it runs after the wiki lookup.
+  const facts = wiki?.title
+    ? await fetchWikidataFacts(wiki.title, `${wiki.language}wiki`).catch(() => null)
+    : null;
   return {
     placeName: searchName ?? cityName ?? placeName,
     lat,
@@ -144,6 +150,7 @@ async function fetchLocationInfo(lat, lng, hint = null) {
     wikiSummary: wiki?.summary ?? null,
     wikiUrl: wiki?.url ?? null,
     wikiPhotos,
+    facts,
     country,
     countryCode,
   };
