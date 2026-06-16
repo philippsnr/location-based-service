@@ -628,6 +628,11 @@
   line-height: 1;
 }
 
+.lis-weather-feels {
+  font-size: 13px;
+  color: #777;
+}
+
 .lis-weather-desc {
   font-size: 14px;
   color: #555;
