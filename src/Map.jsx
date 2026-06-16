@@ -21,6 +21,7 @@ import { fetchWeather } from './services/weather'
 import { fetchElevation } from './services/elevation'
 import { fetchAirQuality } from './services/airquality'
 import { fetchWikidataFacts } from './services/wikidata'
+import { GEO_DENIED_MESSAGE, getGeolocationPermissionState } from './services/geolocation'
 import { POI_FILTERS, fetchPois } from './services/overpass'
 import {
   getFavourites,
@@ -226,6 +227,8 @@ function Map() {
   const [favourites, setFavourites] = useState(() => getFavourites());
   const [savedPlacesOpen, setSavedPlacesOpen] = useState(false);
   const [autoOpenCollapsed, setAutoOpenCollapsed] = useState(false);
+  // Actionable message shown when a location action is blocked/denied.
+  const [geoMessage, setGeoMessage] = useState('');
   const mapCenterRef = useRef(null);
   const activeFilterRef = useRef(null);
   const poiAbortRef = useRef(null);
@@ -258,6 +261,12 @@ function Map() {
   useEffect(() => {
     return subscribeFavourites(() => setFavourites(getFavourites()));
   }, []);
+
+  useEffect(() => {
+    if (!geoMessage) return;
+    const t = window.setTimeout(() => setGeoMessage(''), 6000);
+    return () => window.clearTimeout(t);
+  }, [geoMessage]);
 
   const handlePositionSelect = useCallback(async (latlng, hint = null, { collapsed = false } = {}) => {
     const lat = latlng.lat ?? latlng[0];
@@ -383,7 +392,15 @@ function Map() {
     setRoutePlanningKey((k) => k + 1);
     setSheetOpen(false);
     setRoutePlanningOpen(true);
-  }, []);
+    // Routing needs the user's position as the start point. If location is
+    // blocked we still open the planner (a start can be typed manually) but
+    // tell the user why "My Location" is unavailable instead of failing mutely.
+    if (!userPosition) {
+      getGeolocationPermissionState().then((state) => {
+        if (state === 'denied') setGeoMessage(GEO_DENIED_MESSAGE);
+      });
+    }
+  }, [userPosition]);
 
   const handleConfirmRoute = useCallback((start, end, profile) => {
     setConfirmedRoute({ start, end, profile });
@@ -530,6 +547,22 @@ function Map() {
   return (
     <>
       <div className="map-wrapper">
+        {geoMessage && (
+          <div className="geo-toast" role="alert">
+            <span className="geo-toast__text">{geoMessage}</span>
+            <button
+              type="button"
+              className="geo-toast__close"
+              onClick={() => setGeoMessage('')}
+              aria-label="Dismiss"
+            >
+              <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" strokeWidth="2.5" fill="none" strokeLinecap="round" aria-hidden="true">
+                <line x1="18" y1="6" x2="6" y2="18" />
+                <line x1="6" y1="6" x2="18" y2="18" />
+              </svg>
+            </button>
+          </div>
+        )}
         <MapContainer
           center={mapCenter}
           zoom={15}
@@ -553,7 +586,7 @@ function Map() {
           <ZoomToLocation position={position} />
           <LocationMarker position={isPoiSheet ? null : position} onSelect={handlePositionSelect} placeName={locationInfo?.placeName} />
           <UserLocationMarker position={userPosition} accuracy={userAccuracy} />
-          <LocateControl onLocate={handleLocate} />
+          <LocateControl onLocate={handleLocate} onError={setGeoMessage} />
           <ScaleControl />
           <MapStyleControl style={mapStyle} onToggle={handleToggleMapStyle} />
           <MapCenterTracker centerRef={mapCenterRef} />
