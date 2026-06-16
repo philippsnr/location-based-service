@@ -411,6 +411,19 @@
   overflow: visible;
 }
 
+.location-info-sheet__address {
+  font-size: 12.5px;
+  color: #888;
+  line-height: 1.3;
+  margin-top: 2px;
+}
+
+.location-info-sheet:not(.location-info-sheet--expanded) .location-info-sheet__address {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .location-info-sheet__country {
   font-size: 13px;
   color: #666;

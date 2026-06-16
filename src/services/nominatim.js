@@ -40,7 +40,17 @@ export async function reverseGeocode(lat, lng) {
   const country = addr.country ?? null;
   const countryCode = addr.country_code ?? null;
 
-  return { placeName, cityName, country, countryCode };
+  // Full street-level address, built only when a road is known. House number
+  // is appended to the road; postcode and city form the second part.
+  const road = addr.road ?? null;
+  let address = null;
+  if (road) {
+    const street = addr.house_number ? `${road} ${addr.house_number}` : road;
+    const locality = [addr.postcode, cityName].filter(Boolean).join(' ');
+    address = [street, locality].filter(Boolean).join(', ');
+  }
+
+  return { placeName, cityName, country, countryCode, address };
 }
 
 export async function forwardGeocode(query, { limit = 5, signal } = {}) {
