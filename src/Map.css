@@ -815,6 +815,43 @@
   background: #e4e4e8;
 }
 
+/* ── Wikidata facts ─────────────────────────────────────────────────────── */
+
+.lis-facts {
+  padding: 4px 16px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.lis-fact {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 7px 0;
+}
+
+.lis-fact + .lis-fact {
+  border-top: 1px solid #f5f5f7;
+}
+
+.lis-fact__icon {
+  width: 15px;
+  text-align: center;
+  flex-shrink: 0;
+  font-size: 14px;
+}
+
+.lis-fact__label {
+  flex: 1;
+  font-size: 13.5px;
+  color: #333;
+}
+
+.lis-fact__value {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #1a1a1a;
+}
+
 /* ── Content wrapper ────────────────────────────────────────────────────── */
 
 .lis-content {
