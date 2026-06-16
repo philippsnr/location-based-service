@@ -653,6 +653,31 @@
   color: #888;
 }
 
+.lis-aqi-row {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-top: 10px;
+}
+
+.lis-aqi-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.lis-aqi-label {
+  font-size: 13px;
+  color: #555;
+}
+
+.lis-aqi-value {
+  font-size: 12px;
+  color: #999;
+  margin-left: auto;
+}
+
 .lis-daylight-row {
   display: flex;
   align-items: center;
