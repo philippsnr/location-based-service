@@ -131,7 +131,7 @@ async function resolveHeroPhotos(lat, lng, hint, cityName) {
 // Wikipedia/photo lookup and the displayed place name, so searching "Bodensee"
 // shows Bodensee rather than the nearest reverse-geocoded city.
 async function fetchLocationInfo(lat, lng, hint = null) {
-  const { placeName, cityName, country, countryCode } = await reverseGeocode(lat, lng);
+  const { placeName, cityName, country, countryCode, address } = await reverseGeocode(lat, lng);
   const searchName = hint?.split(',')[0].trim() || null;
   const [wikiResult, heroResult] = await Promise.allSettled([
     resolveWikiSummary(lat, lng, searchName, cityName),
@@ -152,6 +152,7 @@ async function fetchLocationInfo(lat, lng, hint = null) {
     wikiUrl: wiki?.url ?? null,
     wikiPhotos,
     facts,
+    address,
     country,
     countryCode,
   };

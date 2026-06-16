@@ -496,6 +496,12 @@ function LocationInfoSheet({ opened, onClosed, locationInfo, loading, onShowRout
                 locationInfo?.placeName ?? 'Unknown location'
               )}
             </div>
+            {!loading && !locationInfo?.poi && locationInfo?.address &&
+              locationInfo.address !== locationInfo.placeName && (
+              <div className="location-info-sheet__address">
+                {locationInfo.address}
+              </div>
+            )}
             {!loading && locationInfo?.country && (
               <div className="location-info-sheet__country">
                 {locationInfo.countryCode
