@@ -256,9 +256,9 @@ function WeatherStrip({ weatherInfo }) {
   const descText = weatherInfo.description.split(' ').slice(0, -1).join(' ');
   const { sunrise, sunset, humidity, uvIndex, apparentTemperature } = weatherInfo;
   const temp = Math.round(weatherInfo.temperature);
-  // Only show "feels like" when it differs meaningfully from the actual temp.
+  // Show "feels like" whenever the rounded value differs from the actual temp.
   const feelsLike = apparentTemperature != null ? Math.round(apparentTemperature) : null;
-  const showFeelsLike = feelsLike != null && Math.abs(feelsLike - temp) >= 2;
+  const showFeelsLike = feelsLike != null && feelsLike !== temp;
   return (
     <div className="lis-weather-block">
       <div className="lis-weather-row">
