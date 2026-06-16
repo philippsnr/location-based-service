@@ -1,7 +1,7 @@
 const WEATHER_API_BASE = 'https://api.open-meteo.com/v1/forecast';
 const CURRENT_PARAM_CANDIDATES = [
-  'temperature_2m,apparent_temperature,weathercode,windspeed_10m,relative_humidity_2m,uv_index',
-  'temperature_2m,apparent_temperature,weather_code,wind_speed_10m,relative_humidity_2m,uv_index',
+  'temperature_2m,apparent_temperature,weathercode,windspeed_10m,winddirection_10m,relative_humidity_2m,uv_index',
+  'temperature_2m,apparent_temperature,weather_code,wind_speed_10m,wind_direction_10m,relative_humidity_2m,uv_index',
 ];
 
 const WMO_WEATHER_MAP = {
@@ -101,6 +101,7 @@ export async function fetchWeather(lat, lng) {
       apparentTemperature: current.apparent_temperature ?? null,
       weatherCode,
       windSpeed: current.windspeed_10m ?? current.wind_speed_10m,
+      windDirection: current.winddirection_10m ?? current.wind_direction_10m ?? null,
       description: `${weatherMeta.description} ${weatherMeta.icon}`,
       icon: weatherMeta.icon,
       sunrise,

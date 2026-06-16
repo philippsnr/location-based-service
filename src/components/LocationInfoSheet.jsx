@@ -264,7 +264,7 @@ function DaylightBar({ sunrise, sunset }) {
 
 function WeatherStrip({ weatherInfo }) {
   const descText = weatherInfo.description.split(' ').slice(0, -1).join(' ');
-  const { sunrise, sunset, humidity, uvIndex, apparentTemperature, airQuality } = weatherInfo;
+  const { sunrise, sunset, humidity, uvIndex, apparentTemperature, airQuality, windDirection } = weatherInfo;
   const temp = Math.round(weatherInfo.temperature);
   // Show "feels like" whenever the rounded value differs from the actual temp.
   const feelsLike = apparentTemperature != null ? Math.round(apparentTemperature) : null;
@@ -288,6 +288,18 @@ function WeatherStrip({ weatherInfo }) {
                 <path d="M12.73 19.41A2 2 0 1 0 14 16H2"/>
                 <path d="M16.27 7.73A2.5 2.5 0 1 1 18.5 12H2"/>
               </svg>
+              {windDirection != null && (
+                // Wind direction is where the wind comes FROM; add 180° so the
+                // arrow points the way the wind is blowing TO.
+                <svg
+                  className="lis-wind-arrow"
+                  style={{ transform: `rotate(${windDirection + 180}deg)` }}
+                  viewBox="0 0 24 24" width="12" height="12"
+                  fill="currentColor" aria-hidden="true"
+                >
+                  <path d="M12 2 L18 20 L12 16 L6 20 Z" />
+                </svg>
+              )}
               {Math.round(weatherInfo.windSpeed)} km/h
             </span>
             {humidity != null && (
