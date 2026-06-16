@@ -653,6 +653,11 @@
   color: #888;
 }
 
+.lis-wind-arrow {
+  transform-origin: center;
+  color: #777;
+}
+
 .lis-aqi-row {
   display: flex;
   align-items: center;
