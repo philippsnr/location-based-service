@@ -3,6 +3,8 @@ import { flushSync } from 'react-dom';
 import { Sheet } from 'framework7-react';
 import L from 'leaflet';
 import { forwardGeocode } from '../services/nominatim';
+import { fetchElevationProfile } from '../services/elevationProfile';
+import ElevationChart from './ElevationChart';
 
 const DEBOUNCE_MS = 350;
 const MIN_QUERY_LENGTH = 3;
@@ -12,7 +14,7 @@ const SNAP_THRESHOLD = 50;
 const SNAP_DURATION = 300;
 
 function getFullHeight() {
-  return Math.min(520, Math.round(window.innerHeight * 0.8));
+  return Math.min(680, Math.round(window.innerHeight * 0.9));
 }
 
 function snapTo(sheetEl, targetHeight, onDone) {
@@ -57,12 +59,16 @@ const OSRM_BASE = {
 
 async function fetchRoutePreview(start, end, profile, signal) {
   const base = OSRM_BASE[profile] ?? OSRM_BASE.car;
-  const url = `${base}/${start.lng},${start.lat};${end.lng},${end.lat}?overview=false`;
+  const url = `${base}/${start.lng},${start.lat};${end.lng},${end.lat}?overview=full&geometries=geojson`;
   const res = await fetch(url, { signal });
   const data = await res.json();
-  return data.routes?.[0]
-    ? { distance: data.routes[0].distance, duration: data.routes[0].duration }
-    : null;
+  const route = data.routes?.[0];
+  if (!route) return null;
+  return {
+    distance: route.distance,
+    duration: route.duration,
+    geometry: route.geometry.coordinates,
+  };
 }
 
 function AddressField({ label, query, setQuery, coords, setCoords, placeholder }) {
@@ -205,6 +211,9 @@ export default function RoutePlanningSheet({
   const [routePreview, setRoutePreview] = useState(null);
   const [previewLoading, setPreviewLoading] = useState(false);
   const [previewError, setPreviewError] = useState(false);
+  const [elevationProfile, setElevationProfile] = useState(null);
+  const [elevationLoading, setElevationLoading] = useState(false);
+  const [elevationError, setElevationError] = useState(false);
 
   const applyExpanded = useCallback((value) => {
     isExpandedRef.current = value;
@@ -303,6 +312,9 @@ export default function RoutePlanningSheet({
     if (!startCoords || !endCoords) {
       setRoutePreview(null);
       setPreviewError(false);
+      setElevationProfile(null);
+      setElevationLoading(false);
+      setElevationError(false);
       return;
     }
 
@@ -310,13 +322,32 @@ export default function RoutePlanningSheet({
     setPreviewLoading(true);
     setRoutePreview(null);
     setPreviewError(false);
+    setElevationProfile(null);
+    setElevationLoading(false);
+    setElevationError(false);
 
     fetchRoutePreview(startCoords, endCoords, travelMode, ctrl.signal)
-      .then((preview) => {
-        if (!ctrl.signal.aborted) {
-          setRoutePreview(preview);
-          if (!preview) setPreviewError(true);
+      .then(async (preview) => {
+        if (ctrl.signal.aborted) return;
+        setRoutePreview(preview);
+        if (!preview) {
+          setPreviewError(true);
           setPreviewLoading(false);
+          return;
+        }
+        setPreviewLoading(false);
+        setElevationLoading(true);
+        try {
+          const elevations = await fetchElevationProfile(preview.geometry, ctrl.signal);
+          if (!ctrl.signal.aborted) {
+            setElevationProfile(elevations);
+            setElevationLoading(false);
+          }
+        } catch (err) {
+          if (!ctrl.signal.aborted && err.name !== 'AbortError') {
+            setElevationError(true);
+            setElevationLoading(false);
+          }
         }
       })
       .catch((err) => {
@@ -491,6 +522,14 @@ export default function RoutePlanningSheet({
                 </span>
               )}
             </div>
+
+            {routePreview && (
+              <ElevationChart
+                elevations={elevationProfile}
+                loading={elevationLoading}
+                error={elevationError}
+              />
+            )}
 
             <button
               className="route-sheet__confirm-btn"
