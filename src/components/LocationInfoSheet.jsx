@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { flushSync } from 'react-dom';
 import { Sheet } from 'framework7-react';
 
@@ -65,6 +65,39 @@ const WHEELCHAIR_LABEL = {
 function formatWebsiteLabel(url) {
   try { return new URL(url).hostname.replace(/^www\./, ''); }
   catch { return url; }
+}
+
+const PARTICLE_COUNTS = { rain: 20, thunderstorm: 20, snow: 15, 'night-clear': 25 };
+
+function buildParticleStyles(theme, count) {
+  return Array.from({ length: count }, (_, i) => {
+    if (theme === 'rain' || theme === 'thunderstorm') {
+      return { '--i': i, left: `${i * 5}%` };
+    }
+    if (theme === 'snow') {
+      return { '--i': i, left: `${i * 7}%` };
+    }
+    if (theme === 'night-clear') {
+      return { '--i': i, top: `${(i * 37 + 11) % 95 + 2}%`, left: `${(i * 41 + 7) % 97 + 1}%` };
+    }
+    return { '--i': i };
+  });
+}
+
+function WeatherBackdrop({ theme }) {
+  const count = PARTICLE_COUNTS[theme] ?? 0;
+  const particles = useMemo(
+    () => (count > 0 ? buildParticleStyles(theme, count) : []),
+    [theme, count],
+  );
+  if (!theme) return null;
+  return (
+    <div className={`lis-backdrop lis-backdrop--${theme}`} aria-hidden="true">
+      {particles.map((style, i) => (
+        <span key={i} className="lis-backdrop__particle" style={style} />
+      ))}
+    </div>
+  );
 }
 
 // Horizontal photo carousel with pagination dots. The dots hint that more
@@ -471,6 +504,8 @@ function LocationInfoSheet({ opened, onClosed, locationInfo, loading, onShowRout
   const lngLabel = lng != null ? `${Math.abs(lng).toFixed(5)}° ${lng >= 0 ? 'E' : 'W'}` : null;
   const canShare = !loading && lat != null;
 
+  const weatherTheme = locationInfo?.weatherInfo?.theme ?? null;
+
   return (
     <Sheet
       className={`location-info-sheet${isExpanded ? ' location-info-sheet--expanded' : ''}`}
@@ -480,6 +515,7 @@ function LocationInfoSheet({ opened, onClosed, locationInfo, loading, onShowRout
       closeByBackdropClick={false}
       closeByOutsideClick={false}
     >
+      <WeatherBackdrop theme={weatherTheme} />
       {/* Fixed header */}
       <div
         className="sheet-modal-swipe-step"
