@@ -42,6 +42,34 @@ function getWeatherMeta(weatherCode) {
   };
 }
 
+function getWeatherTheme(weatherCode, timezone, sunrise, sunset) {
+  let isNight = false;
+  if (timezone && sunrise && sunset) {
+    try {
+      const localTime = new Intl.DateTimeFormat('en-GB', {
+        timeZone: timezone,
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false,
+      }).format(new Date());
+      const [lh, lm] = localTime.split(':').map(Number);
+      const nowMin = lh * 60 + lm;
+      const [sh, sm] = sunrise.split(':').map(Number);
+      const [eh, em] = sunset.split(':').map(Number);
+      isNight = nowMin < sh * 60 + sm || nowMin > eh * 60 + em;
+    } catch {
+      // timezone parsing failed — assume daytime
+    }
+  }
+
+  if (weatherCode === 95 || weatherCode === 96 || weatherCode === 99) return 'thunderstorm';
+  if ([51, 53, 55, 56, 57, 61, 63, 65, 66, 67, 80, 81, 82].includes(weatherCode)) return 'rain';
+  if ([71, 73, 75, 77, 85, 86].includes(weatherCode)) return 'snow';
+  if (weatherCode === 45 || weatherCode === 48) return 'fog';
+  if (weatherCode === 0 || weatherCode === 1) return isNight ? 'night-clear' : 'sunny';
+  return 'cloudy';
+}
+
 export async function fetchWeather(lat, lng) {
   const lastErrors = [];
 
@@ -92,6 +120,8 @@ export async function fetchWeather(lat, lng) {
     const parseTime = (iso) => iso ? iso.split('T')[1]?.slice(0, 5) : null;
     const sunrise = parseTime(data?.daily?.sunrise?.[0]);
     const sunset  = parseTime(data?.daily?.sunset?.[0]);
+    const timezone = data.timezone ?? null;
+    const theme = getWeatherTheme(weatherCode, timezone, sunrise, sunset);
 
     const humidity = current.relative_humidity_2m ?? null;
     const uvIndex = current.uv_index != null ? Math.round(current.uv_index) : null;
@@ -108,7 +138,8 @@ export async function fetchWeather(lat, lng) {
       sunset,
       humidity,
       uvIndex,
-      timezone: data.timezone ?? null,
+      timezone,
+      theme,
     };
   }
 
