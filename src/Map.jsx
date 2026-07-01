@@ -30,6 +30,37 @@ import {
   subscribe as subscribeFavourites,
 } from './services/favourites'
 
+/**
+ * @file Map view root: renders the Leaflet map, wires up markers, POI results,
+ * the info sheet, route planning and saved places. This is the single owner of
+ * the app's map-related state (selected location, user position, active POI
+ * filter, favourites, route).
+ */
+
+/** @typedef {[number, number]} LatLngTuple */
+
+/**
+ * The shape produced by {@link fetchLocationInfo} and consumed by
+ * {@link module:./components/LocationInfoSheet}. `weatherInfo` and `elevation`
+ * are attached later by the caller (`handlePositionSelect`) since they run in
+ * parallel with the info fetch.
+ *
+ * @typedef {Object} LocationInfo
+ * @property {string} placeName - Human-readable name for the selected point.
+ * @property {number} lat
+ * @property {number} lng
+ * @property {string|null} wikiSummary - Wikipedia intro paragraph, or null.
+ * @property {string|null} wikiUrl - Canonical Wikipedia article URL, or null.
+ * @property {string[]} [wikiPhotos] - Commons hero photos (may be empty).
+ * @property {Object|null} [facts] - Structured Wikidata facts (population/area/founded).
+ * @property {string|null} [address] - Full street address from Nominatim, when a road is known.
+ * @property {string|null} [country] - Full country name from Nominatim.
+ * @property {string|null} [countryCode] - ISO 3166-1 alpha-2 code, lowercase.
+ * @property {Object|null} [poi] - POI-specific details when this was opened from the POI layer.
+ * @property {Object|null} [weatherInfo] - Weather + air quality bundle (attached by caller).
+ * @property {number|null} [elevation] - Elevation in metres above sea level (attached by caller).
+ */
+
 const defaultPosition = [54.4047, 10.2256];
 const MAP_STYLE_STORAGE_KEY = 'map-style';
 
@@ -59,7 +90,13 @@ const MAP_STYLES = {
 // Cycle order for the map style toggle button.
 const MAP_STYLE_CYCLE = ['standard', 'satellite', 'topo'];
 
-// Normalize {lat,lng} objects, [lat,lng] arrays, and L.LatLng instances to L.LatLng.
+/**
+ * Normalise a coordinate value into a Leaflet `LatLng`.
+ * Accepts `{lat, lng}` objects, `[lat, lng]` tuples, existing `L.LatLng`
+ * instances, or nullish values.
+ * @param {import('leaflet').LatLng | LatLngTuple | {lat: number, lng: number} | null | undefined} v
+ * @returns {import('leaflet').LatLng | null} A LatLng, or null if input was falsy/unrecognised.
+ */
 function toLatLng(v) {
   if (!v) return null;
   if (v instanceof L.LatLng) return v;
@@ -91,6 +128,12 @@ const poiIconByFilter = Object.fromEntries(
   ])
 );
 
+/**
+ * Keeps a ref pointed at the map's current centre so callbacks (e.g. POI fetch)
+ * can read the latest centre without re-rendering when the map is panned.
+ * @param {{ centerRef: import('react').MutableRefObject<import('leaflet').LatLng|null> }} props
+ * @returns {null}
+ */
 function MapCenterTracker({ centerRef }) {
   const map = useMap();
   useMapEvents({ moveend() { centerRef.current = map.getCenter(); } });
@@ -98,6 +141,11 @@ function MapCenterTracker({ centerRef }) {
   return null;
 }
 
+/**
+ * Build a compact street-level address string from an OSM tag bag.
+ * @param {Object<string, string>} tags - Raw OSM tags for a node/way (uses `addr:*` keys).
+ * @returns {string|null} A one-line address like `"Main St 12, 24103 Kiel"`, or null if no address tags.
+ */
 function buildPoiAddress(tags) {
   const street = tags['addr:street'];
   const num = tags['addr:housenumber'];
@@ -109,8 +157,17 @@ function buildPoiAddress(tags) {
   return parts.join(', ') || null;
 }
 
-// Resolve a Wikipedia summary, preferring a user-typed search name (hint) and
-// falling back to the reverse-geocoded city so the sheet is never empty.
+/**
+ * Resolve a Wikipedia summary for a location, preferring a user-typed search
+ * name (`hint`) and falling back to the reverse-geocoded city so the sheet is
+ * never empty.
+ * @param {number} lat
+ * @param {number} lng
+ * @param {string|null} hint - Search-result name, if the user picked one.
+ * @param {string|null} cityName - Reverse-geocoded city, town or village.
+ * @returns {Promise<{title: string, language: string, summary: string, url: string}|null>}
+ *   Wikipedia summary object, or null when nothing was found.
+ */
 async function resolveWikiSummary(lat, lng, hint, cityName) {
   if (hint) {
     const named = await wikipedia.getNamedLocationSummary(lat, lng, hint).catch(() => null);
@@ -119,7 +176,15 @@ async function resolveWikiSummary(lat, lng, hint, cityName) {
   return wikipedia.getCityLocationSummary(lat, lng, cityName).catch(() => null);
 }
 
-// Hero photos, same hint-first / city-fallback strategy. Returns an array.
+/**
+ * Resolve Wikimedia Commons hero photos for a location using the same
+ * hint-first / city-fallback strategy as {@link resolveWikiSummary}.
+ * @param {number} lat
+ * @param {number} lng
+ * @param {string|null} hint
+ * @param {string|null} cityName
+ * @returns {Promise<string[]>} Absolute image URLs; empty on failure or no matches.
+ */
 async function resolveHeroPhotos(lat, lng, hint, cityName) {
   if (hint) {
     const named = await wikipedia.getCommonsGeoPhotos(lat, lng, { cityName: hint }).catch(() => []);
@@ -128,9 +193,21 @@ async function resolveHeroPhotos(lat, lng, hint, cityName) {
   return wikipedia.getCommonsGeoPhotos(lat, lng, { cityName }).catch(() => []);
 }
 
-// `hint` is the name of a selected search result. When present it drives the
-// Wikipedia/photo lookup and the displayed place name, so searching "Bodensee"
-// shows Bodensee rather than the nearest reverse-geocoded city.
+/**
+ * Fetch the aggregate {@link LocationInfo} bundle for a coordinate.
+ *
+ * Runs reverse-geocoding, then Wikipedia summary + hero photos + Wikidata
+ * facts in parallel. `hint` is the raw name of a selected search result; when
+ * present it drives the Wikipedia/photo lookup and the displayed place name,
+ * so searching "Bodensee" shows Bodensee rather than the nearest
+ * reverse-geocoded city.
+ *
+ * @param {number} lat
+ * @param {number} lng
+ * @param {string|null} [hint=null]
+ * @returns {Promise<LocationInfo>} The core info bundle. `weatherInfo` and
+ *   `elevation` are attached separately by the caller.
+ */
 async function fetchLocationInfo(lat, lng, hint = null) {
   const { placeName, cityName, country, countryCode, address } = await reverseGeocode(lat, lng);
   const searchName = hint?.split(',')[0].trim() || null;
@@ -159,6 +236,19 @@ async function fetchLocationInfo(lat, lng, hint = null) {
   };
 }
 
+/**
+ * @typedef {Object} LocationMarkerProps
+ * @property {import('leaflet').LatLng | LatLngTuple | null} position - Where to draw the marker, or null to hide it.
+ * @property {(latlng: import('leaflet').LatLng) => void} onSelect - Fires when the user clicks the map.
+ * @property {string|null|undefined} placeName - Popup label; shows "Loading…" while resolving.
+ */
+
+/**
+ * The click-to-place map pin: listens for map clicks, hands the coordinate off
+ * to `onSelect`, and renders the current selection with a drop-in animation.
+ * @param {LocationMarkerProps} props
+ * @returns {import('react').ReactElement | null}
+ */
 function LocationMarker({ position, onSelect, placeName }) {
   useMapEvents({
     click(e) {
@@ -178,6 +268,11 @@ function LocationMarker({ position, onSelect, placeName }) {
   );
 }
 
+/**
+ * Smoothly flies the map to `position` on every change. Renders nothing.
+ * @param {{ position: import('leaflet').LatLng | LatLngTuple | null }} props
+ * @returns {null}
+ */
 function ZoomToLocation({ position }) {
   const map = useMap();
 
@@ -192,6 +287,12 @@ function ZoomToLocation({ position }) {
   return null;
 }
 
+/**
+ * Fits the map view to enclose the current POI markers. No-op when the list
+ * is empty; runs on every change to `poiMarkers`.
+ * @param {{ poiMarkers: Array<{ lat: number, lng: number }> }} props
+ * @returns {null}
+ */
 function FitBoundsOnPoi({ poiMarkers }) {
   const map = useMap();
 
@@ -204,6 +305,14 @@ function FitBoundsOnPoi({ poiMarkers }) {
   return null;
 }
 
+/**
+ * Root map view. Owns the app's map-related state (selected position, user
+ * position, active POI filter, info sheet visibility, route planning, saved
+ * places) and orchestrates the child controls and sheets.
+ *
+ * Takes no props — all state is internal.
+ * @returns {import('react').ReactElement}
+ */
 function Map() {
   const [position, setPosition] = useState(null);
   const [userPosition, setUserPosition] = useState(null);
