@@ -3,14 +3,42 @@ import { useMap } from 'react-leaflet'
 import L from 'leaflet'
 import 'leaflet-routing-machine'
 
-// routing.openstreetmap.de has per-profile servers with correct data;
-// router.project-osrm.org only carries car data and ignores other profiles.
+/**
+ * @file Draws a route between two or more waypoints on the Leaflet map using
+ * OSRM, and reports the resulting distance/duration up to the parent.
+ */
+
+/**
+ * Per-profile OSRM router configurations.
+ *
+ * routing.openstreetmap.de has per-profile servers with correct data;
+ * router.project-osrm.org only carries car data and ignores other profiles.
+ * @type {Record<'car' | 'foot' | 'bike', { serviceUrl: string, profile: string }>}
+ */
 const OSRM_ROUTER = {
   car: { serviceUrl: 'https://routing.openstreetmap.de/routed-car/route/v1', profile: 'driving' },
   foot: { serviceUrl: 'https://routing.openstreetmap.de/routed-foot/route/v1', profile: 'foot' },
   bike: { serviceUrl: 'https://routing.openstreetmap.de/routed-bike/route/v1', profile: 'bike' },
 }
 
+/**
+ * @typedef {Object} RoutingMachineProps
+ * @property {import('leaflet').LatLng[]} waypoints
+ *   Ordered list of stops. Must contain at least two points; otherwise the
+ *   effect is skipped.
+ * @property {'car' | 'foot' | 'bike'} [profile='car']
+ *   Travel mode selecting the OSRM profile server. Unknown values fall back to `'car'`.
+ * @property {(info: { distance: number, duration: number }) => void} [onRouteFound]
+ *   Fires once per route with `distance` in metres and `duration` in seconds.
+ */
+
+/**
+ * Renders no DOM of its own; instead it attaches a Leaflet Routing Machine
+ * control to the parent `MapContainer`, listens for the first route found,
+ * fits the map to it, and reports the summary via `onRouteFound`.
+ * @param {RoutingMachineProps} props
+ * @returns {null}
+ */
 export default function RoutingMachine({ waypoints, profile = 'car', onRouteFound }) {
   const map = useMap()
 

@@ -2,16 +2,35 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { flushSync } from 'react-dom';
 import { Sheet } from 'framework7-react';
 
+/**
+ * @file Bottom sheet that shows the details of a selected location: place
+ * name, hero photos, weather + air quality, coordinates/elevation/timezone,
+ * Wikidata facts, Wikipedia summary or POI details. Also owns its own
+ * peek/expand drag interaction.
+ */
+
+/** @typedef {import('../Map.jsx').LocationInfo} LocationInfo */
+
 const PEEK_HEIGHT = 80;
 const FULL_HEIGHT_RATIO = 0.67;
 const DRAG_THRESHOLD = 20;
 const SNAP_THRESHOLD = 50;
 const SNAP_DURATION = 300;
 
+/** @returns {number} Height in px for the "expanded" snap position. */
 function getFullHeight() {
   return Math.round(window.innerHeight * FULL_HEIGHT_RATIO);
 }
 
+/**
+ * Animate `sheetEl` to `targetHeight`, then invoke `onDone`. Uses both the
+ * `transitionend` event and a safety timeout so we still fire `onDone` when
+ * the transition is preempted or the height is already at target.
+ * @param {HTMLElement} sheetEl
+ * @param {number} targetHeight - Target height in px.
+ * @param {() => void} onDone
+ * @returns {void}
+ */
 function snapTo(sheetEl, targetHeight, onDone) {
   let settled = false;
   const finish = () => {
@@ -31,11 +50,13 @@ function snapTo(sheetEl, targetHeight, onDone) {
   setTimeout(finish, SNAP_DURATION + 50);
 }
 
+/** @param {number} meters @returns {string} Distance formatted as `"m"` under 1 km, else `"km"` with one decimal. */
 function formatDistance(meters) {
   if (meters >= 1000) return `${(meters / 1000).toFixed(1)} km`;
   return `${Math.round(meters)} m`;
 }
 
+/** @param {number} seconds @returns {string} Duration formatted as `"h min"` (dropping hours below 1 h). */
 function formatDuration(seconds) {
   const h = Math.floor(seconds / 3600);
   const m = Math.floor((seconds % 3600) / 60);
@@ -62,6 +83,7 @@ const WHEELCHAIR_LABEL = {
   no: 'Not wheelchair accessible',
 };
 
+/** @param {string} url @returns {string} Bare hostname (`"example.com"`) or the original URL when parsing fails. */
 function formatWebsiteLabel(url) {
   try { return new URL(url).hostname.replace(/^www\./, ''); }
   catch { return url; }
@@ -69,6 +91,14 @@ function formatWebsiteLabel(url) {
 
 const PARTICLE_COUNTS = { rain: 20, thunderstorm: 20, snow: 15, 'night-clear': 25 };
 
+/**
+ * Build inline style objects for the animated backdrop particles. Each theme
+ * uses a different placement strategy (columns for rain/snow, pseudo-random
+ * grid for stars).
+ * @param {'rain' | 'thunderstorm' | 'snow' | 'night-clear' | string} theme
+ * @param {number} count
+ * @returns {Array<Object>}
+ */
 function buildParticleStyles(theme, count) {
   return Array.from({ length: count }, (_, i) => {
     if (theme === 'rain' || theme === 'thunderstorm') {
@@ -84,6 +114,12 @@ function buildParticleStyles(theme, count) {
   });
 }
 
+/**
+ * Fixed-position animated backdrop layered behind the sheet content.
+ * Renders nothing when `theme` is falsy or unknown.
+ * @param {{ theme: string | null | undefined }} props
+ * @returns {import('react').ReactElement | null}
+ */
 function WeatherBackdrop({ theme }) {
   const count = PARTICLE_COUNTS[theme] ?? 0;
   const particles = useMemo(
@@ -100,8 +136,12 @@ function WeatherBackdrop({ theme }) {
   );
 }
 
-// Horizontal photo carousel with pagination dots. The dots hint that more
-// photos exist and track which one is in view (active dot expands to a pill).
+/**
+ * Horizontal photo carousel with pagination dots. The dots hint that more
+ * photos exist and track which one is in view (active dot expands to a pill).
+ * @param {{ photos: string[], placeName: string | null | undefined }} props
+ * @returns {import('react').ReactElement}
+ */
 function PhotoCarousel({ photos, placeName }) {
   const [active, setActive] = useState(0);
   const trackRef = useRef(null);
@@ -136,6 +176,25 @@ function PhotoCarousel({ photos, placeName }) {
   );
 }
 
+/**
+ * @typedef {Object} PoiDetails
+ * @property {string} type - POI filter key (e.g. `"restaurant"`, `"museum"`).
+ * @property {string|null} [address] - Composed street-level address.
+ * @property {string|null} [openingHours] - OSM-formatted opening hours string.
+ * @property {string|null} [website]
+ * @property {string|null} [phone]
+ * @property {string|null} [cuisine] - Semicolon/comma-separated list; only the first entry is shown.
+ * @property {string|null} [operator]
+ * @property {'yes'|'limited'|'no'|string|null} [wheelchair]
+ */
+
+/**
+ * Renders the POI-specific rows (type, address, opening hours, cuisine,
+ * website, phone, operator, wheelchair). Each row is only shown when its
+ * field is populated.
+ * @param {{ poi: PoiDetails }} props
+ * @returns {import('react').ReactElement}
+ */
 function PoiInfoSection({ poi }) {
   const typeLabel = POI_TYPE_LABEL[poi.type] ?? poi.type;
   const cuisine = poi.cuisine ? poi.cuisine.split(/[;,]/)[0].trim() : null;
@@ -212,12 +271,17 @@ function PoiInfoSection({ poi }) {
   );
 }
 
+/** @param {number} year @returns {string} `"12 BC"` for negative years, else the year as a plain string. */
 function formatFounded(year) {
   return year < 0 ? `${Math.abs(year)} BC` : `${year}`;
 }
 
-// Structured city facts from Wikidata. Each row is rendered only when the
-// corresponding field has data; the whole section is hidden when empty.
+/**
+ * Structured city facts from Wikidata. Each row is rendered only when the
+ * corresponding field has data; the whole section is hidden when empty.
+ * @param {{ facts: { population?: number|null, area?: number|null, founded?: number|null } }} props
+ * @returns {import('react').ReactElement | null}
+ */
 function FactsSection({ facts }) {
   const rows = [
     facts.population != null && {
@@ -255,6 +319,11 @@ function FactsSection({ facts }) {
   );
 }
 
+/**
+ * Map a UV index value to a display label and swatch colour.
+ * @param {number} uv
+ * @returns {{ text: string, color: string }}
+ */
 function uvIndexLabel(uv) {
   if (uv <= 2) return { text: 'low',      color: '#4caf50' };
   if (uv <= 5) return { text: 'moderate', color: '#ffc107' };
@@ -262,7 +331,11 @@ function uvIndexLabel(uv) {
   return             { text: 'very high', color: '#f44336' };
 }
 
-// European Air Quality Index bands (label + dot colour).
+/**
+ * Map an AQI value to the European Air Quality Index band (label + dot colour).
+ * @param {number} aqi
+ * @returns {{ text: string, color: string }}
+ */
 function airQualityLabel(aqi) {
   if (aqi <= 20)  return { text: 'Good',           color: '#50ccb0' };
   if (aqi <= 50)  return { text: 'Fair',           color: '#a8c84a' };
@@ -272,11 +345,18 @@ function airQualityLabel(aqi) {
   return             { text: 'Extremely Poor', color: '#960032' };
 }
 
+/** @param {string} hhmm - Time in `"HH:MM"` format. @returns {number} Minutes since midnight. */
 function toMinutes(hhmm) {
   const [h, m] = hhmm.split(':').map(Number);
   return h * 60 + m;
 }
 
+/**
+ * Progress bar showing where the current local time falls between sunrise and
+ * sunset, with sun icons at each end.
+ * @param {{ sunrise: string, sunset: string }} props - Both values in `"HH:MM"` format.
+ * @returns {import('react').ReactElement}
+ */
 function DaylightBar({ sunrise, sunset }) {
   const now = new Date();
   const nowMin = now.getHours() * 60 + now.getMinutes();
@@ -295,6 +375,25 @@ function DaylightBar({ sunrise, sunset }) {
   );
 }
 
+/**
+ * Weather summary strip: icon + temperature (with optional "feels like"),
+ * description, wind (with direction arrow when known), humidity, UV index,
+ * AQI band, and the daylight progress bar.
+ * @param {{ weatherInfo: {
+ *   description: string,
+ *   temperature: number,
+ *   icon: string,
+ *   windSpeed: number,
+ *   windDirection?: number|null,
+ *   humidity?: number|null,
+ *   uvIndex?: number|null,
+ *   apparentTemperature?: number|null,
+ *   airQuality?: { aqi?: number|null }|null,
+ *   sunrise?: string|null,
+ *   sunset?: string|null,
+ * } }} props
+ * @returns {import('react').ReactElement}
+ */
 function WeatherStrip({ weatherInfo }) {
   const descText = weatherInfo.description.split(' ').slice(0, -1).join(' ');
   const { sunrise, sunset, humidity, uvIndex, apparentTemperature, airQuality, windDirection } = weatherInfo;
@@ -366,6 +465,35 @@ function WeatherStrip({ weatherInfo }) {
   );
 }
 
+/**
+ * @typedef {Object} RouteInfo
+ * @property {number} distance - Route distance in metres.
+ * @property {number} duration - Route duration in seconds.
+ */
+
+/**
+ * @typedef {Object} LocationInfoSheetProps
+ * @property {boolean} opened - Whether the sheet should be visible.
+ * @property {() => void} onClosed - Fires after the sheet closes (via close button or programmatic close).
+ * @property {LocationInfo | null} locationInfo - The data to render. Sub-sections are omitted when their field is missing.
+ * @property {boolean} loading - When true, shows skeleton placeholders instead of content.
+ * @property {() => void} onShowRoute - Fires when the user taps the directions button.
+ * @property {boolean} routingActive - When true, disables the directions button (a route is already showing).
+ * @property {RouteInfo | null} routeInfo - Distance/duration card shown when a route is drawn; hidden when null.
+ * @property {number | null} distanceToUser - Distance from the user's position in metres; hidden when null.
+ * @property {boolean} isFavourite - Whether the current location is in the favourites list.
+ * @property {() => void} onToggleFavourite - Fires when the star button is tapped.
+ * @property {boolean} [initialCollapsed=false] - When true, the sheet opens in the peek state instead of expanded.
+ */
+
+/**
+ * Bottom sheet showing the details for the currently selected location.
+ * Supports drag-to-expand/collapse, share/copy actions, favourite toggle and
+ * "get directions". Uses Framework7's `Sheet` for the base transition and
+ * layers manual pointer handling on top for the peek/expand snap points.
+ * @param {LocationInfoSheetProps} props
+ * @returns {import('react').ReactElement}
+ */
 function LocationInfoSheet({ opened, onClosed, locationInfo, loading, onShowRoute, routingActive, routeInfo, distanceToUser, isFavourite, onToggleFavourite, initialCollapsed = false }) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [shareMessage, setShareMessage] = useState('');

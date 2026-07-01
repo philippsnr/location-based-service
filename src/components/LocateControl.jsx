@@ -8,6 +8,31 @@ import {
   getGeolocationPermissionState,
 } from '../services/geolocation'
 
+/**
+ * @file Custom Leaflet "locate me" button. Shows the current position,
+ * animates the map to it, and surfaces actionable messages when geolocation
+ * is denied or fails.
+ */
+
+/**
+ * @typedef {Object} LocateControlProps
+ * @property {(latlng: import('leaflet').LatLng, accuracy: number) => void} onLocate
+ *   Fires when the browser resolves the user's position; `accuracy` is the
+ *   radius in metres reported by the Geolocation API.
+ * @property {(message: string) => void} [onError]
+ *   Optional handler invoked with a human-readable string when the request is
+ *   denied (matches {@link GEO_DENIED_MESSAGE}) or the browser reports a
+ *   `locationerror`.
+ */
+
+/**
+ * Renders a "locate me" button in the top-left Leaflet control corner. On
+ * click it requests device-orientation permission (iOS), checks the
+ * geolocation permission state up front to explain a prior denial, then asks
+ * the map to locate and flies to the resolved position.
+ * @param {LocateControlProps} props
+ * @returns {null}
+ */
 export default function LocateControl({ onLocate, onError }) {
   const map = useMap()
 

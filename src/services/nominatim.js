@@ -1,5 +1,26 @@
+/**
+ * @file Thin wrapper around the public Nominatim (OpenStreetMap) geocoder.
+ * Exposes reverse geocoding (coord → place) and forward geocoding (query → coords).
+ */
+
 const BASE_URL = 'https://nominatim.openstreetmap.org';
 
+/**
+ * Result of {@link reverseGeocode}.
+ * @typedef {Object} NominatimReverseResult
+ * @property {string} placeName - Best human-readable name derived from address tags; falls back to `display_name` or `"Unknown location"`.
+ * @property {string|null} cityName - City / town / village / municipality when known, otherwise null.
+ * @property {string|null} country - Full country name, or null.
+ * @property {string|null} countryCode - ISO 3166-1 alpha-2 code, lowercase (from Nominatim's `country_code`).
+ * @property {string|null} address - Full street-level address (`"<road> <house_number>, <postcode> <city>"`); null when no road is known.
+ */
+
+/**
+ * Reverse-geocode a coordinate via the public Nominatim endpoint.
+ * @param {number} lat
+ * @param {number} lng
+ * @returns {Promise<NominatimReverseResult>}
+ */
 export async function reverseGeocode(lat, lng) {
   const res = await fetch(
     `${BASE_URL}/reverse?lat=${lat}&lon=${lng}&format=json&zoom=18&extratags=1&namedetails=1`,
@@ -53,6 +74,26 @@ export async function reverseGeocode(lat, lng) {
   return { placeName, cityName, country, countryCode, address };
 }
 
+/**
+ * One entry returned by {@link forwardGeocode}.
+ * @typedef {Object} NominatimForwardResult
+ * @property {string} displayName - Nominatim's full `display_name` string.
+ * @property {string} name - Short label: the result's `name`, or the first segment of `display_name`, or `"Unknown"`.
+ * @property {string|null} type - Nominatim result type (e.g. `"city"`, `"attraction"`), or null.
+ * @property {string|null} country - Deduplicated `"county, state, country"` subtitle string, or null.
+ * @property {number} lat
+ * @property {number} lng
+ */
+
+/**
+ * Forward-geocode a free-text query via the public Nominatim search endpoint.
+ * @param {string} query - Search terms; will be URL-encoded.
+ * @param {Object} [options]
+ * @param {number} [options.limit=5] - Maximum number of results to return.
+ * @param {AbortSignal} [options.signal] - Optional signal to cancel the request.
+ * @returns {Promise<NominatimForwardResult[]>}
+ * @throws {Error} When the HTTP response is not OK.
+ */
 export async function forwardGeocode(query, { limit = 5, signal } = {}) {
   const url =
     `${BASE_URL}/search?q=${encodeURIComponent(query)}` +
