@@ -26,7 +26,7 @@ const BASE_URL = 'https://nominatim.openstreetmap.org';
 export async function reverseGeocode(lat, lng) {
   const res = await fetch(
     `${BASE_URL}/reverse?lat=${lat}&lon=${lng}&format=json&zoom=18&extratags=1&namedetails=1`,
-    { headers: { 'Accept-Language': 'en' } }
+    { headers: { 'Accept-Language': 'en' } },
   );
   const data = await res.json();
 
@@ -53,12 +53,7 @@ export async function reverseGeocode(lat, lng) {
     data.display_name?.split(',')[0] ||
     'Unknown location';
 
-  const cityName =
-    addr.city ??
-    addr.town ??
-    addr.village ??
-    addr.municipality ??
-    null;
+  const cityName = addr.city ?? addr.town ?? addr.village ?? addr.municipality ?? null;
 
   const country = addr.country ?? null;
   const countryCode = addr.country_code ?? null;
@@ -73,7 +68,15 @@ export async function reverseGeocode(lat, lng) {
     address = [street, locality].filter(Boolean).join(', ');
   }
 
-  return { placeName, cityName, country, countryCode, address, osmType: data.addresstype ?? data.type ?? null, osmClass: data.class ?? null };
+  return {
+    placeName,
+    cityName,
+    country,
+    countryCode,
+    address,
+    osmType: data.addresstype ?? data.type ?? null,
+    osmClass: data.class ?? null,
+  };
 }
 
 /**

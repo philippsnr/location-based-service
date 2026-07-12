@@ -156,12 +156,13 @@ function SavedPlacesSheet({ opened, onClosed, favourites, userPosition, onSelect
   }, [opened, applyExpanded]);
 
   const sortedFavs = [...favourites].sort(
-    (a, b) => new Date(b.savedAt).getTime() - new Date(a.savedAt).getTime()
+    (a, b) => new Date(b.savedAt).getTime() - new Date(a.savedAt).getTime(),
   );
 
-  const title = favourites.length > 0
-    ? `${favourites.length} saved place${favourites.length === 1 ? '' : 's'}`
-    : 'Saved places';
+  const title =
+    favourites.length > 0
+      ? `${favourites.length} saved place${favourites.length === 1 ? '' : 's'}`
+      : 'Saved places';
 
   return (
     <Sheet
@@ -182,10 +183,22 @@ function SavedPlacesSheet({ opened, onClosed, favourites, userPosition, onSelect
           <span className="saved-places-sheet__title">{title}</span>
           <button
             className="saved-places-sheet__close-btn"
-            onClick={(e) => { e.stopPropagation(); handleClose(); }}
+            onClick={(e) => {
+              e.stopPropagation();
+              handleClose();
+            }}
             aria-label="Close"
           >
-            <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" strokeWidth="2.5" fill="none" strokeLinecap="round" aria-hidden="true">
+            <svg
+              viewBox="0 0 24 24"
+              width="14"
+              height="14"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              fill="none"
+              strokeLinecap="round"
+              aria-hidden="true"
+            >
               <line x1="18" y1="6" x2="6" y2="18" />
               <line x1="6" y1="6" x2="18" y2="18" />
             </svg>
@@ -200,9 +213,7 @@ function SavedPlacesSheet({ opened, onClosed, favourites, userPosition, onSelect
           </div>
         ) : (
           sortedFavs.map((fav) => {
-            const dist = userPosition
-              ? L.latLng(fav.lat, fav.lng).distanceTo(userPosition)
-              : null;
+            const dist = userPosition ? L.latLng(fav.lat, fav.lng).distanceTo(userPosition) : null;
             return (
               <div key={`${fav.lat},${fav.lng}`} className="saved-places-item">
                 <button
@@ -210,7 +221,14 @@ function SavedPlacesSheet({ opened, onClosed, favourites, userPosition, onSelect
                   className="saved-places-item__main"
                   onClick={() => onSelect(fav)}
                 >
-                  <svg className="saved-places-item__icon" viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true">
+                  <svg
+                    className="saved-places-item__icon"
+                    viewBox="0 0 24 24"
+                    width="16"
+                    height="16"
+                    fill="currentColor"
+                    aria-hidden="true"
+                  >
                     <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
                   </svg>
                   <span className="saved-places-item__name">{fav.placeName}</span>
@@ -221,11 +239,23 @@ function SavedPlacesSheet({ opened, onClosed, favourites, userPosition, onSelect
                 <button
                   type="button"
                   className="saved-places-item__remove"
-                  onClick={(e) => { e.stopPropagation(); onRemove(fav); }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onRemove(fav);
+                  }}
                   aria-label={`Remove ${fav.placeName} from favourites`}
                   title="Remove"
                 >
-                  <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" strokeWidth="2.5" fill="none" strokeLinecap="round" aria-hidden="true">
+                  <svg
+                    viewBox="0 0 24 24"
+                    width="14"
+                    height="14"
+                    stroke="currentColor"
+                    strokeWidth="2.5"
+                    fill="none"
+                    strokeLinecap="round"
+                    aria-hidden="true"
+                  >
                     <line x1="18" y1="6" x2="6" y2="18" />
                     <line x1="6" y1="6" x2="18" y2="18" />
                   </svg>

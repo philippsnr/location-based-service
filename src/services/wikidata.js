@@ -8,7 +8,7 @@ const WIKIDATA_API_BASE = 'https://www.wikidata.org/w/api.php';
 
 const PROPERTY = {
   population: 'P1082',
-  area: 'P2046',     // km²
+  area: 'P2046', // km²
   inception: 'P571', // founding / inception date
 };
 

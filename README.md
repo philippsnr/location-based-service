@@ -63,14 +63,14 @@ After step 4, Vite prints a local URL in the terminal (for example `http://local
 
 Run these from inside the project folder with `npm run <script>`:
 
-| Script          | What it does                                              |
-| --------------- | -------------------------------------------------------- |
-| `dev`           | Start the local development server with hot reload.      |
-| `build`         | Create an optimized production build in `dist/`.         |
-| `preview`       | Serve the production build locally to preview it.        |
-| `lint`          | Check the code for problems with ESLint.                 |
-| `lint:fix`      | Automatically fix the ESLint problems it can.            |
-| `format`        | Format the whole codebase with Prettier.                 |
+| Script     | What it does                                        |
+| ---------- | --------------------------------------------------- |
+| `dev`      | Start the local development server with hot reload. |
+| `build`    | Create an optimized production build in `dist/`.    |
+| `preview`  | Serve the production build locally to preview it.   |
+| `lint`     | Check the code for problems with ESLint.            |
+| `lint:fix` | Automatically fix the ESLint problems it can.       |
+| `format`   | Format the whole codebase with Prettier.            |
 
 ---
 
@@ -104,7 +104,7 @@ location-based-service/
 
 We track our work using a **GitHub Project board** — a visual, Kanban-style board where every task is a card. If you've never used one, here's what it is and how to find it.
 
-**What it is:** Each card on the board is a GitHub *issue* — a single task or feature (this README, for example, was task **#201**). Cards move across columns such as **To do → In progress → Done** so anyone can see what's planned, what's being worked on, and what's finished. The **Roadmap** view shows the same tasks on a timeline instead of columns, which is useful for seeing the bigger picture over time.
+**What it is:** Each card on the board is a GitHub _issue_ — a single task or feature (this README, for example, was task **#201**). Cards move across columns such as **To do → In progress → Done** so anyone can see what's planned, what's being worked on, and what's finished. The **Roadmap** view shows the same tasks on a timeline instead of columns, which is useful for seeing the bigger picture over time.
 
 **How to find it (step by step):**
 
