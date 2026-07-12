@@ -321,10 +321,22 @@ function ZoomToLocation({ target }) {
   const map = useMap();
 
   useEffect(() => {
-    if (target) {
-      map.flyTo(target.position, deriveZoom(target.osmType, target.osmClass), {
-        duration: 1.5,
-      });
+    if (!target) return;
+    const zoom = deriveZoom(target.osmType, target.osmClass);
+
+    // Shift the fly-to centre so the marker lands in the middle of the visible
+    // area (between search bar and info sheet) rather than the screen centre.
+    const sheetHeight = target.sheetOpen ? Math.round(window.innerHeight * 0.67) : 0;
+    const searchBarHeight = 56;
+    const offsetPx = (sheetHeight - searchBarHeight) / 2;
+
+    if (offsetPx > 0) {
+      const targetPoint = map.project(target.position, zoom);
+      const adjustedPoint = targetPoint.subtract([0, -offsetPx]);
+      const adjustedLatLng = map.unproject(adjustedPoint, zoom);
+      map.flyTo(adjustedLatLng, zoom, { duration: 1.5 });
+    } else {
+      map.flyTo(target.position, zoom, { duration: 1.5 });
     }
   }, [target, map]);
 
@@ -450,7 +462,7 @@ function Map() {
       const airQuality = airQualityResult.status === 'fulfilled' ? airQualityResult.value : null;
       const weatherInfo = baseWeather ? { ...baseWeather, airQuality } : null;
       setLocationInfo({ ...info, weatherInfo, elevation, osmType: hintOsmType ?? info.osmType, osmClass: info.osmClass });
-      setZoomTarget({ position: L.latLng(lat, lng), osmType: hintOsmType ?? info.osmType ?? null, osmClass: info.osmClass ?? null });
+      setZoomTarget({ position: L.latLng(lat, lng), osmType: hintOsmType ?? info.osmType ?? null, osmClass: info.osmClass ?? null, sheetOpen: true });
     } catch (err) {
       console.warn('Failed to fetch location info:', err);
       setLocationInfo({ placeName: hint ?? 'Unknown location', lat, lng, wikiSummary: null, wikiUrl: null, weatherInfo: null });
