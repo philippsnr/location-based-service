@@ -668,12 +668,13 @@ function Map() {
       placeName: locationInfo.placeName,
       lat: locationInfo.lat,
       lng: locationInfo.lng,
+      osmType: locationInfo.osmType ?? null,
     });
   }, [locationInfo]);
 
   const handleSelectFavourite = useCallback((fav) => {
     setSavedPlacesOpen(false);
-    handlePositionSelect(L.latLng(fav.lat, fav.lng));
+    handlePositionSelect(L.latLng(fav.lat, fav.lng), fav.placeName, { osmType: fav.osmType ?? null });
   }, [handlePositionSelect]);
 
   const handleRemoveFavourite = useCallback((fav) => {

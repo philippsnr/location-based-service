@@ -50,7 +50,7 @@ export function isFavourite(lat, lng) {
   return read().some((f) => sameLocation(f, { lat, lng }));
 }
 
-export function addFavourite({ placeName, lat, lng }) {
+export function addFavourite({ placeName, lat, lng, osmType = null }) {
   if (lat == null || lng == null) return;
   const items = read();
   if (items.some((f) => sameLocation(f, { lat, lng }))) return;
@@ -58,6 +58,7 @@ export function addFavourite({ placeName, lat, lng }) {
     placeName: placeName || 'Unknown location',
     lat,
     lng,
+    osmType,
     savedAt: new Date().toISOString(),
   });
   write(items);
