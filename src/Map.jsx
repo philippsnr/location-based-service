@@ -447,11 +447,12 @@ function Map() {
   }, []);
 
   const handleLocate = useCallback((latlng, accuracy) => {
-    // Refresh the route origin only; do not change the selected target or open the info sheet.
     const ll = toLatLng(latlng);
-    if (ll) setUserPosition(ll);
+    if (!ll) return;
+    setUserPosition(ll);
     if (accuracy != null) setUserAccuracy(accuracy);
-  }, []);
+    handlePositionSelect(ll);
+  }, [handlePositionSelect]);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
