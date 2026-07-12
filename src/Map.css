@@ -253,6 +253,16 @@
   font-style: italic;
 }
 
+.search-control__status--label {
+  padding: 10px 20px 6px;
+  font-size: 11px;
+  font-style: normal;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #999;
+}
+
 .geo-toast {
   position: absolute;
   top: calc(env(safe-area-inset-top) + 68px);
