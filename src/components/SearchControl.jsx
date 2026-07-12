@@ -76,7 +76,7 @@ export default function SearchControl({ onSelect }) {
     setQuery('');
     setResults([]);
     setOpen(false);
-    onSelect({ lat: item.lat, lng: item.lng, name: item.name });
+    onSelect({ lat: item.lat, lng: item.lng, name: item.name, type: item.type });
   };
 
   const handleClear = () => {

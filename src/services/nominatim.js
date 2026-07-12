@@ -71,7 +71,7 @@ export async function reverseGeocode(lat, lng) {
     address = [street, locality].filter(Boolean).join(', ');
   }
 
-  return { placeName, cityName, country, countryCode, address };
+  return { placeName, cityName, country, countryCode, address, osmType: data.addresstype ?? data.type ?? null, osmClass: data.class ?? null };
 }
 
 /**
@@ -116,7 +116,7 @@ export async function forwardGeocode(query, { limit = 5, signal } = {}) {
     return {
       displayName: r.display_name,
       name: r.name || r.display_name?.split(',')[0] || 'Unknown',
-      type: r.type ?? null,
+      type: r.addresstype ?? r.type ?? null,
       country: subtitle,
       lat: parseFloat(r.lat),
       lng: parseFloat(r.lon),
