@@ -1,6 +1,9 @@
-// Wikidata provides free, structured facts about places via its public API
-// (no key required). We resolve the entity by its Wikipedia page title and pull
-// a few well-known properties (population, area, founding year).
+/**
+ * @file Fetches free, structured facts about places from Wikidata's public API
+ * (no key required). Resolves the entity by its Wikipedia page title and pulls
+ * a few well-known properties (population, area, founding year).
+ */
+
 const WIKIDATA_API_BASE = 'https://www.wikidata.org/w/api.php';
 
 const PROPERTY = {
@@ -9,21 +12,33 @@ const PROPERTY = {
   inception: 'P571', // founding / inception date
 };
 
-// Claim values are deeply nested; pull the first claim's main value for a
-// property, or null if the property is absent.
+/**
+ * Pull the first claim's main value for a property from an entity.
+ * @param {Object} entity - A Wikidata entity object.
+ * @param {string} property - Wikidata property id (e.g. `"P1082"`).
+ * @returns {*|null} The claim's main value, or null when the property is absent.
+ */
 function claimValue(entity, property) {
   return entity?.claims?.[property]?.[0]?.mainsnak?.datavalue?.value ?? null;
 }
 
-// Quantity values look like { amount: "+60321", unit: "1" }.
+/**
+ * Parse a Wikidata quantity value (e.g. `{ amount: "+60321", unit: "1" }`).
+ * @param {{amount?: string}} value - A Wikidata quantity datavalue.
+ * @returns {number|null} The numeric amount, or null when unparseable.
+ */
 function parseQuantity(value) {
   if (value?.amount == null) return null;
   const n = Number(value.amount);
   return Number.isFinite(n) ? n : null;
 }
 
-// Time values look like { time: "+1811-00-00T00:00:00Z", ... }. Returns the
-// year as a number (negative for BCE), or null if it can't be parsed.
+/**
+ * Parse a Wikidata time value (e.g. `{ time: "+1811-00-00T00:00:00Z" }`).
+ * @param {{time?: string}} value - A Wikidata time datavalue.
+ * @returns {number|null} The year as a number (negative for BCE), or null when
+ *   it can't be parsed.
+ */
 function parseYear(value) {
   const match = /^([+-])(\d+)-/.exec(value?.time ?? '');
   if (!match) return null;
@@ -32,10 +47,16 @@ function parseYear(value) {
   return match[1] === '-' ? -year : year;
 }
 
-// Fetch structured city facts from Wikidata for a Wikipedia page title. `site`
-// is the Wikipedia site id the title belongs to (e.g. 'enwiki', 'dewiki').
-// Returns an object with only the fields that have data, or null if the entity
-// is missing or none of the fields are present.
+/**
+ * Fetch structured city facts from Wikidata for a Wikipedia page title.
+ * @param {string} wikipediaTitle - The Wikipedia page title to resolve.
+ * @param {string} [site='enwiki'] - Wikipedia site id the title belongs to
+ *   (e.g. `"enwiki"`, `"dewiki"`).
+ * @returns {Promise<{population?: number, area?: number, founded?: number}|null>}
+ *   An object with only the fields that have data, or null when the entity is
+ *   missing or none of the fields are present.
+ * @throws {Error} When the Wikidata request fails (non-2xx response).
+ */
 export async function fetchWikidataFacts(wikipediaTitle, site = 'enwiki') {
   if (!wikipediaTitle) return null;
 

@@ -1,8 +1,20 @@
+/**
+ * @file Fetches nearby points of interest from the Overpass API (OpenStreetMap
+ * data). Races multiple public endpoints for resilience and caches results on a
+ * ~1 km grid to reduce load.
+ */
+
 const OVERPASS_ENDPOINTS = [
   'https://overpass-api.de/api/interpreter',
   'https://overpass.kumi.systems/api/interpreter',
 ];
 
+/**
+ * Available POI category filters used to build Overpass queries.
+ * Each entry defines its OSM tag, search radius (metres) and whether to query
+ * nodes only or also ways.
+ * @type {Array<{id: string, label: string, emoji: string, color: string, tagKey: string, tagValue: string, radius: number, nodesOnly: boolean}>}
+ */
 export const POI_FILTERS = [
   { id: 'restaurant',  label: 'Restaurants',  emoji: '🍽️', color: '#ff6b35', tagKey: 'amenity', tagValue: 'restaurant',  radius: 1000, nodesOnly: true },
   { id: 'cafe',        label: 'Cafés',         emoji: '☕',  color: '#8b5cf6', tagKey: 'amenity', tagValue: 'cafe',         radius: 1000, nodesOnly: true },
@@ -19,6 +31,14 @@ export const POI_FILTERS = [
 // Keyed by `${filterId}_${lat.toFixed(2)}_${lng.toFixed(2)}` (~1 km grid)
 const cache = new Map();
 
+/**
+ * POST an Overpass QL query to a single endpoint.
+ * @param {string} url - The Overpass API endpoint URL.
+ * @param {string} query - The Overpass QL query string.
+ * @param {AbortSignal} [signal] - Optional signal to cancel the request.
+ * @returns {Promise<Object>} The parsed Overpass JSON response.
+ * @throws {Error} On a non-2xx response or an Overpass timeout/runtime error.
+ */
 async function postOverpass(url, query, signal) {
   const res = await fetch(url, {
     method: 'POST',
@@ -34,7 +54,14 @@ async function postOverpass(url, query, signal) {
   return data;
 }
 
-// Race all endpoints — first successful response wins, rest are cancelled.
+/**
+ * Run a query against all endpoints and return the first successful response;
+ * remaining in-flight requests are cancelled.
+ * @param {string} query - The Overpass QL query string.
+ * @param {AbortSignal} [signal] - Optional signal to cancel all requests.
+ * @returns {Promise<Object>} The parsed Overpass JSON response.
+ * @throws {Error} An `AbortError` if aborted, otherwise when all endpoints fail.
+ */
 async function queryOverpass(query, signal) {
   const inner = new AbortController();
   signal?.addEventListener('abort', () => inner.abort(), { once: true });
@@ -50,6 +77,26 @@ async function queryOverpass(query, signal) {
   }
 }
 
+/**
+ * A point of interest returned by {@link fetchPois}.
+ * @typedef {Object} Poi
+ * @property {number} id - OSM element id.
+ * @property {number} lat - Latitude in decimal degrees.
+ * @property {number} lng - Longitude in decimal degrees.
+ * @property {string} name - Place name, or the filter's label when unnamed.
+ * @property {string} filterType - The filter id this POI matched.
+ * @property {Object} tags - Raw OSM tags for the element.
+ */
+
+/**
+ * Fetch nearby points of interest for a category around a coordinate. Results
+ * are cached per `${filterId}` and ~1 km grid cell.
+ * @param {number} lat - Latitude in decimal degrees.
+ * @param {number} lng - Longitude in decimal degrees.
+ * @param {string} filterId - Id of a {@link POI_FILTERS} entry.
+ * @param {AbortSignal} [signal] - Optional signal to cancel the request.
+ * @returns {Promise<Poi[]>} Matching POIs, or `[]` for an unknown filter.
+ */
 export async function fetchPois(lat, lng, filterId, signal) {
   const filter = POI_FILTERS.find(f => f.id === filterId);
   if (!filter) return [];

@@ -6,6 +6,13 @@ import { forwardGeocode } from '../services/nominatim';
 import { fetchElevationProfile } from '../services/elevationProfile';
 import ElevationChart from './ElevationChart';
 
+/**
+ * @file Bottom sheet for planning a route: from/to address autocomplete,
+ * travel-mode selection (drive/walk/bike), a live distance/duration preview and
+ * elevation profile, and confirm/cancel. Owns its own peek/expand drag
+ * interaction and collapses to an "Active Route" header once confirmed.
+ */
+
 const DEBOUNCE_MS = 350;
 const MIN_QUERY_LENGTH = 3;
 const PEEK_HEIGHT = 80;
@@ -13,10 +20,20 @@ const DRAG_THRESHOLD = 20;
 const SNAP_THRESHOLD = 50;
 const SNAP_DURATION = 300;
 
+/** @returns {number} Height in px for the "expanded" snap position (capped at 680). */
 function getFullHeight() {
   return Math.min(680, Math.round(window.innerHeight * 0.9));
 }
 
+/**
+ * Animate `sheetEl` to `targetHeight`, then invoke `onDone`. Uses both the
+ * `transitionend` event and a safety timeout so we still fire `onDone` when
+ * the transition is preempted or the height is already at target.
+ * @param {HTMLElement} sheetEl
+ * @param {number} targetHeight - Target height in px.
+ * @param {() => void} onDone
+ * @returns {void}
+ */
 function snapTo(sheetEl, targetHeight, onDone) {
   let settled = false;
   const finish = () => {
@@ -36,11 +53,13 @@ function snapTo(sheetEl, targetHeight, onDone) {
   setTimeout(finish, SNAP_DURATION + 50);
 }
 
+/** @param {number} meters @returns {string} Distance formatted as `"m"` under 1 km, else `"km"` with one decimal. */
 function formatDistance(meters) {
   if (meters >= 1000) return `${(meters / 1000).toFixed(1)} km`;
   return `${Math.round(meters)} m`;
 }
 
+/** @param {number} seconds @returns {string} Duration formatted as `"h min"` (dropping hours below 1 h). */
 function formatDuration(seconds) {
   const h = Math.floor(seconds / 3600);
   const m = Math.floor((seconds % 3600) / 60);
@@ -57,6 +76,15 @@ const OSRM_BASE = {
   bike: 'https://routing.openstreetmap.de/routed-bike/route/v1/bike',
 };
 
+/**
+ * Fetch a route preview between two coordinates for a travel profile.
+ * @param {{lat: number, lng: number}} start - Start coordinate.
+ * @param {{lat: number, lng: number}} end - End coordinate.
+ * @param {'car'|'foot'|'bike'} profile - Travel profile (falls back to car).
+ * @param {AbortSignal} [signal] - Optional signal to cancel the request.
+ * @returns {Promise<{distance: number, duration: number, geometry: Array<[number, number]>}|null>}
+ *   Distance (m), duration (s) and GeoJSON geometry, or null when no route found.
+ */
 async function fetchRoutePreview(start, end, profile, signal) {
   const base = OSRM_BASE[profile] ?? OSRM_BASE.car;
   const url = `${base}/${start.lng},${start.lat};${end.lng},${end.lat}?overview=full&geometries=geojson`;
@@ -71,6 +99,23 @@ async function fetchRoutePreview(start, end, profile, signal) {
   };
 }
 
+/**
+ * @typedef {Object} AddressFieldProps
+ * @property {string} label - Field label ("From"/"To").
+ * @property {string} query - Current text value (controlled).
+ * @property {(value: string) => void} setQuery - Updates the text value.
+ * @property {import('leaflet').LatLng | null} coords - Resolved coordinate, or null while unresolved.
+ * @property {(coords: import('leaflet').LatLng | null) => void} setCoords - Sets/clears the resolved coordinate.
+ * @property {string} placeholder - Input placeholder text.
+ */
+
+/**
+ * A single address input with debounced forward-geocoding autocomplete. Shows a
+ * results dropdown; selecting a result sets both the text and coordinates.
+ * Searching is suppressed once a coordinate is resolved.
+ * @param {AddressFieldProps} props
+ * @returns {import('react').ReactElement}
+ */
 function AddressField({ label, query, setQuery, coords, setCoords, placeholder }) {
   const [results, setResults] = useState([]);
   const [searching, setSearching] = useState(false);
@@ -187,6 +232,23 @@ function AddressField({ label, query, setQuery, coords, setCoords, placeholder }
   );
 }
 
+/**
+ * @typedef {Object} RoutePlanningSheetProps
+ * @property {boolean} opened - Whether the sheet should be visible.
+ * @property {() => void} onClosed - Fires after the sheet closes.
+ * @property {{placeName?: string, lat?: number, lng?: number} | null} destination - Pre-fills the "To" field.
+ * @property {import('leaflet').LatLng | null} userPosition - Pre-fills the "From" field with "My Location" when present.
+ * @property {(start: import('leaflet').LatLng, end: import('leaflet').LatLng, mode: 'car'|'foot'|'bike') => void} onConfirmRoute - Fires when the user taps "Get Directions".
+ * @property {() => void} onCancelRoute - Fires when an active route is cancelled.
+ */
+
+/**
+ * Route planning bottom sheet. Lets the user pick start/end and travel mode,
+ * shows a live route preview and elevation profile, then confirms the route
+ * (after which it collapses to a compact "Active Route" header).
+ * @param {RoutePlanningSheetProps} props
+ * @returns {import('react').ReactElement}
+ */
 export default function RoutePlanningSheet({
   opened,
   onClosed,

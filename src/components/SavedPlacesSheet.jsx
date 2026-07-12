@@ -3,16 +3,32 @@ import { flushSync } from 'react-dom';
 import { Sheet } from 'framework7-react';
 import L from 'leaflet';
 
+/**
+ * @file Bottom sheet listing the user's saved (favourite) places, newest first,
+ * each with distance from the user and a remove button. Owns its own
+ * peek/expand drag interaction.
+ */
+
 const PEEK_HEIGHT = 80;
 const FULL_HEIGHT_RATIO = 0.67;
 const DRAG_THRESHOLD = 20;
 const SNAP_THRESHOLD = 50;
 const SNAP_DURATION = 300;
 
+/** @returns {number} Height in px for the "expanded" snap position. */
 function getFullHeight() {
   return Math.round(window.innerHeight * FULL_HEIGHT_RATIO);
 }
 
+/**
+ * Animate `sheetEl` to `targetHeight`, then invoke `onDone`. Uses both the
+ * `transitionend` event and a safety timeout so we still fire `onDone` when
+ * the transition is preempted or the height is already at target.
+ * @param {HTMLElement} sheetEl
+ * @param {number} targetHeight - Target height in px.
+ * @param {() => void} onDone
+ * @returns {void}
+ */
 function snapTo(sheetEl, targetHeight, onDone) {
   let settled = false;
   const finish = () => {
@@ -32,11 +48,28 @@ function snapTo(sheetEl, targetHeight, onDone) {
   setTimeout(finish, SNAP_DURATION + 50);
 }
 
+/** @param {number} meters @returns {string} Distance formatted as `"m"` under 1 km, else `"km"` with one decimal. */
 function formatDistance(meters) {
   if (meters >= 1000) return `${(meters / 1000).toFixed(1)} km`;
   return `${Math.round(meters)} m`;
 }
 
+/**
+ * @typedef {Object} SavedPlacesSheetProps
+ * @property {boolean} opened - Whether the sheet should be visible.
+ * @property {() => void} onClosed - Fires after the sheet closes.
+ * @property {Array<{lat: number, lng: number, placeName: string, savedAt: string}>} favourites - Saved places to list.
+ * @property {import('leaflet').LatLng | null} userPosition - Used to compute distance; hidden when null.
+ * @property {(favourite: Object) => void} onSelect - Fires with a favourite when its row is tapped.
+ * @property {(favourite: Object) => void} onRemove - Fires with a favourite when its remove button is tapped.
+ */
+
+/**
+ * Bottom sheet listing saved favourite places, sorted newest-first. Supports
+ * drag-to-expand/collapse and shows an empty-state hint when there are none.
+ * @param {SavedPlacesSheetProps} props
+ * @returns {import('react').ReactElement}
+ */
 function SavedPlacesSheet({ opened, onClosed, favourites, userPosition, onSelect, onRemove }) {
   const [isExpanded, setIsExpanded] = useState(false);
   const isExpandedRef = useRef(false);

@@ -4,16 +4,31 @@ import { Sheet } from 'framework7-react';
 import L from 'leaflet';
 import { POI_FILTERS } from '../services/overpass';
 
+/**
+ * @file Bottom sheet listing nearby POI results for the active filter, sorted
+ * by distance from the user. Owns its own peek/expand drag interaction.
+ */
+
 const PEEK_HEIGHT = 80;
 const FULL_HEIGHT_RATIO = 0.67;
 const DRAG_THRESHOLD = 20;
 const SNAP_THRESHOLD = 50;
 const SNAP_DURATION = 300;
 
+/** @returns {number} Height in px for the "expanded" snap position. */
 function getFullHeight() {
   return Math.round(window.innerHeight * FULL_HEIGHT_RATIO);
 }
 
+/**
+ * Animate `sheetEl` to `targetHeight`, then invoke `onDone`. Uses both the
+ * `transitionend` event and a safety timeout so we still fire `onDone` when
+ * the transition is preempted or the height is already at target.
+ * @param {HTMLElement} sheetEl
+ * @param {number} targetHeight - Target height in px.
+ * @param {() => void} onDone
+ * @returns {void}
+ */
 function snapTo(sheetEl, targetHeight, onDone) {
   let settled = false;
   const finish = () => {
@@ -33,11 +48,29 @@ function snapTo(sheetEl, targetHeight, onDone) {
   setTimeout(finish, SNAP_DURATION + 50);
 }
 
+/** @param {number} meters @returns {string} Distance formatted as `"m"` under 1 km, else `"km"` with one decimal. */
 function formatDistance(meters) {
   if (meters >= 1000) return `${(meters / 1000).toFixed(1)} km`;
   return `${Math.round(meters)} m`;
 }
 
+/**
+ * @typedef {Object} PoiResultsSheetProps
+ * @property {boolean} opened - Whether the sheet should be visible.
+ * @property {() => void} onClosed - Fires after the sheet closes.
+ * @property {Array<{id: number, lat: number, lng: number, name: string}>} pois - POIs to list.
+ * @property {import('leaflet').LatLng | null} userPosition - Used to compute and sort by distance; when null, results sort by name.
+ * @property {string|null} activeFilter - Id of the active {@link POI_FILTERS} entry (drives the title/colour).
+ * @property {(poi: Object) => void} onSelectPoi - Fires with a POI when a result is tapped.
+ */
+
+/**
+ * Bottom sheet showing nearby POI results, sorted by distance from the user
+ * (or alphabetically when the user's position is unknown). Supports
+ * drag-to-expand/collapse.
+ * @param {PoiResultsSheetProps} props
+ * @returns {import('react').ReactElement}
+ */
 function PoiResultsSheet({ opened, onClosed, pois, userPosition, activeFilter, onSelectPoi }) {
   const [isExpanded, setIsExpanded] = useState(false);
   const isExpandedRef = useRef(false);

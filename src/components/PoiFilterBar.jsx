@@ -1,5 +1,10 @@
 import { POI_FILTERS } from '../services/overpass';
 
+/**
+ * @file Horizontal toolbar of POI category toggle buttons (restaurants, cafés,
+ * etc.). The active button reflects loading/error state for its category.
+ */
+
 const ICONS = {
   restaurant: (
     <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true">
@@ -60,6 +65,19 @@ const ICONS = {
   ),
 };
 
+/**
+ * @typedef {Object} PoiFilterBarProps
+ * @property {string|null} activeFilter - Id of the currently selected filter, or null.
+ * @property {boolean} loading - Whether a POI fetch is in progress (shown on the active button).
+ * @property {boolean} error - Whether the last fetch failed (shown on the active button).
+ * @property {(filterId: string) => void} onToggle - Fires with a filter id when a button is tapped.
+ */
+
+/**
+ * Toolbar of POI category filter buttons built from {@link POI_FILTERS}.
+ * @param {PoiFilterBarProps} props
+ * @returns {import('react').ReactElement}
+ */
 function PoiFilterBar({ activeFilter, loading, error, onToggle }) {
   return (
     <div className="poi-filter-bar" role="toolbar" aria-label="Nearby places filters">

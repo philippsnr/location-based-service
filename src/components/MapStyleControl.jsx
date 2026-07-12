@@ -5,6 +5,12 @@ import mapStyleIcon from '../assets/map-style-map.png';
 import satelliteStyleIcon from '../assets/map-style-satellite.png';
 import topoStyleIcon from '../assets/map-style-topo.png';
 
+/**
+ * @file Leaflet map control (top-left) that cycles the base map style between
+ * standard, satellite and topographic. The button previews the style it will
+ * switch to next.
+ */
+
 // Order the toggle button cycles through.
 const STYLE_CYCLE = ['standard', 'satellite', 'topo'];
 
@@ -20,6 +26,20 @@ const STYLE_LABEL = {
   topo: 'topographic',
 };
 
+/**
+ * @typedef {Object} MapStyleControlProps
+ * @property {'standard'|'satellite'|'topo'} style - The currently active style
+ *   key (used to preview the next style on the button).
+ * @property {() => void} onToggle - Fires when the button is tapped; the parent
+ *   is responsible for advancing to the next style.
+ */
+
+/**
+ * Adds a Leaflet control button that cycles the base map style. Renders no DOM
+ * of its own (the control is mounted imperatively onto the map).
+ * @param {MapStyleControlProps} props
+ * @returns {null}
+ */
 export default function MapStyleControl({ style, onToggle }) {
   const map = useMap();
 

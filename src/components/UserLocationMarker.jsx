@@ -2,6 +2,18 @@ import { useEffect, useRef } from 'react';
 import { useMap } from 'react-leaflet';
 import L from 'leaflet';
 
+/**
+ * @file Renders the user's location on the map: a pulsing dot, a GPS accuracy
+ * circle, and a heading cone driven by device orientation. Also exports a
+ * helper to request the iOS device-orientation permission.
+ */
+
+/**
+ * Request permission to use device orientation on browsers that gate it behind
+ * a user gesture (notably iOS Safari). No-op where the permission API is
+ * unavailable; failures are swallowed. Must be called from a user gesture.
+ * @returns {void}
+ */
 export function requestOrientationPermission() {
   if (
     typeof DeviceOrientationEvent !== 'undefined' &&
@@ -11,6 +23,19 @@ export function requestOrientationPermission() {
   }
 }
 
+/**
+ * @typedef {Object} UserLocationMarkerProps
+ * @property {import('leaflet').LatLng | null} position - The user's position; the marker is removed when null.
+ * @property {number | null} accuracy - GPS accuracy radius in metres; the accuracy circle is hidden when null or ≤ 0.
+ */
+
+/**
+ * Shows the user's position marker (with heading cone) and accuracy circle on
+ * the map, updating imperatively and rotating the cone from device-orientation
+ * events. Renders no DOM of its own.
+ * @param {UserLocationMarkerProps} props
+ * @returns {null}
+ */
 export default function UserLocationMarker({ position, accuracy }) {
   const map = useMap();
   const markerRef = useRef(null);
