@@ -1,7 +1,7 @@
-import { useEffect } from 'react'
-import { useMap } from 'react-leaflet'
-import L from 'leaflet'
-import 'leaflet-routing-machine'
+import { useEffect } from 'react';
+import { useMap } from 'react-leaflet';
+import L from 'leaflet';
+import 'leaflet-routing-machine';
 
 /**
  * @file Draws a route between two or more waypoints on the Leaflet map using
@@ -19,7 +19,7 @@ const OSRM_ROUTER = {
   car: { serviceUrl: 'https://routing.openstreetmap.de/routed-car/route/v1', profile: 'driving' },
   foot: { serviceUrl: 'https://routing.openstreetmap.de/routed-foot/route/v1', profile: 'foot' },
   bike: { serviceUrl: 'https://routing.openstreetmap.de/routed-bike/route/v1', profile: 'bike' },
-}
+};
 
 /**
  * @typedef {Object} RoutingMachineProps
@@ -40,12 +40,12 @@ const OSRM_ROUTER = {
  * @returns {null}
  */
 export default function RoutingMachine({ waypoints, profile = 'car', onRouteFound }) {
-  const map = useMap()
+  const map = useMap();
 
   useEffect(() => {
-    if (!waypoints || waypoints.length < 2) return undefined
+    if (!waypoints || waypoints.length < 2) return undefined;
 
-    const { serviceUrl, profile: osrmProfile } = OSRM_ROUTER[profile] ?? OSRM_ROUTER.car
+    const { serviceUrl, profile: osrmProfile } = OSRM_ROUTER[profile] ?? OSRM_ROUTER.car;
 
     const control = L.Routing.control({
       waypoints,
@@ -65,27 +65,31 @@ export default function RoutingMachine({ waypoints, profile = 'car', onRouteFoun
         addWaypoints: false,
         styles: [{ color: '#1976d2', weight: 5, opacity: 0.85 }],
       },
-    }).addTo(map)
+    }).addTo(map);
 
     control.on('routesfound', (e) => {
-      const route = e.routes[0]
-      if (!route) return
+      const route = e.routes[0];
+      if (!route) return;
       if (onRouteFound) {
-        onRouteFound({ distance: route.summary.totalDistance, duration: route.summary.totalTime })
+        onRouteFound({ distance: route.summary.totalDistance, duration: route.summary.totalTime });
       }
       if (route.coordinates?.length > 1) {
-        map.flyToBounds(L.latLngBounds(route.coordinates), { padding: [50, 50], maxZoom: 15, duration: 1.2 })
+        map.flyToBounds(L.latLngBounds(route.coordinates), {
+          padding: [50, 50],
+          maxZoom: 15,
+          duration: 1.2,
+        });
       }
-    })
+    });
 
     control.on('routingerror', (e) => {
-      console.warn('OSRM routing error:', e.error)
-    })
+      console.warn('OSRM routing error:', e.error);
+    });
 
     return () => {
-      map.removeControl(control)
-    }
-  }, [map, waypoints, profile])
+      map.removeControl(control);
+    };
+  }, [map, waypoints, profile]);
 
-  return null
+  return null;
 }

@@ -48,10 +48,12 @@ const WMO_WEATHER_MAP = {
  *   fallback for unrecognised codes.
  */
 function getWeatherMeta(weatherCode) {
-  return WMO_WEATHER_MAP[weatherCode] ?? {
-    description: 'Unknown weather condition',
-    icon: '❔',
-  };
+  return (
+    WMO_WEATHER_MAP[weatherCode] ?? {
+      description: 'Unknown weather condition',
+      icon: '❔',
+    }
+  );
 }
 
 /**
@@ -118,14 +120,14 @@ export async function fetchWeather(lat, lng) {
       response = await fetch(url);
     } catch (error) {
       lastErrors.push(
-        `request failed for current=${currentParam}: ${error instanceof Error ? error.message : String(error)}`
+        `request failed for current=${currentParam}: ${error instanceof Error ? error.message : String(error)}`,
       );
       continue;
     }
 
     if (!response.ok) {
       lastErrors.push(
-        `request failed for current=${currentParam}: ${response.status} ${response.statusText}`.trim()
+        `request failed for current=${currentParam}: ${response.status} ${response.statusText}`.trim(),
       );
       continue;
     }
@@ -135,7 +137,7 @@ export async function fetchWeather(lat, lng) {
       data = await response.json();
     } catch (error) {
       lastErrors.push(
-        `invalid JSON for current=${currentParam}: ${error instanceof Error ? error.message : String(error)}`
+        `invalid JSON for current=${currentParam}: ${error instanceof Error ? error.message : String(error)}`,
       );
       continue;
     }
@@ -149,9 +151,9 @@ export async function fetchWeather(lat, lng) {
     const weatherCode = current.weathercode ?? current.weather_code;
     const weatherMeta = getWeatherMeta(weatherCode);
 
-    const parseTime = (iso) => iso ? iso.split('T')[1]?.slice(0, 5) : null;
+    const parseTime = (iso) => (iso ? iso.split('T')[1]?.slice(0, 5) : null);
     const sunrise = parseTime(data?.daily?.sunrise?.[0]);
-    const sunset  = parseTime(data?.daily?.sunset?.[0]);
+    const sunset = parseTime(data?.daily?.sunset?.[0]);
     const timezone = data.timezone ?? null;
     const theme = getWeatherTheme(weatherCode, timezone, sunrise, sunset);
 

@@ -7,12 +7,20 @@
 /* ── Loading screen ─────────────────────────────────────────────────────── */
 
 @keyframes ls-spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 @keyframes ls-fadein {
-  from { opacity: 0; transform: translateY(8px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .loading-screen {
@@ -369,7 +377,9 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background-color 0.2s ease, color 0.2s ease;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease;
 }
 
 .map-style-control__btn:hover {
@@ -526,13 +536,15 @@
   z-index: 1;
 }
 
-
-
 /* ── Weather backdrop (animated theme layer) ────────────────────────────── */
 
 @keyframes lis-backdrop-in {
-  from { opacity: 0; }
-  to   { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 .lis-backdrop {
@@ -550,9 +562,9 @@
 .lis-backdrop--rain {
   background: linear-gradient(
     175deg,
-    rgba(10, 20, 68, 0.30) 0%,
-    rgba(7,  15, 52, 0.22) 65%,
-    rgba(5,  12, 42, 0.14) 100%
+    rgba(10, 20, 68, 0.3) 0%,
+    rgba(7, 15, 52, 0.22) 65%,
+    rgba(5, 12, 42, 0.14) 100%
   );
 }
 
@@ -564,14 +576,18 @@
   left: 0;
   right: 0;
   height: 22%;
-  background: linear-gradient(to top, rgba(50, 100, 210, 0.10) 0%, transparent 100%);
+  background: linear-gradient(to top, rgba(50, 100, 210, 0.1) 0%, transparent 100%);
   pointer-events: none;
 }
 
 /* Slow sweep of reflected light — like rain on a window */
 @keyframes lis-rain-sheen {
-  0%   { transform: translateX(-130%) skewX(-12deg); }
-  100% { transform: translateX(270%)  skewX(-12deg); }
+  0% {
+    transform: translateX(-130%) skewX(-12deg);
+  }
+  100% {
+    transform: translateX(270%) skewX(-12deg);
+  }
 }
 
 .lis-backdrop--rain::after {
@@ -593,22 +609,38 @@
 /* Three separate keyframes so each depth layer falls at a slightly
    different angle — background nearly straight, foreground most slanted */
 @keyframes lis-rain-back {
-  from { transform: rotate(17deg) translateY(0); }
-  to   { transform: rotate(17deg) translateY(112vh); }
+  from {
+    transform: rotate(17deg) translateY(0);
+  }
+  to {
+    transform: rotate(17deg) translateY(112vh);
+  }
 }
 @keyframes lis-rain-mid {
-  from { transform: rotate(20deg) translateY(0); }
-  to   { transform: rotate(20deg) translateY(112vh); }
+  from {
+    transform: rotate(20deg) translateY(0);
+  }
+  to {
+    transform: rotate(20deg) translateY(112vh);
+  }
 }
 @keyframes lis-rain-front {
-  from { transform: rotate(23deg) translateY(0); }
-  to   { transform: rotate(23deg) translateY(112vh); }
+  from {
+    transform: rotate(23deg) translateY(0);
+  }
+  to {
+    transform: rotate(23deg) translateY(112vh);
+  }
 }
 
 /* Shared fallback used by thunderstorm */
 @keyframes lis-rain-fall {
-  from { transform: rotate(20deg) translateY(0); }
-  to   { transform: rotate(20deg) translateY(112vh); }
+  from {
+    transform: rotate(20deg) translateY(0);
+  }
+  to {
+    transform: rotate(20deg) translateY(112vh);
+  }
 }
 
 .lis-backdrop--rain .lis-backdrop__particle {
@@ -618,22 +650,26 @@
 }
 
 /* Back layer — slow, long, dim, straight */
-.lis-backdrop--rain .lis-backdrop__particle:nth-child(3n+2) {
+.lis-backdrop--rain .lis-backdrop__particle:nth-child(3n + 2) {
   width: 1px;
   height: 145px;
   background: linear-gradient(to bottom, transparent 0%, rgba(155, 200, 255, 0.24) 100%);
   animation: lis-rain-back linear infinite;
   animation-duration: calc(1.28s + var(--i) * 0.055s);
-  animation-delay: calc(var(--i) * -0.20s);
+  animation-delay: calc(var(--i) * -0.2s);
 }
 
 /* Mid layer — medium speed, moderate brightness */
-.lis-backdrop--rain .lis-backdrop__particle:nth-child(3n+1) {
+.lis-backdrop--rain .lis-backdrop__particle:nth-child(3n + 1) {
   width: 1.5px;
   height: 98px;
-  background: linear-gradient(to bottom, rgba(175, 218, 255, 0.65) 0%, rgba(120, 178, 255, 0.18) 100%);
+  background: linear-gradient(
+    to bottom,
+    rgba(175, 218, 255, 0.65) 0%,
+    rgba(120, 178, 255, 0.18) 100%
+  );
   animation: lis-rain-mid linear infinite;
-  animation-duration: calc(0.80s + var(--i) * 0.030s);
+  animation-duration: calc(0.8s + var(--i) * 0.03s);
   animation-delay: calc(var(--i) * -0.14s);
 }
 
@@ -643,53 +679,73 @@
   height: 72px;
   background: linear-gradient(
     to bottom,
-    rgba(218, 238, 255, 1.00) 0%,
-    rgba(155, 205, 255, 0.60) 45%,
+    rgba(218, 238, 255, 1) 0%,
+    rgba(155, 205, 255, 0.6) 45%,
     transparent 100%
   );
   box-shadow:
-    0 0 6px  rgba(130, 188, 255, 0.65),
-    0 0 2px  rgba(225, 242, 255, 0.95);
+    0 0 6px rgba(130, 188, 255, 0.65),
+    0 0 2px rgba(225, 242, 255, 0.95);
   animation: lis-rain-front linear infinite;
-  animation-duration: calc(0.50s + var(--i) * 0.016s);
+  animation-duration: calc(0.5s + var(--i) * 0.016s);
   animation-delay: calc(var(--i) * -0.09s);
 }
 
 /* ── Snow ── */
 
 .lis-backdrop--snow {
-  background: linear-gradient(175deg, rgba(180,220,255,0.14) 0%, rgba(210,235,255,0.09) 100%);
+  background: linear-gradient(175deg, rgba(180, 220, 255, 0.14) 0%, rgba(210, 235, 255, 0.09) 100%);
 }
 
 @keyframes lis-snow-fall {
-  0%   { transform: translateY(-30px) translateX(0); }
-  25%  { transform: translateY(25vh)  translateX(12px); }
-  50%  { transform: translateY(50vh)  translateX(-8px); }
-  75%  { transform: translateY(75vh)  translateX(15px); }
-  100% { transform: translateY(110vh) translateX(5px); }
+  0% {
+    transform: translateY(-30px) translateX(0);
+  }
+  25% {
+    transform: translateY(25vh) translateX(12px);
+  }
+  50% {
+    transform: translateY(50vh) translateX(-8px);
+  }
+  75% {
+    transform: translateY(75vh) translateX(15px);
+  }
+  100% {
+    transform: translateY(110vh) translateX(5px);
+  }
 }
 
-.lis-backdrop--snow .lis-backdrop__particle::before { content: '❄'; }
+.lis-backdrop--snow .lis-backdrop__particle::before {
+  content: '❄';
+}
 
 .lis-backdrop--snow .lis-backdrop__particle {
   position: absolute;
   top: 0;
   opacity: 0.55;
   user-select: none;
-  color: rgba(200,230,255,0.9);
+  color: rgba(200, 230, 255, 0.9);
   animation: lis-snow-fall ease-in-out infinite;
   animation-duration: calc(4.5s + var(--i) * 0.45s);
   animation-delay: calc(var(--i) * -0.7s);
 }
 
-.lis-backdrop--snow .lis-backdrop__particle:nth-child(3n)   { font-size: 9px; }
-.lis-backdrop--snow .lis-backdrop__particle:nth-child(3n+1) { font-size: 13px; opacity: 0.7; }
-.lis-backdrop--snow .lis-backdrop__particle:nth-child(3n+2) { font-size: 17px; opacity: 0.45; }
+.lis-backdrop--snow .lis-backdrop__particle:nth-child(3n) {
+  font-size: 9px;
+}
+.lis-backdrop--snow .lis-backdrop__particle:nth-child(3n + 1) {
+  font-size: 13px;
+  opacity: 0.7;
+}
+.lis-backdrop--snow .lis-backdrop__particle:nth-child(3n + 2) {
+  font-size: 17px;
+  opacity: 0.45;
+}
 
 /* ── Thunderstorm ── */
 
 .lis-backdrop--thunderstorm {
-  background: linear-gradient(175deg, rgba(30,20,70,0.22) 0%, rgba(20,30,90,0.18) 100%);
+  background: linear-gradient(175deg, rgba(30, 20, 70, 0.22) 0%, rgba(20, 30, 90, 0.18) 100%);
 }
 
 .lis-backdrop--thunderstorm .lis-backdrop__particle {
@@ -697,27 +753,41 @@
   top: -120px;
   width: 1px;
   height: 90px;
-  background: linear-gradient(to bottom, transparent, rgba(180,200,255,0.38));
+  background: linear-gradient(to bottom, transparent, rgba(180, 200, 255, 0.38));
   transform-origin: top center;
   animation: lis-rain-fall linear infinite;
   animation-duration: calc(0.55s + var(--i) * 0.012s);
   animation-delay: calc(var(--i) * -0.1s);
 }
 
-.lis-backdrop--thunderstorm .lis-backdrop__particle:nth-child(3n)   { opacity: 0.6; }
-.lis-backdrop--thunderstorm .lis-backdrop__particle:nth-child(3n+1) { opacity: 0.4; }
-.lis-backdrop--thunderstorm .lis-backdrop__particle:nth-child(3n+2) { opacity: 0.8; width: 1.5px; }
+.lis-backdrop--thunderstorm .lis-backdrop__particle:nth-child(3n) {
+  opacity: 0.6;
+}
+.lis-backdrop--thunderstorm .lis-backdrop__particle:nth-child(3n + 1) {
+  opacity: 0.4;
+}
+.lis-backdrop--thunderstorm .lis-backdrop__particle:nth-child(3n + 2) {
+  opacity: 0.8;
+  width: 1.5px;
+}
 
 @keyframes lis-lightning {
-  0%, 5%, 7%, 100% { opacity: 0; }
-  6%               { opacity: 0.65; }
+  0%,
+  5%,
+  7%,
+  100% {
+    opacity: 0;
+  }
+  6% {
+    opacity: 0.65;
+  }
 }
 
 .lis-backdrop--thunderstorm::after {
   content: '';
   position: absolute;
   inset: 0;
-  background: rgba(160,190,255,0.7);
+  background: rgba(160, 190, 255, 0.7);
   animation: lis-lightning 7s ease-in-out infinite;
   pointer-events: none;
 }
@@ -725,12 +795,24 @@
 /* ── Sunny ── */
 
 .lis-backdrop--sunny {
-  background: radial-gradient(ellipse at 50% -10%, rgba(255,210,60,0.22) 0%, rgba(255,180,30,0.10) 55%, transparent 85%);
+  background: radial-gradient(
+    ellipse at 50% -10%,
+    rgba(255, 210, 60, 0.22) 0%,
+    rgba(255, 180, 30, 0.1) 55%,
+    transparent 85%
+  );
 }
 
 @keyframes lis-sunny-pulse {
-  0%, 100% { transform: translateX(-50%) scale(1);    opacity: 0.6; }
-  50%      { transform: translateX(-50%) scale(1.15); opacity: 1; }
+  0%,
+  100% {
+    transform: translateX(-50%) scale(1);
+    opacity: 0.6;
+  }
+  50% {
+    transform: translateX(-50%) scale(1.15);
+    opacity: 1;
+  }
 }
 
 .lis-backdrop--sunny::before {
@@ -742,7 +824,12 @@
   width: 300px;
   height: 300px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(255,230,100,0.45) 0%, rgba(255,200,50,0.15) 50%, transparent 70%);
+  background: radial-gradient(
+    circle,
+    rgba(255, 230, 100, 0.45) 0%,
+    rgba(255, 200, 50, 0.15) 50%,
+    transparent 70%
+  );
   animation: lis-sunny-pulse 5s ease-in-out infinite;
   pointer-events: none;
 }
@@ -750,24 +837,38 @@
 /* ── Cloudy ── */
 
 .lis-backdrop--cloudy {
-  background: linear-gradient(175deg, rgba(150,165,200,0.11) 0%, rgba(180,190,220,0.08) 100%);
+  background: linear-gradient(175deg, rgba(150, 165, 200, 0.11) 0%, rgba(180, 190, 220, 0.08) 100%);
 }
 
 @keyframes lis-cloud-l {
-  0%, 100% { transform: translateX(-6%); }
-  50%      { transform: translateX(6%); }
+  0%,
+  100% {
+    transform: translateX(-6%);
+  }
+  50% {
+    transform: translateX(6%);
+  }
 }
 
 @keyframes lis-cloud-r {
-  0%, 100% { transform: translateX(6%); }
-  50%      { transform: translateX(-6%); }
+  0%,
+  100% {
+    transform: translateX(6%);
+  }
+  50% {
+    transform: translateX(-6%);
+  }
 }
 
 .lis-backdrop--cloudy::before {
   content: '';
   position: absolute;
   inset: 0;
-  background: radial-gradient(ellipse 130% 70% at 20% 20%, rgba(200,215,235,0.18) 0%, transparent 65%);
+  background: radial-gradient(
+    ellipse 130% 70% at 20% 20%,
+    rgba(200, 215, 235, 0.18) 0%,
+    transparent 65%
+  );
   animation: lis-cloud-l 14s ease-in-out infinite;
   pointer-events: none;
 }
@@ -776,7 +877,11 @@
   content: '';
   position: absolute;
   inset: 0;
-  background: radial-gradient(ellipse 110% 60% at 80% 75%, rgba(190,200,225,0.14) 0%, transparent 65%);
+  background: radial-gradient(
+    ellipse 110% 60% at 80% 75%,
+    rgba(190, 200, 225, 0.14) 0%,
+    transparent 65%
+  );
   animation: lis-cloud-r 18s ease-in-out infinite;
   pointer-events: none;
 }
@@ -784,17 +889,27 @@
 /* ── Fog ── */
 
 .lis-backdrop--fog {
-  background: linear-gradient(175deg, rgba(185,195,210,0.16) 0%, rgba(200,208,220,0.12) 100%);
+  background: linear-gradient(175deg, rgba(185, 195, 210, 0.16) 0%, rgba(200, 208, 220, 0.12) 100%);
 }
 
 @keyframes lis-fog-l {
-  0%, 100% { transform: translateX(0); }
-  50%      { transform: translateX(-8%); }
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  50% {
+    transform: translateX(-8%);
+  }
 }
 
 @keyframes lis-fog-r {
-  0%, 100% { transform: translateX(0); }
-  50%      { transform: translateX(8%); }
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  50% {
+    transform: translateX(8%);
+  }
 }
 
 .lis-backdrop--fog::before {
@@ -804,9 +919,9 @@
   background: linear-gradient(
     to right,
     transparent 0%,
-    rgba(215,225,240,0.28) 30%,
-    rgba(225,232,242,0.32) 55%,
-    rgba(215,225,240,0.22) 75%,
+    rgba(215, 225, 240, 0.28) 30%,
+    rgba(225, 232, 242, 0.32) 55%,
+    rgba(215, 225, 240, 0.22) 75%,
     transparent 100%
   );
   animation: lis-fog-l 12s ease-in-out infinite;
@@ -820,8 +935,8 @@
   background: linear-gradient(
     to right,
     transparent 15%,
-    rgba(210,220,235,0.20) 45%,
-    rgba(218,228,240,0.24) 65%,
+    rgba(210, 220, 235, 0.2) 45%,
+    rgba(218, 228, 240, 0.24) 65%,
     transparent 90%
   );
   animation: lis-fog-r 17s ease-in-out infinite;
@@ -831,26 +946,42 @@
 /* ── Night-clear ── */
 
 .lis-backdrop--night-clear {
-  background: linear-gradient(175deg, rgba(8,18,70,0.22) 0%, rgba(15,28,90,0.16) 100%);
+  background: linear-gradient(175deg, rgba(8, 18, 70, 0.22) 0%, rgba(15, 28, 90, 0.16) 100%);
 }
 
 @keyframes lis-twinkle {
-  0%, 100% { opacity: 0.2; transform: scale(0.7); }
-  50%      { opacity: 1;   transform: scale(1.3); }
+  0%,
+  100% {
+    opacity: 0.2;
+    transform: scale(0.7);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.3);
+  }
 }
 
 .lis-backdrop--night-clear .lis-backdrop__particle {
   position: absolute;
   border-radius: 50%;
-  background: rgba(255,255,255,0.85);
+  background: rgba(255, 255, 255, 0.85);
   animation: lis-twinkle ease-in-out infinite;
   animation-duration: calc(2.2s + var(--i) * 0.22s);
   animation-delay: calc(var(--i) * -0.4s);
 }
 
-.lis-backdrop--night-clear .lis-backdrop__particle:nth-child(3n)   { width: 1px;   height: 1px; }
-.lis-backdrop--night-clear .lis-backdrop__particle:nth-child(3n+1) { width: 2px;   height: 2px; }
-.lis-backdrop--night-clear .lis-backdrop__particle:nth-child(3n+2) { width: 1.5px; height: 1.5px; }
+.lis-backdrop--night-clear .lis-backdrop__particle:nth-child(3n) {
+  width: 1px;
+  height: 1px;
+}
+.lis-backdrop--night-clear .lis-backdrop__particle:nth-child(3n + 1) {
+  width: 2px;
+  height: 2px;
+}
+.lis-backdrop--night-clear .lis-backdrop__particle:nth-child(3n + 2) {
+  width: 1.5px;
+  height: 1.5px;
+}
 
 /* ── Reduced motion ── */
 
@@ -873,7 +1004,9 @@
 }
 
 @media (max-height: 680px) {
-  .lis-hero { height: 120px; }
+  .lis-hero {
+    height: 120px;
+  }
 }
 
 /* ── Photo carousel ─────────────────────────────────────────────────────── */
@@ -904,7 +1037,9 @@
 }
 
 @media (max-height: 680px) {
-  .lis-carousel__img { height: 120px; }
+  .lis-carousel__img {
+    height: 120px;
+  }
 }
 
 /* Pagination dots: hint that more photos exist; active dot expands to a pill. */
@@ -925,7 +1060,9 @@
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.6);
   box-shadow: 0 0 2px rgba(0, 0, 0, 0.45);
-  transition: width 0.2s ease, background-color 0.2s ease;
+  transition:
+    width 0.2s ease,
+    background-color 0.2s ease;
 }
 
 .lis-carousel__dot--active {
@@ -944,8 +1081,12 @@
 /* ── Loading skeletons ──────────────────────────────────────────────────── */
 
 @keyframes skeleton-shimmer {
-  from { background-position: -200px 0; }
-  to   { background-position: 200px 0; }
+  from {
+    background-position: -200px 0;
+  }
+  to {
+    background-position: 200px 0;
+  }
 }
 
 .lis-skeleton {
@@ -971,7 +1112,9 @@
 }
 
 @media (max-height: 680px) {
-  .lis-skeleton--hero { height: 120px; }
+  .lis-skeleton--hero {
+    height: 120px;
+  }
 }
 
 /* Weather strip placeholder — mirrors .lis-weather-block padding/border. */
@@ -1002,7 +1145,9 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .lis-skeleton { animation: none; }
+  .lis-skeleton {
+    animation: none;
+  }
 }
 
 .lis-weather-row {
@@ -1246,7 +1391,9 @@
   background: transparent;
   color: #c0c0c8;
   cursor: pointer;
-  transition: background 0.15s, color 0.15s;
+  transition:
+    background 0.15s,
+    color 0.15s;
   flex-shrink: 0;
 }
 
@@ -1648,7 +1795,10 @@
   font-size: 12px;
   color: #333;
   cursor: pointer;
-  transition: border-color 0.15s, background 0.15s, color 0.15s;
+  transition:
+    border-color 0.15s,
+    background 0.15s,
+    color 0.15s;
   min-height: 44px;
   display: flex;
   flex-direction: column;
@@ -1970,7 +2120,9 @@
   border: 1px solid rgba(0, 0, 0, 0.1);
   border-radius: 17px;
   background: #ffffff;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.14), 0 0 0 0.5px rgba(0, 0, 0, 0.04);
+  box-shadow:
+    0 2px 6px rgba(0, 0, 0, 0.14),
+    0 0 0 0.5px rgba(0, 0, 0, 0.04);
   font-size: 13px;
   font-weight: 500;
   color: #3c4043;
@@ -1978,7 +2130,11 @@
   white-space: nowrap;
   vertical-align: middle;
   letter-spacing: 0.01em;
-  transition: box-shadow 0.18s, background 0.18s, color 0.18s, border-color 0.18s;
+  transition:
+    box-shadow 0.18s,
+    background 0.18s,
+    color 0.18s,
+    border-color 0.18s;
   pointer-events: auto;
   -webkit-tap-highlight-color: transparent;
 }
@@ -1988,7 +2144,9 @@
 }
 
 .poi-filter-btn:hover:not(.poi-filter-btn--active) {
-  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2), 0 0 0 0.5px rgba(0, 0, 0, 0.06);
+  box-shadow:
+    0 3px 10px rgba(0, 0, 0, 0.2),
+    0 0 0 0.5px rgba(0, 0, 0, 0.06);
 }
 
 .poi-filter-btn--active {
@@ -2023,7 +2181,9 @@
 }
 
 @keyframes poi-spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .poi-spinner {
@@ -2046,7 +2206,9 @@
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: background 0.15s, color 0.15s;
+  transition:
+    background 0.15s,
+    color 0.15s;
 }
 
 .lis-fav-btn:hover:not(:disabled) {
@@ -2087,7 +2249,9 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background 0.15s, color 0.15s;
+  transition:
+    background 0.15s,
+    color 0.15s;
 }
 
 .saved-places-fab:hover {
@@ -2273,11 +2437,12 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background 0.15s, color 0.15s;
+  transition:
+    background 0.15s,
+    color 0.15s;
 }
 
 .saved-places-item__remove:hover {
   background: rgba(255, 59, 48, 0.12);
   color: #ff3b30;
 }
-

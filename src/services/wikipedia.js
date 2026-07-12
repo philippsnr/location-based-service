@@ -5,7 +5,7 @@
  */
 
 /** Two-letter language code derived from the browser, defaulting to `"en"`. */
-const lang = navigator.language?.split('-')[0] ?? 'en'
+const lang = navigator.language?.split('-')[0] ?? 'en';
 
 /**
  * Build the MediaWiki API base URL for a language.
@@ -32,8 +32,8 @@ async function query(params, language = lang) {
   const url = new URL(apiBase(language));
 
   Object.entries({
-    format: "json",
-    origin: "*",
+    format: 'json',
+    origin: '*',
     ...params,
   }).forEach(([key, value]) => {
     url.searchParams.set(key, value);
@@ -55,11 +55,14 @@ async function query(params, language = lang) {
  * @returns {Promise<Array<Object>>} Search hits (empty when none).
  */
 export async function search(queryText, language = lang) {
-  const data = await query({
-    action: "query",
-    list: "search",
-    srsearch: queryText,
-  }, language);
+  const data = await query(
+    {
+      action: 'query',
+      list: 'search',
+      srsearch: queryText,
+    },
+    language,
+  );
 
   return data?.query?.search ?? [];
 }
@@ -85,9 +88,7 @@ export async function search(queryText, language = lang) {
  * @throws {Error} On a non-2xx response other than the handled 404 fallback.
  */
 export async function getSummary(title, language = lang) {
-  const response = await fetch(
-    `${restBase(language)}/page/summary/${encodeURIComponent(title)}`
-  );
+  const response = await fetch(`${restBase(language)}/page/summary/${encodeURIComponent(title)}`);
 
   if (!response.ok) {
     if (response.status === 404 && language !== 'en') {
@@ -143,13 +144,16 @@ export async function getLocationSummary(placeName) {
  * @returns {Promise<Array<Object>>} Geosearch hits (empty when none).
  */
 async function geosearch(lat, lng, { radius = 10000, limit = 10 } = {}, language = lang) {
-  const data = await query({
-    action: 'query',
-    list: 'geosearch',
-    gscoord: `${lat}|${lng}`,
-    gsradius: radius,
-    gslimit: limit,
-  }, language);
+  const data = await query(
+    {
+      action: 'query',
+      list: 'geosearch',
+      gscoord: `${lat}|${lng}`,
+      gsradius: radius,
+      gslimit: limit,
+    },
+    language,
+  );
   return data?.query?.geosearch ?? [];
 }
 
@@ -207,10 +211,7 @@ export async function getNamedLocationSummary(lat, lng, name) {
 
   const summary = await getSummary(first.title, language);
   const coords = summary.coordinates;
-  if (
-    coords &&
-    haversineMeters(lat, lng, coords.lat, coords.lon) > MAX_NAMED_DISTANCE_M
-  ) {
+  if (coords && haversineMeters(lat, lng, coords.lat, coords.lon) > MAX_NAMED_DISTANCE_M) {
     return null;
   }
   return summary;
@@ -364,9 +365,9 @@ export async function getCommonsGeoPhoto(lat, lng, opts = {}) {
  */
 export async function getPage(title) {
   return query({
-    action: "query",
-    prop: "info|pageimages|coordinates|description",
-    piprop: "original",
+    action: 'query',
+    prop: 'info|pageimages|coordinates|description',
+    piprop: 'original',
     titles: title,
   });
 }

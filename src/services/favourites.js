@@ -34,7 +34,7 @@ function read() {
         item &&
         typeof item.lat === 'number' &&
         typeof item.lng === 'number' &&
-        typeof item.placeName === 'string'
+        typeof item.placeName === 'string',
     );
   } catch (error) {
     console.warn('Failed to read favourites from localStorage:', error);
@@ -70,10 +70,7 @@ function notify() {
  * @returns {boolean}
  */
 function sameLocation(a, b) {
-  return (
-    Math.abs(a.lat - b.lat) < COORD_EPSILON &&
-    Math.abs(a.lng - b.lng) < COORD_EPSILON
-  );
+  return Math.abs(a.lat - b.lat) < COORD_EPSILON && Math.abs(a.lng - b.lng) < COORD_EPSILON;
 }
 
 /**

@@ -20,9 +20,12 @@ function PWAUpdatePrompt() {
   } = useRegisterSW({
     onRegisteredSW(swUrl, registration) {
       if (registration) {
-        setInterval(() => {
-          registration.update();
-        }, 60 * 60 * 1000);
+        setInterval(
+          () => {
+            registration.update();
+          },
+          60 * 60 * 1000,
+        );
       }
     },
   });

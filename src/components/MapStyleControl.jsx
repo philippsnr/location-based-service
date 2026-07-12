@@ -47,10 +47,7 @@ export default function MapStyleControl({ style, onToggle }) {
     const control = L.control({ position: 'topleft' });
 
     control.onAdd = () => {
-      const container = L.DomUtil.create(
-        'div',
-        'leaflet-bar leaflet-control map-style-control'
-      );
+      const container = L.DomUtil.create('div', 'leaflet-bar leaflet-control map-style-control');
       const btn = L.DomUtil.create('button', 'map-style-control__btn', container);
       const icon = L.DomUtil.create('img', 'map-style-control__icon', btn);
       const currentIndex = STYLE_CYCLE.indexOf(style);

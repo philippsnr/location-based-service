@@ -156,7 +156,7 @@ function PoiResultsSheet({ opened, onClosed, pois, userPosition, activeFilter, o
     applyExpanded(false);
   }, [opened, applyExpanded]);
 
-  const filterDef = POI_FILTERS.find(f => f.id === activeFilter);
+  const filterDef = POI_FILTERS.find((f) => f.id === activeFilter);
 
   const sortedPois = [...pois].sort((a, b) => {
     if (userPosition) {
@@ -167,9 +167,7 @@ function PoiResultsSheet({ opened, onClosed, pois, userPosition, activeFilter, o
     return (a.name ?? '').localeCompare(b.name ?? '');
   });
 
-  const title = filterDef
-    ? `${pois.length} ${filterDef.label} nearby`
-    : `${pois.length} results`;
+  const title = filterDef ? `${pois.length} ${filterDef.label} nearby` : `${pois.length} results`;
 
   return (
     <Sheet
@@ -190,10 +188,22 @@ function PoiResultsSheet({ opened, onClosed, pois, userPosition, activeFilter, o
           <span className="poi-results-sheet__title">{title}</span>
           <button
             className="poi-results-sheet__close-btn"
-            onClick={(e) => { e.stopPropagation(); handleClose(); }}
+            onClick={(e) => {
+              e.stopPropagation();
+              handleClose();
+            }}
             aria-label="Close"
           >
-            <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" strokeWidth="2.5" fill="none" strokeLinecap="round" aria-hidden="true">
+            <svg
+              viewBox="0 0 24 24"
+              width="14"
+              height="14"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              fill="none"
+              strokeLinecap="round"
+              aria-hidden="true"
+            >
               <line x1="18" y1="6" x2="6" y2="18" />
               <line x1="6" y1="6" x2="18" y2="18" />
             </svg>
@@ -203,15 +213,9 @@ function PoiResultsSheet({ opened, onClosed, pois, userPosition, activeFilter, o
 
       <div className="poi-results-sheet__scroll">
         {sortedPois.map((poi) => {
-          const dist = userPosition
-            ? L.latLng(poi.lat, poi.lng).distanceTo(userPosition)
-            : null;
+          const dist = userPosition ? L.latLng(poi.lat, poi.lng).distanceTo(userPosition) : null;
           return (
-            <button
-              key={poi.id}
-              className="poi-results-item"
-              onClick={() => onSelectPoi(poi)}
-            >
+            <button key={poi.id} className="poi-results-item" onClick={() => onSelectPoi(poi)}>
               <span
                 className="poi-results-item__dot"
                 style={{ background: filterDef?.color ?? '#888' }}

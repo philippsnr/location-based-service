@@ -1,5 +1,13 @@
 import { useCallback, useState, useEffect, useMemo, useRef } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, Tooltip, useMapEvents, useMap } from 'react-leaflet';
+import {
+  MapContainer,
+  TileLayer,
+  Marker,
+  Popup,
+  Tooltip,
+  useMapEvents,
+  useMap,
+} from 'react-leaflet';
 import L from 'leaflet';
 import markerIconUrl from './assets/marker.png';
 import 'leaflet/dist/leaflet.css';
@@ -16,19 +24,19 @@ import PoiResultsSheet from './components/PoiResultsSheet';
 import ScaleControl from './components/ScaleControl';
 import SavedPlacesSheet from './components/SavedPlacesSheet';
 import { reverseGeocode } from './services/nominatim';
-import wikipedia from './services/wikipedia'
-import { fetchWeather } from './services/weather'
-import { fetchElevation } from './services/elevation'
-import { fetchAirQuality } from './services/airquality'
-import { fetchWikidataFacts } from './services/wikidata'
-import { GEO_DENIED_MESSAGE, getGeolocationPermissionState } from './services/geolocation'
-import { POI_FILTERS, fetchPois } from './services/overpass'
+import wikipedia from './services/wikipedia';
+import { fetchWeather } from './services/weather';
+import { fetchElevation } from './services/elevation';
+import { fetchAirQuality } from './services/airquality';
+import { fetchWikidataFacts } from './services/wikidata';
+import { GEO_DENIED_MESSAGE, getGeolocationPermissionState } from './services/geolocation';
+import { POI_FILTERS, fetchPois } from './services/overpass';
 import {
   getFavourites,
   toggleFavourite,
   removeFavourite,
   subscribe as subscribeFavourites,
-} from './services/favourites'
+} from './services/favourites';
 
 /**
  * @file Map view root: renders the Leaflet map, wires up markers, POI results,
@@ -68,7 +76,8 @@ const MAP_STYLES = {
   standard: {
     label: 'Standard',
     url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+    attribution:
+      '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
   },
   satellite: {
     label: 'Satellite',
@@ -117,7 +126,7 @@ const customMarkerIcon = new L.DivIcon({
 });
 
 const poiIconByFilter = Object.fromEntries(
-  POI_FILTERS.map(f => [
+  POI_FILTERS.map((f) => [
     f.id,
     new L.DivIcon({
       html: `<div style="width:14px;height:14px;border-radius:50%;background:${f.color};border:2.5px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.3)"></div>`,
@@ -125,7 +134,7 @@ const poiIconByFilter = Object.fromEntries(
       iconAnchor: [7, 7],
       className: '',
     }),
-  ])
+  ]),
 );
 
 /**
@@ -136,8 +145,14 @@ const poiIconByFilter = Object.fromEntries(
  */
 function MapCenterTracker({ centerRef }) {
   const map = useMap();
-  useMapEvents({ moveend() { centerRef.current = map.getCenter(); } });
-  useEffect(() => { centerRef.current = map.getCenter(); }, [map, centerRef]);
+  useMapEvents({
+    moveend() {
+      centerRef.current = map.getCenter();
+    },
+  });
+  useEffect(() => {
+    centerRef.current = map.getCenter();
+  }, [map, centerRef]);
   return null;
 }
 
@@ -209,7 +224,8 @@ async function resolveHeroPhotos(lat, lng, hint, cityName) {
  *   `elevation` are attached separately by the caller.
  */
 async function fetchLocationInfo(lat, lng, hint = null) {
-  const { placeName, cityName, country, countryCode, address, osmType, osmClass } = await reverseGeocode(lat, lng);
+  const { placeName, cityName, country, countryCode, address, osmType, osmClass } =
+    await reverseGeocode(lat, lng);
   const searchName = hint?.split(',')[0].trim() || null;
   const [wikiResult, heroResult] = await Promise.allSettled([
     resolveWikiSummary(lat, lng, searchName, cityName),
@@ -354,7 +370,7 @@ function FitBoundsOnPoi({ poiMarkers }) {
 
   useEffect(() => {
     if (!poiMarkers.length) return;
-    const bounds = L.latLngBounds(poiMarkers.map(p => [p.lat, p.lng]));
+    const bounds = L.latLngBounds(poiMarkers.map((p) => [p.lat, p.lng]));
     map.fitBounds(bounds, { padding: [48, 48], maxZoom: 15 });
   }, [poiMarkers, map]);
 
@@ -434,42 +450,65 @@ function Map() {
     return () => window.clearTimeout(t);
   }, [geoMessage]);
 
-  const handlePositionSelect = useCallback(async (latlng, hint = null, { collapsed = false, osmType: hintOsmType = null } = {}) => {
-    const lat = latlng.lat ?? latlng[0];
-    const lng = latlng.lng ?? latlng[1];
-    setIsPoiSheet(false);
-    setPosition(latlng);
-    setAutoOpenCollapsed(collapsed);
-    setSheetOpen(true);
-    setInfoLoading(true);
-    setLocationInfo(null);
-    setRoutingActive(false);
-    setRouteInfo(null);
-    setConfirmedRoute(null);
-    setRoutePlanningOpen(false);
-    try {
-      const [infoResult, weatherResult, elevationResult, airQualityResult] = await Promise.allSettled([
-        fetchLocationInfo(lat, lng, hint),
-        fetchWeather(lat, lng),
-        fetchElevation(lat, lng),
-        fetchAirQuality(lat, lng),
-      ]);
-      const info = infoResult.status === 'fulfilled'
-        ? infoResult.value
-        : { placeName: hint ?? 'Unknown location', lat, lng, wikiSummary: null, wikiUrl: null };
-      const baseWeather = weatherResult.status === 'fulfilled' ? weatherResult.value : null;
-      const elevation = elevationResult.status === 'fulfilled' ? elevationResult.value : null;
-      const airQuality = airQualityResult.status === 'fulfilled' ? airQualityResult.value : null;
-      const weatherInfo = baseWeather ? { ...baseWeather, airQuality } : null;
-      setLocationInfo({ ...info, weatherInfo, elevation, osmType: hintOsmType ?? info.osmType, osmClass: info.osmClass });
-      setZoomTarget({ position: L.latLng(lat, lng), osmType: hintOsmType ?? info.osmType ?? null, osmClass: info.osmClass ?? null, sheetOpen: true });
-    } catch (err) {
-      console.warn('Failed to fetch location info:', err);
-      setLocationInfo({ placeName: hint ?? 'Unknown location', lat, lng, wikiSummary: null, wikiUrl: null, weatherInfo: null });
-    } finally {
-      setInfoLoading(false);
-    }
-  }, []);
+  const handlePositionSelect = useCallback(
+    async (latlng, hint = null, { collapsed = false, osmType: hintOsmType = null } = {}) => {
+      const lat = latlng.lat ?? latlng[0];
+      const lng = latlng.lng ?? latlng[1];
+      setIsPoiSheet(false);
+      setPosition(latlng);
+      setAutoOpenCollapsed(collapsed);
+      setSheetOpen(true);
+      setInfoLoading(true);
+      setLocationInfo(null);
+      setRoutingActive(false);
+      setRouteInfo(null);
+      setConfirmedRoute(null);
+      setRoutePlanningOpen(false);
+      try {
+        const [infoResult, weatherResult, elevationResult, airQualityResult] =
+          await Promise.allSettled([
+            fetchLocationInfo(lat, lng, hint),
+            fetchWeather(lat, lng),
+            fetchElevation(lat, lng),
+            fetchAirQuality(lat, lng),
+          ]);
+        const info =
+          infoResult.status === 'fulfilled'
+            ? infoResult.value
+            : { placeName: hint ?? 'Unknown location', lat, lng, wikiSummary: null, wikiUrl: null };
+        const baseWeather = weatherResult.status === 'fulfilled' ? weatherResult.value : null;
+        const elevation = elevationResult.status === 'fulfilled' ? elevationResult.value : null;
+        const airQuality = airQualityResult.status === 'fulfilled' ? airQualityResult.value : null;
+        const weatherInfo = baseWeather ? { ...baseWeather, airQuality } : null;
+        setLocationInfo({
+          ...info,
+          weatherInfo,
+          elevation,
+          osmType: hintOsmType ?? info.osmType,
+          osmClass: info.osmClass,
+        });
+        setZoomTarget({
+          position: L.latLng(lat, lng),
+          osmType: hintOsmType ?? info.osmType ?? null,
+          osmClass: info.osmClass ?? null,
+          sheetOpen: true,
+        });
+      } catch (err) {
+        console.warn('Failed to fetch location info:', err);
+        setLocationInfo({
+          placeName: hint ?? 'Unknown location',
+          lat,
+          lng,
+          wikiSummary: null,
+          wikiUrl: null,
+          weatherInfo: null,
+        });
+      } finally {
+        setInfoLoading(false);
+      }
+    },
+    [],
+  );
 
   const handlePoiSelect = useCallback((poi) => {
     const latlng = L.latLng(poi.lat, poi.lng);
@@ -504,13 +543,16 @@ function Map() {
     setInfoLoading(false);
   }, []);
 
-  const handleLocate = useCallback((latlng, accuracy) => {
-    const ll = toLatLng(latlng);
-    if (!ll) return;
-    setUserPosition(ll);
-    if (accuracy != null) setUserAccuracy(accuracy);
-    handlePositionSelect(ll);
-  }, [handlePositionSelect]);
+  const handleLocate = useCallback(
+    (latlng, accuracy) => {
+      const ll = toLatLng(latlng);
+      if (!ll) return;
+      setUserPosition(ll);
+      if (accuracy != null) setUserAccuracy(accuracy);
+      handlePositionSelect(ll);
+    },
+    [handlePositionSelect],
+  );
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -536,7 +578,8 @@ function Map() {
           // arrived via a ?lat=&lng= deep link, and only once per mount.
           if (!autoOpenedRef.current) {
             const params = new URLSearchParams(window.location.search);
-            const hasDeepLink = !isNaN(parseFloat(params.get('lat'))) && !isNaN(parseFloat(params.get('lng')));
+            const hasDeepLink =
+              !isNaN(parseFloat(params.get('lat'))) && !isNaN(parseFloat(params.get('lng')));
             if (!hasDeepLink) {
               autoOpenedRef.current = true;
               handlePositionSelect(userLatLng, null, { collapsed: true });
@@ -547,7 +590,7 @@ function Map() {
           console.warn('Geolocation error:', error);
           // Fall back to default position if geolocation fails
           setMapCenter(defaultPosition);
-        }
+        },
       );
     } else {
       console.warn('Geolocation is not supported by this browser');
@@ -668,9 +711,7 @@ function Map() {
   const currentIsFavourite = useMemo(() => {
     if (!locationInfo?.lat || !locationInfo?.lng) return false;
     return favourites.some(
-      (f) =>
-        Math.abs(f.lat - locationInfo.lat) < 1e-5 &&
-        Math.abs(f.lng - locationInfo.lng) < 1e-5
+      (f) => Math.abs(f.lat - locationInfo.lat) < 1e-5 && Math.abs(f.lng - locationInfo.lng) < 1e-5,
     );
   }, [locationInfo?.lat, locationInfo?.lng, favourites]);
 
@@ -684,10 +725,15 @@ function Map() {
     });
   }, [locationInfo]);
 
-  const handleSelectFavourite = useCallback((fav) => {
-    setSavedPlacesOpen(false);
-    handlePositionSelect(L.latLng(fav.lat, fav.lng), fav.placeName, { osmType: fav.osmType ?? null });
-  }, [handlePositionSelect]);
+  const handleSelectFavourite = useCallback(
+    (fav) => {
+      setSavedPlacesOpen(false);
+      handlePositionSelect(L.latLng(fav.lat, fav.lng), fav.placeName, {
+        osmType: fav.osmType ?? null,
+      });
+    },
+    [handlePositionSelect],
+  );
 
   const handleRemoveFavourite = useCallback((fav) => {
     removeFavourite(fav.lat, fav.lng);
@@ -725,7 +771,16 @@ function Map() {
               onClick={() => setGeoMessage('')}
               aria-label="Dismiss"
             >
-              <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" strokeWidth="2.5" fill="none" strokeLinecap="round" aria-hidden="true">
+              <svg
+                viewBox="0 0 24 24"
+                width="14"
+                height="14"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                fill="none"
+                strokeLinecap="round"
+                aria-hidden="true"
+              >
                 <line x1="18" y1="6" x2="6" y2="18" />
                 <line x1="6" y1="6" x2="18" y2="18" />
               </svg>
@@ -753,21 +808,32 @@ function Map() {
             />
           )}
           <ZoomToLocation target={zoomTarget} />
-          <LocationMarker position={isPoiSheet ? null : position} onSelect={handlePositionSelect} placeName={locationInfo?.placeName} />
+          <LocationMarker
+            position={isPoiSheet ? null : position}
+            onSelect={handlePositionSelect}
+            placeName={locationInfo?.placeName}
+          />
           <UserLocationMarker position={userPosition} accuracy={userAccuracy} />
           <LocateControl onLocate={handleLocate} onError={setGeoMessage} />
           <ScaleControl />
           <MapStyleControl style={mapStyle} onToggle={handleToggleMapStyle} />
           <MapCenterTracker centerRef={mapCenterRef} />
           <FitBoundsOnPoi poiMarkers={poiMarkers} />
-          {poiMarkers.map(poi => (
+          {poiMarkers.map((poi) => (
             <Marker
               key={poi.id}
               position={[poi.lat, poi.lng]}
               icon={poiIconByFilter[activeFilter] ?? poiIconByFilter.restaurant}
-              eventHandlers={{ click: (e) => { e.originalEvent?.stopPropagation(); handlePoiSelect(poi); } }}
+              eventHandlers={{
+                click: (e) => {
+                  e.originalEvent?.stopPropagation();
+                  handlePoiSelect(poi);
+                },
+              }}
             >
-              <Tooltip direction="top" offset={[0, -8]}>{poi.name}</Tooltip>
+              <Tooltip direction="top" offset={[0, -8]}>
+                {poi.name}
+              </Tooltip>
             </Marker>
           ))}
           {routingActive && waypoints && (
@@ -778,8 +844,17 @@ function Map() {
             />
           )}
         </MapContainer>
-        <SearchControl onSelect={({ lat, lng, name, type }) => handlePositionSelect(L.latLng(lat, lng), name, { osmType: type })} />
-        <PoiFilterBar activeFilter={activeFilter} loading={poiLoading} error={poiError} onToggle={handleFilterToggle} />
+        <SearchControl
+          onSelect={({ lat, lng, name, type }) =>
+            handlePositionSelect(L.latLng(lat, lng), name, { osmType: type })
+          }
+        />
+        <PoiFilterBar
+          activeFilter={activeFilter}
+          loading={poiLoading}
+          error={poiError}
+          onToggle={handleFilterToggle}
+        />
         <button
           type="button"
           className={`saved-places-fab${favourites.length > 0 ? ' saved-places-fab--has-items' : ''}`}

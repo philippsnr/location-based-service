@@ -65,10 +65,10 @@ export default function UserLocationMarker({ position, accuracy }) {
     const icon = L.divIcon({
       html:
         '<div class="ulm-wrapper">' +
-          '<svg class="ulm-cone" viewBox="0 0 24 24" width="24" height="24" aria-hidden="true">' +
-            '<polygon points="12,1 0,24 24,24" fill="rgba(0,122,255,0.32)"/>' +
-          '</svg>' +
-          '<div class="ulm-dot"></div>' +
+        '<svg class="ulm-cone" viewBox="0 0 24 24" width="24" height="24" aria-hidden="true">' +
+        '<polygon points="12,1 0,24 24,24" fill="rgba(0,122,255,0.32)"/>' +
+        '</svg>' +
+        '<div class="ulm-dot"></div>' +
         '</div>',
       iconSize: [48, 48],
       iconAnchor: [24, 24],
@@ -123,9 +123,7 @@ export default function UserLocationMarker({ position, accuracy }) {
     const handleOrientation = (e) => {
       if (hasAbsolute || e.alpha == null) return;
       const heading =
-        e.webkitCompassHeading != null
-          ? e.webkitCompassHeading
-          : (360 - e.alpha) % 360;
+        e.webkitCompassHeading != null ? e.webkitCompassHeading : (360 - e.alpha) % 360;
       updateHeading(heading);
     };
 

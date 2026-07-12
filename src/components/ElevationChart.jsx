@@ -12,8 +12,12 @@ import { computeElevationStats } from '../services/elevationProfile';
  * @returns {import('react').ReactElement}
  */
 function ElevationSvgChart({ elevations }) {
-  const W = 300, H = 108;
-  const padL = 36, padR = 6, padT = 6, padB = 14;
+  const W = 300,
+    H = 108;
+  const padL = 36,
+    padR = 6,
+    padT = 6,
+    padB = 14;
   const chartW = W - padL - padR;
   const chartH = H - padT - padB;
 
@@ -52,13 +56,60 @@ function ElevationSvgChart({ elevations }) {
         </linearGradient>
       </defs>
       <line x1={padL} y1={padT} x2={padL + chartW} y2={padT} stroke="#ebebeb" strokeWidth="1" />
-      <line x1={padL} y1={padT + chartH / 2} x2={padL + chartW} y2={padT + chartH / 2} stroke="#ebebeb" strokeWidth="1" />
-      <line x1={padL} y1={bottomY} x2={padL + chartW} y2={bottomY} stroke="#d8d8d8" strokeWidth="1" />
+      <line
+        x1={padL}
+        y1={padT + chartH / 2}
+        x2={padL + chartW}
+        y2={padT + chartH / 2}
+        stroke="#ebebeb"
+        strokeWidth="1"
+      />
+      <line
+        x1={padL}
+        y1={bottomY}
+        x2={padL + chartW}
+        y2={bottomY}
+        stroke="#d8d8d8"
+        strokeWidth="1"
+      />
       <path d={areaD} fill="url(#elev-fill)" />
-      <polyline points={linePoints} fill="none" stroke="#007aff" strokeWidth="1.5" strokeLinejoin="round" />
-      <text x={padL - 4} y={padT + 1} textAnchor="end" fontSize="9" fill="#aaa" dominantBaseline="hanging">{max}m</text>
-      <text x={padL - 4} y={padT + chartH / 2} textAnchor="end" fontSize="9" fill="#aaa" dominantBaseline="middle">{midEl}m</text>
-      <text x={padL - 4} y={bottomY} textAnchor="end" fontSize="9" fill="#aaa" dominantBaseline="auto">{min}m</text>
+      <polyline
+        points={linePoints}
+        fill="none"
+        stroke="#007aff"
+        strokeWidth="1.5"
+        strokeLinejoin="round"
+      />
+      <text
+        x={padL - 4}
+        y={padT + 1}
+        textAnchor="end"
+        fontSize="9"
+        fill="#aaa"
+        dominantBaseline="hanging"
+      >
+        {max}m
+      </text>
+      <text
+        x={padL - 4}
+        y={padT + chartH / 2}
+        textAnchor="end"
+        fontSize="9"
+        fill="#aaa"
+        dominantBaseline="middle"
+      >
+        {midEl}m
+      </text>
+      <text
+        x={padL - 4}
+        y={bottomY}
+        textAnchor="end"
+        fontSize="9"
+        fill="#aaa"
+        dominantBaseline="auto"
+      >
+        {min}m
+      </text>
     </svg>
   );
 }

@@ -85,8 +85,11 @@ const WHEELCHAIR_LABEL = {
 
 /** @param {string} url @returns {string} Bare hostname (`"example.com"`) or the original URL when parsing fails. */
 function formatWebsiteLabel(url) {
-  try { return new URL(url).hostname.replace(/^www\./, ''); }
-  catch { return url; }
+  try {
+    return new URL(url).hostname.replace(/^www\./, '');
+  } catch {
+    return url;
+  }
 }
 
 const PARTICLE_COUNTS = { rain: 20, thunderstorm: 20, snow: 15, 'night-clear': 25 };
@@ -108,7 +111,7 @@ function buildParticleStyles(theme, count) {
       return { '--i': i, left: `${i * 7}%` };
     }
     if (theme === 'night-clear') {
-      return { '--i': i, top: `${(i * 37 + 11) % 95 + 2}%`, left: `${(i * 41 + 7) % 97 + 1}%` };
+      return { '--i': i, top: `${((i * 37 + 11) % 95) + 2}%`, left: `${((i * 41 + 7) % 97) + 1}%` };
     }
     return { '--i': i };
   });
@@ -206,7 +209,7 @@ function PoiInfoSection({ poi }) {
       {poi.address && (
         <div className="lis-poi__row">
           <svg className="lis-poi__icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-            <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+            <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" />
           </svg>
           <span>{poi.address}</span>
         </div>
@@ -215,7 +218,7 @@ function PoiInfoSection({ poi }) {
       {poi.openingHours && (
         <div className="lis-poi__row">
           <svg className="lis-poi__icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-            <path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67V7z"/>
+            <path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67V7z" />
           </svg>
           <span>{poi.openingHours}</span>
         </div>
@@ -224,7 +227,7 @@ function PoiInfoSection({ poi }) {
       {cuisine && (
         <div className="lis-poi__row">
           <svg className="lis-poi__icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-            <path d="M11 9H9V2H7v7H5V2H3v7c0 2.12 1.66 3.84 3.75 3.97V22h2.5v-9.03C11.34 12.84 13 11.12 13 9V2h-2v7zm5-3v8h2.5v8H21V2c-2.76 0-5 2.24-5 4z"/>
+            <path d="M11 9H9V2H7v7H5V2H3v7c0 2.12 1.66 3.84 3.75 3.97V22h2.5v-9.03C11.34 12.84 13 11.12 13 9V2h-2v7zm5-3v8h2.5v8H21V2c-2.76 0-5 2.24-5 4z" />
           </svg>
           <span style={{ textTransform: 'capitalize' }}>{cuisine}</span>
         </div>
@@ -233,7 +236,7 @@ function PoiInfoSection({ poi }) {
       {poi.website && (
         <div className="lis-poi__row">
           <svg className="lis-poi__icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z" />
           </svg>
           <a href={poi.website} target="_blank" rel="noopener noreferrer" className="lis-poi__link">
             {formatWebsiteLabel(poi.website)}
@@ -244,16 +247,18 @@ function PoiInfoSection({ poi }) {
       {poi.phone && (
         <div className="lis-poi__row">
           <svg className="lis-poi__icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-            <path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/>
+            <path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z" />
           </svg>
-          <a href={`tel:${poi.phone}`} className="lis-poi__link">{poi.phone}</a>
+          <a href={`tel:${poi.phone}`} className="lis-poi__link">
+            {poi.phone}
+          </a>
         </div>
       )}
 
       {poi.operator && (
         <div className="lis-poi__row">
           <svg className="lis-poi__icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-            <path d="M12 7V3H2v18h20V7H12zM6 19H4v-2h2v2zm0-4H4v-2h2v2zm0-4H4V9h2v2zm0-4H4V5h2v2zm4 12H8v-2h2v2zm0-4H8v-2h2v2zm0-4H8V9h2v2zm0-4H8V5h2v2zm10 12h-8v-2h2v-2h-2v-2h2v-2h-2V9h8v10zm-2-8h-2v2h2v-2zm0 4h-2v2h2v-2z"/>
+            <path d="M12 7V3H2v18h20V7H12zM6 19H4v-2h2v2zm0-4H4v-2h2v2zm0-4H4V9h2v2zm0-4H4V5h2v2zm4 12H8v-2h2v2zm0-4H8v-2h2v2zm0-4H8V9h2v2zm0-4H8V5h2v2zm10 12h-8v-2h2v-2h-2v-2h2v-2h-2V9h8v10zm-2-8h-2v2h2v-2zm0 4h-2v2h2v-2z" />
           </svg>
           <span>{poi.operator}</span>
         </div>
@@ -262,7 +267,7 @@ function PoiInfoSection({ poi }) {
       {poi.wheelchair && (
         <div className="lis-poi__row">
           <svg className="lis-poi__icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-            <path d="M13 4c0-1.1-.9-2-2-2s-2 .9-2 2 .9 2 2 2 2-.9 2-2zm-1.95 9H14v6h2v-6.28c0-1.06-.84-1.93-1.91-1.96l-1.57-.04L11 8.4l3.46 2.07.99-1.71-3.95-2.35a1.991 1.991 0 0 0-2.6.45L7.34 9.45l-3.6 1.04.55 1.93 4.18-1.21 1.06-1.27L10.5 14H7v6h2v-4.51l3.05-1.49z"/>
+            <path d="M13 4c0-1.1-.9-2-2-2s-2 .9-2 2 .9 2 2 2 2-.9 2-2zm-1.95 9H14v6h2v-6.28c0-1.06-.84-1.93-1.91-1.96l-1.57-.04L11 8.4l3.46 2.07.99-1.71-3.95-2.35a1.991 1.991 0 0 0-2.6.45L7.34 9.45l-3.6 1.04.55 1.93 4.18-1.21 1.06-1.27L10.5 14H7v6h2v-4.51l3.05-1.49z" />
           </svg>
           <span>{WHEELCHAIR_LABEL[poi.wheelchair] ?? `Wheelchair: ${poi.wheelchair}`}</span>
         </div>
@@ -310,7 +315,9 @@ function FactsSection({ facts }) {
     <div className="lis-facts">
       {rows.map((row) => (
         <div key={row.key} className="lis-fact">
-          <span className="lis-fact__icon" aria-hidden="true">{row.icon}</span>
+          <span className="lis-fact__icon" aria-hidden="true">
+            {row.icon}
+          </span>
           <span className="lis-fact__label">{row.label}</span>
           <span className="lis-fact__value">{row.value}</span>
         </div>
@@ -325,10 +332,10 @@ function FactsSection({ facts }) {
  * @returns {{ text: string, color: string }}
  */
 function uvIndexLabel(uv) {
-  if (uv <= 2) return { text: 'low',      color: '#4caf50' };
+  if (uv <= 2) return { text: 'low', color: '#4caf50' };
   if (uv <= 5) return { text: 'moderate', color: '#ffc107' };
-  if (uv <= 7) return { text: 'high',     color: '#ff9800' };
-  return             { text: 'very high', color: '#f44336' };
+  if (uv <= 7) return { text: 'high', color: '#ff9800' };
+  return { text: 'very high', color: '#f44336' };
 }
 
 /**
@@ -337,12 +344,12 @@ function uvIndexLabel(uv) {
  * @returns {{ text: string, color: string }}
  */
 function airQualityLabel(aqi) {
-  if (aqi <= 20)  return { text: 'Good',           color: '#50ccb0' };
-  if (aqi <= 50)  return { text: 'Fair',           color: '#a8c84a' };
-  if (aqi <= 100) return { text: 'Moderate',       color: '#f0c020' };
-  if (aqi <= 150) return { text: 'Poor',           color: '#ff9800' };
-  if (aqi <= 200) return { text: 'Very Poor',      color: '#f44336' };
-  return             { text: 'Extremely Poor', color: '#960032' };
+  if (aqi <= 20) return { text: 'Good', color: '#50ccb0' };
+  if (aqi <= 50) return { text: 'Fair', color: '#a8c84a' };
+  if (aqi <= 100) return { text: 'Moderate', color: '#f0c020' };
+  if (aqi <= 150) return { text: 'Poor', color: '#ff9800' };
+  if (aqi <= 200) return { text: 'Very Poor', color: '#f44336' };
+  return { text: 'Extremely Poor', color: '#960032' };
 }
 
 /** @param {string} hhmm - Time in `"HH:MM"` format. @returns {number} Minutes since midnight. */
@@ -396,7 +403,8 @@ function DaylightBar({ sunrise, sunset }) {
  */
 function WeatherStrip({ weatherInfo }) {
   const descText = weatherInfo.description.split(' ').slice(0, -1).join(' ');
-  const { sunrise, sunset, humidity, uvIndex, apparentTemperature, airQuality, windDirection } = weatherInfo;
+  const { sunrise, sunset, humidity, uvIndex, apparentTemperature, airQuality, windDirection } =
+    weatherInfo;
   const temp = Math.round(weatherInfo.temperature);
   // Show "feels like" whenever the rounded value differs from the actual temp.
   const feelsLike = apparentTemperature != null ? Math.round(apparentTemperature) : null;
@@ -408,17 +416,25 @@ function WeatherStrip({ weatherInfo }) {
         <div className="lis-weather-body">
           <div className="lis-weather-top">
             <span className="lis-weather-temp">{temp}°</span>
-            {showFeelsLike && (
-              <span className="lis-weather-feels">· feels like {feelsLike}°</span>
-            )}
+            {showFeelsLike && <span className="lis-weather-feels">· feels like {feelsLike}°</span>}
             <span className="lis-weather-desc">{descText}</span>
           </div>
           <div className="lis-weather-meta">
             <span className="lis-weather-meta__item">
-              <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                <path d="M9.59 4.59A2 2 0 1 1 11 8H2"/>
-                <path d="M12.73 19.41A2 2 0 1 0 14 16H2"/>
-                <path d="M16.27 7.73A2.5 2.5 0 1 1 18.5 12H2"/>
+              <svg
+                viewBox="0 0 24 24"
+                width="13"
+                height="13"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M9.59 4.59A2 2 0 1 1 11 8H2" />
+                <path d="M12.73 19.41A2 2 0 1 0 14 16H2" />
+                <path d="M16.27 7.73A2.5 2.5 0 1 1 18.5 12H2" />
               </svg>
               {windDirection != null && (
                 // Wind direction is where the wind comes FROM; add 180° so the
@@ -426,40 +442,41 @@ function WeatherStrip({ weatherInfo }) {
                 <svg
                   className="lis-wind-arrow"
                   style={{ transform: `rotate(${windDirection + 180}deg)` }}
-                  viewBox="0 0 24 24" width="12" height="12"
-                  fill="currentColor" aria-hidden="true"
+                  viewBox="0 0 24 24"
+                  width="12"
+                  height="12"
+                  fill="currentColor"
+                  aria-hidden="true"
                 >
                   <path d="M12 2 L18 20 L12 16 L6 20 Z" />
                 </svg>
               )}
               {Math.round(weatherInfo.windSpeed)} km/h
             </span>
-            {humidity != null && (
-              <span className="lis-weather-meta__item">
-                💧 {humidity}%
-              </span>
-            )}
-            {uvIndex != null && (() => {
-              const { text, color } = uvIndexLabel(uvIndex);
-              return (
-                <span className="lis-weather-meta__item" style={{ color }}>
-                  UV {uvIndex} <span style={{ fontSize: '0.75em', opacity: 0.85 }}>{text}</span>
-                </span>
-              );
-            })()}
+            {humidity != null && <span className="lis-weather-meta__item">💧 {humidity}%</span>}
+            {uvIndex != null &&
+              (() => {
+                const { text, color } = uvIndexLabel(uvIndex);
+                return (
+                  <span className="lis-weather-meta__item" style={{ color }}>
+                    UV {uvIndex} <span style={{ fontSize: '0.75em', opacity: 0.85 }}>{text}</span>
+                  </span>
+                );
+              })()}
           </div>
         </div>
       </div>
-      {airQuality?.aqi != null && (() => {
-        const { text, color } = airQualityLabel(airQuality.aqi);
-        return (
-          <div className="lis-aqi-row">
-            <span className="lis-aqi-dot" style={{ background: color }} aria-hidden="true" />
-            <span className="lis-aqi-label">AQI {text}</span>
-            <span className="lis-aqi-value">{airQuality.aqi}</span>
-          </div>
-        );
-      })()}
+      {airQuality?.aqi != null &&
+        (() => {
+          const { text, color } = airQualityLabel(airQuality.aqi);
+          return (
+            <div className="lis-aqi-row">
+              <span className="lis-aqi-dot" style={{ background: color }} aria-hidden="true" />
+              <span className="lis-aqi-label">AQI {text}</span>
+              <span className="lis-aqi-value">{airQuality.aqi}</span>
+            </div>
+          );
+        })()}
       {sunrise && sunset && <DaylightBar sunrise={sunrise} sunset={sunset} />}
     </div>
   );
@@ -494,7 +511,19 @@ function WeatherStrip({ weatherInfo }) {
  * @param {LocationInfoSheetProps} props
  * @returns {import('react').ReactElement}
  */
-function LocationInfoSheet({ opened, onClosed, locationInfo, loading, onShowRoute, routingActive, routeInfo, distanceToUser, isFavourite, onToggleFavourite, initialCollapsed = false }) {
+function LocationInfoSheet({
+  opened,
+  onClosed,
+  locationInfo,
+  loading,
+  onShowRoute,
+  routingActive,
+  routeInfo,
+  distanceToUser,
+  isFavourite,
+  onToggleFavourite,
+  initialCollapsed = false,
+}) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [shareMessage, setShareMessage] = useState('');
   const [coordsCopied, setCoordsCopied] = useState(false);
@@ -657,20 +686,23 @@ function LocationInfoSheet({ opened, onClosed, locationInfo, loading, onShowRout
               {loading ? (
                 <span className="lis-skeleton lis-skeleton--title" aria-label="Loading" />
               ) : (
-                locationInfo?.placeName ?? 'Unknown location'
+                (locationInfo?.placeName ?? 'Unknown location')
               )}
             </div>
-            {!loading && !locationInfo?.poi && locationInfo?.address &&
+            {!loading &&
+              !locationInfo?.poi &&
+              locationInfo?.address &&
               locationInfo.address !== locationInfo.placeName && (
-              <div className="location-info-sheet__address">
-                {locationInfo.address}
-              </div>
-            )}
+                <div className="location-info-sheet__address">{locationInfo.address}</div>
+              )}
             {!loading && locationInfo?.country && (
               <div className="location-info-sheet__country">
                 {locationInfo.countryCode
                   ? String.fromCodePoint(
-                      ...locationInfo.countryCode.toUpperCase().split('').map(c => 0x1F1E6 - 65 + c.charCodeAt(0))
+                      ...locationInfo.countryCode
+                        .toUpperCase()
+                        .split('')
+                        .map((c) => 0x1f1e6 - 65 + c.charCodeAt(0)),
                     ) + ' '
                   : ''}
                 {locationInfo.country}
@@ -684,9 +716,22 @@ function LocationInfoSheet({ opened, onClosed, locationInfo, loading, onShowRout
             aria-label={isFavourite ? 'Remove from favourites' : 'Add to favourites'}
             aria-pressed={!!isFavourite}
             title={isFavourite ? 'Remove from favourites' : 'Add to favourites'}
-            onClick={(e) => { e.stopPropagation(); onToggleFavourite?.(); }}
+            onClick={(e) => {
+              e.stopPropagation();
+              onToggleFavourite?.();
+            }}
           >
-            <svg viewBox="0 0 24 24" width="18" height="18" fill={isFavourite ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <svg
+              viewBox="0 0 24 24"
+              width="18"
+              height="18"
+              fill={isFavourite ? 'currentColor' : 'none'}
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
               <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
             </svg>
           </button>
@@ -701,7 +746,9 @@ function LocationInfoSheet({ opened, onClosed, locationInfo, loading, onShowRout
               const sheetEl = sheetElRef.current ?? document.querySelector('.location-info-sheet');
               if (sheetEl) {
                 sheetElRef.current = sheetEl;
-                snapTo(sheetEl, PEEK_HEIGHT, () => { flushSync(() => applyExpanded(false)); });
+                snapTo(sheetEl, PEEK_HEIGHT, () => {
+                  flushSync(() => applyExpanded(false));
+                });
               }
               onShowRoute();
             }}
@@ -716,9 +763,22 @@ function LocationInfoSheet({ opened, onClosed, locationInfo, loading, onShowRout
             disabled={!canShare}
             aria-label="Share location"
             title="Share location"
-            onClick={(e) => { e.stopPropagation(); handleShare(); }}
+            onClick={(e) => {
+              e.stopPropagation();
+              handleShare();
+            }}
           >
-            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <svg
+              viewBox="0 0 24 24"
+              width="16"
+              height="16"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
               <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" />
               <polyline points="16 6 12 2 8 6" />
               <line x1="12" y1="2" x2="12" y2="15" />
@@ -727,10 +787,22 @@ function LocationInfoSheet({ opened, onClosed, locationInfo, loading, onShowRout
 
           <button
             className="location-info-sheet__close-btn"
-            onClick={(e) => { e.stopPropagation(); handleClose(); }}
+            onClick={(e) => {
+              e.stopPropagation();
+              handleClose();
+            }}
             aria-label="Close"
           >
-            <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" strokeWidth="2.5" fill="none" strokeLinecap="round" aria-hidden="true">
+            <svg
+              viewBox="0 0 24 24"
+              width="14"
+              height="14"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              fill="none"
+              strokeLinecap="round"
+              aria-hidden="true"
+            >
               <line x1="18" y1="6" x2="6" y2="18" />
               <line x1="6" y1="6" x2="18" y2="18" />
             </svg>
@@ -740,10 +812,7 @@ function LocationInfoSheet({ opened, onClosed, locationInfo, loading, onShowRout
 
       {/* Scrollable body */}
       <div className="location-info-sheet__scroll">
-
-        {shareMessage && (
-          <div className="lis-toast">{shareMessage}</div>
-        )}
+        {shareMessage && <div className="lis-toast">{shareMessage}</div>}
 
         {loading ? (
           <div className="lis-skeleton lis-skeleton--hero" />
@@ -755,10 +824,7 @@ function LocationInfoSheet({ opened, onClosed, locationInfo, loading, onShowRout
               className="lis-hero"
             />
           ) : (
-            <PhotoCarousel
-              photos={locationInfo.wikiPhotos}
-              placeName={locationInfo.placeName}
-            />
+            <PhotoCarousel photos={locationInfo.wikiPhotos} placeName={locationInfo.placeName} />
           )
         ) : null}
 
@@ -772,9 +838,19 @@ function LocationInfoSheet({ opened, onClosed, locationInfo, loading, onShowRout
 
         {routeInfo && (
           <div className="lis-route-card">
-            <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <circle cx="12" cy="12" r="10"/>
-              <polyline points="12 6 12 12 16 14"/>
+            <svg
+              viewBox="0 0 24 24"
+              width="15"
+              height="15"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <circle cx="12" cy="12" r="10" />
+              <polyline points="12 6 12 12 16 14" />
             </svg>
             <span className="lis-route-card__distance">{formatDistance(routeInfo.distance)}</span>
             <span className="lis-route-card__sep">·</span>
@@ -786,24 +862,54 @@ function LocationInfoSheet({ opened, onClosed, locationInfo, loading, onShowRout
           <div className="lis-stats">
             {latLabel && lngLabel && (
               <div className="lis-stat">
-                <svg className="lis-stat__icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                  <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+                <svg
+                  className="lis-stat__icon"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                  aria-hidden="true"
+                >
+                  <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" />
                 </svg>
-                <span className="lis-stat__value lis-stat__value--mono">{latLabel} · {lngLabel}</span>
+                <span className="lis-stat__value lis-stat__value--mono">
+                  {latLabel} · {lngLabel}
+                </span>
                 <button
                   className="lis-stat__copy"
-                  onClick={(e) => { e.stopPropagation(); handleCopyCoords(); }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleCopyCoords();
+                  }}
                   aria-label="Copy coordinates"
                   title="Copy coordinates"
                 >
                   {coordsCopied ? (
-                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                      <polyline points="20 6 9 17 4 12"/>
+                    <svg
+                      viewBox="0 0 24 24"
+                      width="14"
+                      height="14"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      aria-hidden="true"
+                    >
+                      <polyline points="20 6 9 17 4 12" />
                     </svg>
                   ) : (
-                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                      <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
-                      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                    <svg
+                      viewBox="0 0 24 24"
+                      width="14"
+                      height="14"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      aria-hidden="true"
+                    >
+                      <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
                     </svg>
                   )}
                 </button>
@@ -811,7 +917,12 @@ function LocationInfoSheet({ opened, onClosed, locationInfo, loading, onShowRout
             )}
             {locationInfo?.elevation != null && (
               <div className="lis-stat">
-                <svg className="lis-stat__icon" viewBox="0 0 20 14" fill="currentColor" aria-hidden="true">
+                <svg
+                  className="lis-stat__icon"
+                  viewBox="0 0 20 14"
+                  fill="currentColor"
+                  aria-hidden="true"
+                >
                   <path d="M0 14 L7 2 L11 8 L14 4 L20 14 Z" />
                 </svg>
                 <span className="lis-stat__value">{locationInfo.elevation} m above sea level</span>
@@ -819,21 +930,46 @@ function LocationInfoSheet({ opened, onClosed, locationInfo, loading, onShowRout
             )}
             {distanceToUser != null && (
               <div className="lis-stat">
-                <svg className="lis-stat__icon" viewBox="0 0 14 14" fill="currentColor" aria-hidden="true">
+                <svg
+                  className="lis-stat__icon"
+                  viewBox="0 0 14 14"
+                  fill="currentColor"
+                  aria-hidden="true"
+                >
                   <circle cx="2" cy="2" r="1.8" />
-                  <line x1="2" y1="2" x2="12" y2="12" stroke="currentColor" strokeWidth="1.3" strokeDasharray="2.5 2" strokeLinecap="round" />
+                  <line
+                    x1="2"
+                    y1="2"
+                    x2="12"
+                    y2="12"
+                    stroke="currentColor"
+                    strokeWidth="1.3"
+                    strokeDasharray="2.5 2"
+                    strokeLinecap="round"
+                  />
                   <circle cx="12" cy="12" r="1.8" />
                 </svg>
-                <span className="lis-stat__value">{formatDistance(distanceToUser)} from your location</span>
+                <span className="lis-stat__value">
+                  {formatDistance(distanceToUser)} from your location
+                </span>
               </div>
             )}
             {locationInfo?.weatherInfo?.timezone && (
               <div className="lis-stat">
-                <svg className="lis-stat__icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
+                <svg
+                  className="lis-stat__icon"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                  aria-hidden="true"
+                >
+                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z" />
                 </svg>
                 <span className="lis-stat__value">
-                  {new Intl.DateTimeFormat('en-GB', { timeZone: locationInfo.weatherInfo.timezone, hour: '2-digit', minute: '2-digit' }).format(new Date())}
+                  {new Intl.DateTimeFormat('en-GB', {
+                    timeZone: locationInfo.weatherInfo.timezone,
+                    hour: '2-digit',
+                    minute: '2-digit',
+                  }).format(new Date())}
                   {' · '}
                   {locationInfo.weatherInfo.timezone}
                 </span>
@@ -867,7 +1003,17 @@ function LocationInfoSheet({ opened, onClosed, locationInfo, loading, onShowRout
                 className="lis-wiki-link"
               >
                 Read more on Wikipedia
-                <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <svg
+                  viewBox="0 0 24 24"
+                  width="13"
+                  height="13"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
                   <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
                   <polyline points="15 3 21 3 21 9" />
                   <line x1="10" y1="14" x2="21" y2="3" />
@@ -876,7 +1022,6 @@ function LocationInfoSheet({ opened, onClosed, locationInfo, loading, onShowRout
             )}
           </div>
         ) : null}
-
       </div>
     </Sheet>
   );

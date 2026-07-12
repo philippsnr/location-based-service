@@ -27,7 +27,7 @@ function readHistory() {
 
 function saveToHistory(item) {
   const history = readHistory().filter(
-    (h) => !(Math.abs(h.lat - item.lat) < 1e-5 && Math.abs(h.lng - item.lng) < 1e-5)
+    (h) => !(Math.abs(h.lat - item.lat) < 1e-5 && Math.abs(h.lng - item.lng) < 1e-5),
   );
   history.unshift({ name: item.name, lat: item.lat, lng: item.lng, type: item.type });
   try {
@@ -133,7 +133,8 @@ export default function SearchControl({ onSelect }) {
   };
 
   const showHistory = open && query.trim().length < MIN_QUERY_LENGTH && history.length > 0;
-  const showResults = open && query.trim().length >= MIN_QUERY_LENGTH && (loading || results.length > 0);
+  const showResults =
+    open && query.trim().length >= MIN_QUERY_LENGTH && (loading || results.length > 0);
 
   return (
     <div className="search-control" ref={containerRef}>
@@ -176,7 +177,10 @@ export default function SearchControl({ onSelect }) {
               onClick={() => handleSelect(h)}
             >
               <div className="search-control__item-name">
-                <HistoryIcon className="search-control__history-icon" sx={{ fontSize: 14, color: '#999', mr: '8px', flexShrink: 0 }} />
+                <HistoryIcon
+                  className="search-control__history-icon"
+                  sx={{ fontSize: 14, color: '#999', mr: '8px', flexShrink: 0 }}
+                />
                 <span className="search-control__item-name-text">{h.name}</span>
                 {h.type && <span className="place-type-badge">{h.type}</span>}
               </div>
@@ -202,9 +206,7 @@ export default function SearchControl({ onSelect }) {
                   <span className="search-control__item-name-text">{r.name}</span>
                   {r.type && <span className="place-type-badge">{r.type}</span>}
                 </div>
-                {r.country && (
-                  <div className="search-control__item-country">{r.country}</div>
-                )}
+                {r.country && <div className="search-control__item-country">{r.country}</div>}
               </li>
             ))}
         </ul>

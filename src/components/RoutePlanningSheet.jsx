@@ -207,9 +207,7 @@ function AddressField({ label, query, setQuery, coords, setCoords, placeholder }
       </div>
       {open && (searching || results.length > 0) && (
         <ul className="route-sheet__results">
-          {searching && (
-            <li className="route-sheet__results-status">Searching…</li>
-          )}
+          {searching && <li className="route-sheet__results-status">Searching…</li>}
           {!searching &&
             results.map((r, i) => (
               <li
@@ -221,9 +219,7 @@ function AddressField({ label, query, setQuery, coords, setCoords, placeholder }
                   <span className="route-sheet__result-name-text">{r.name}</span>
                   {r.type && <span className="place-type-badge">{r.type}</span>}
                 </div>
-                {r.country && (
-                  <div className="route-sheet__result-country">{r.country}</div>
-                )}
+                {r.country && <div className="route-sheet__result-country">{r.country}</div>}
               </li>
             ))}
         </ul>
@@ -267,7 +263,7 @@ export default function RoutePlanningSheet({
   const [startCoords, setStartCoords] = useState(userPosition ?? null);
   const [endQuery, setEndQuery] = useState(destination?.placeName ?? '');
   const [endCoords, setEndCoords] = useState(
-    destination?.lat != null ? L.latLng(destination.lat, destination.lng) : null
+    destination?.lat != null ? L.latLng(destination.lat, destination.lng) : null,
   );
   const [travelMode, setTravelMode] = useState('car');
   const [routePreview, setRoutePreview] = useState(null);
@@ -426,7 +422,8 @@ export default function RoutePlanningSheet({
     if (!startCoords || !endCoords) return;
     onConfirmRoute(startCoords, endCoords, travelMode);
     setRouteActive(true);
-    const sheetEl = sheetElRef.current ?? document.querySelector('.route-planning-sheet.sheet-modal');
+    const sheetEl =
+      sheetElRef.current ?? document.querySelector('.route-planning-sheet.sheet-modal');
     if (sheetEl) {
       sheetElRef.current = sheetEl;
       snapTo(sheetEl, PEEK_HEIGHT, () => {
@@ -470,7 +467,16 @@ export default function RoutePlanningSheet({
           {routeActive ? (
             <>
               <div className="route-sheet__active-icon">
-                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <svg
+                  viewBox="0 0 24 24"
+                  width="18"
+                  height="18"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
                   <polygon points="3 11 22 2 13 21 11 13 3 11" />
                 </svg>
               </div>
@@ -506,8 +512,9 @@ export default function RoutePlanningSheet({
         </div>
       </div>
 
-      {!routeActive && <div className="route-planning-sheet__body">
-        <>
+      {!routeActive && (
+        <div className="route-planning-sheet__body">
+          <>
             <AddressField
               label="From"
               query={startQuery}
@@ -530,10 +537,21 @@ export default function RoutePlanningSheet({
                 className={`route-sheet__mode-btn${travelMode === 'car' ? ' route-sheet__mode-btn--active' : ''}`}
                 onClick={() => setTravelMode('car')}
               >
-                <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                  <rect x="1" y="11" width="22" height="8" rx="2" ry="2"/>
-                  <path d="M5 11V7a7 7 0 0 1 14 0v4"/>
-                  <circle cx="7.5" cy="19" r="1.5"/><circle cx="16.5" cy="19" r="1.5"/>
+                <svg
+                  viewBox="0 0 24 24"
+                  width="22"
+                  height="22"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
+                  <rect x="1" y="11" width="22" height="8" rx="2" ry="2" />
+                  <path d="M5 11V7a7 7 0 0 1 14 0v4" />
+                  <circle cx="7.5" cy="19" r="1.5" />
+                  <circle cx="16.5" cy="19" r="1.5" />
                 </svg>
                 Drive
               </button>
@@ -541,11 +559,21 @@ export default function RoutePlanningSheet({
                 className={`route-sheet__mode-btn${travelMode === 'foot' ? ' route-sheet__mode-btn--active' : ''}`}
                 onClick={() => setTravelMode('foot')}
               >
-                <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                  <circle cx="12" cy="4" r="1.5"/>
-                  <path d="M9 8l-2 5h5l1 5"/>
-                  <path d="M13 8l2 3-2 2"/>
-                  <path d="M7 13l-2 5"/>
+                <svg
+                  viewBox="0 0 24 24"
+                  width="22"
+                  height="22"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
+                  <circle cx="12" cy="4" r="1.5" />
+                  <path d="M9 8l-2 5h5l1 5" />
+                  <path d="M13 8l2 3-2 2" />
+                  <path d="M7 13l-2 5" />
                 </svg>
                 Walk
               </button>
@@ -553,12 +581,23 @@ export default function RoutePlanningSheet({
                 className={`route-sheet__mode-btn${travelMode === 'bike' ? ' route-sheet__mode-btn--active' : ''}`}
                 onClick={() => setTravelMode('bike')}
               >
-                <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                  <circle cx="5.5" cy="17.5" r="3.5"/><circle cx="18.5" cy="17.5" r="3.5"/>
-                  <path d="M15 6a1 1 0 0 0-1-1h-2"/>
-                  <path d="M15 6l-3 8H5.5"/>
-                  <path d="M15 6l3.5 5.5"/>
-                  <path d="M18.5 11.5L18.5 17.5"/>
+                <svg
+                  viewBox="0 0 24 24"
+                  width="22"
+                  height="22"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
+                  <circle cx="5.5" cy="17.5" r="3.5" />
+                  <circle cx="18.5" cy="17.5" r="3.5" />
+                  <path d="M15 6a1 1 0 0 0-1-1h-2" />
+                  <path d="M15 6l-3 8H5.5" />
+                  <path d="M15 6l3.5 5.5" />
+                  <path d="M18.5 11.5L18.5 17.5" />
                 </svg>
                 Bike
               </button>
@@ -601,7 +640,8 @@ export default function RoutePlanningSheet({
               Get Directions
             </button>
           </>
-      </div>}
+        </div>
+      )}
     </Sheet>
   );
 }
