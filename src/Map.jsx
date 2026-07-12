@@ -209,7 +209,7 @@ async function resolveHeroPhotos(lat, lng, hint, cityName) {
  *   `elevation` are attached separately by the caller.
  */
 async function fetchLocationInfo(lat, lng, hint = null) {
-  const { placeName, cityName, country, countryCode, address } = await reverseGeocode(lat, lng);
+  const { placeName, cityName, country, countryCode, address, osmType, osmClass } = await reverseGeocode(lat, lng);
   const searchName = hint?.split(',')[0].trim() || null;
   const [wikiResult, heroResult] = await Promise.allSettled([
     resolveWikiSummary(lat, lng, searchName, cityName),
@@ -233,6 +233,8 @@ async function fetchLocationInfo(lat, lng, hint = null) {
     address,
     country,
     countryCode,
+    osmType,
+    osmClass,
   };
 }
 
@@ -268,21 +270,63 @@ function LocationMarker({ position, onSelect, placeName }) {
   );
 }
 
+const ZOOM_BY_FEATURE = {
+  // place types
+  city: 13,
+  town: 13,
+  village: 14,
+  hamlet: 14,
+  suburb: 14,
+  neighbourhood: 15,
+  // water / natural
+  water: 11,
+  lake: 11,
+  river: 11,
+  sea: 8,
+  ocean: 5,
+  forest: 13,
+  park: 13,
+  nature_reserve: 12,
+  // admin boundaries
+  country: 5,
+  state: 7,
+  county: 10,
+  administrative: 12,
+  // street / POI
+  road: 17,
+  street: 17,
+  house: 18,
+  building: 18,
+  amenity: 17,
+  tourism: 17,
+  shop: 17,
+};
+
+/**
+ * Derive a sensible zoom level from Nominatim's `type` and `class` fields.
+ * @param {string|null} osmType
+ * @param {string|null} osmClass
+ * @returns {number}
+ */
+function deriveZoom(osmType, osmClass) {
+  return ZOOM_BY_FEATURE[osmType] ?? ZOOM_BY_FEATURE[osmClass] ?? 15;
+}
+
 /**
  * Smoothly flies the map to `position` on every change. Renders nothing.
- * @param {{ position: import('leaflet').LatLng | LatLngTuple | null }} props
+ * @param {{ position: import('leaflet').LatLng | LatLngTuple | null, osmType: string|null, osmClass: string|null }} props
  * @returns {null}
  */
-function ZoomToLocation({ position }) {
+function ZoomToLocation({ target }) {
   const map = useMap();
 
   useEffect(() => {
-    if (position) {
-      map.flyTo(position, 18, {
-        duration: 2,
+    if (target) {
+      map.flyTo(target.position, deriveZoom(target.osmType, target.osmClass), {
+        duration: 1.5,
       });
     }
-  }, [position, map]);
+  }, [target, map]);
 
   return null;
 }
@@ -315,6 +359,7 @@ function FitBoundsOnPoi({ poiMarkers }) {
  */
 function Map() {
   const [position, setPosition] = useState(null);
+  const [zoomTarget, setZoomTarget] = useState(null);
   const [userPosition, setUserPosition] = useState(null);
   const [userAccuracy, setUserAccuracy] = useState(null);
   const [mapCenter, setMapCenter] = useState(null);
@@ -377,7 +422,7 @@ function Map() {
     return () => window.clearTimeout(t);
   }, [geoMessage]);
 
-  const handlePositionSelect = useCallback(async (latlng, hint = null, { collapsed = false } = {}) => {
+  const handlePositionSelect = useCallback(async (latlng, hint = null, { collapsed = false, osmType: hintOsmType = null } = {}) => {
     const lat = latlng.lat ?? latlng[0];
     const lng = latlng.lng ?? latlng[1];
     setIsPoiSheet(false);
@@ -404,7 +449,8 @@ function Map() {
       const elevation = elevationResult.status === 'fulfilled' ? elevationResult.value : null;
       const airQuality = airQualityResult.status === 'fulfilled' ? airQualityResult.value : null;
       const weatherInfo = baseWeather ? { ...baseWeather, airQuality } : null;
-      setLocationInfo({ ...info, weatherInfo, elevation });
+      setLocationInfo({ ...info, weatherInfo, elevation, osmType: hintOsmType ?? info.osmType, osmClass: info.osmClass });
+      setZoomTarget({ position: L.latLng(lat, lng), osmType: hintOsmType ?? info.osmType ?? null, osmClass: info.osmClass ?? null });
     } catch (err) {
       console.warn('Failed to fetch location info:', err);
       setLocationInfo({ placeName: hint ?? 'Unknown location', lat, lng, wikiSummary: null, wikiUrl: null, weatherInfo: null });
@@ -693,7 +739,7 @@ function Map() {
               zIndex={2}
             />
           )}
-          <ZoomToLocation position={position} />
+          <ZoomToLocation target={zoomTarget} />
           <LocationMarker position={isPoiSheet ? null : position} onSelect={handlePositionSelect} placeName={locationInfo?.placeName} />
           <UserLocationMarker position={userPosition} accuracy={userAccuracy} />
           <LocateControl onLocate={handleLocate} onError={setGeoMessage} />
@@ -719,7 +765,7 @@ function Map() {
             />
           )}
         </MapContainer>
-        <SearchControl onSelect={({ lat, lng, name }) => handlePositionSelect(L.latLng(lat, lng), name)} />
+        <SearchControl onSelect={({ lat, lng, name, type }) => handlePositionSelect(L.latLng(lat, lng), name, { osmType: type })} />
         <PoiFilterBar activeFilter={activeFilter} loading={poiLoading} error={poiError} onToggle={handleFilterToggle} />
         <button
           type="button"
@@ -758,6 +804,7 @@ function Map() {
           setRouteInfo(null);
           setConfirmedRoute(null);
           setPosition(null);
+          setZoomTarget(null);
         }}
         locationInfo={locationInfo}
         loading={infoLoading}
