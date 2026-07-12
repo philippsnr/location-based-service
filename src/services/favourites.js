@@ -73,12 +73,12 @@ export function removeFavourite(lat, lng) {
   notify();
 }
 
-export function toggleFavourite({ placeName, lat, lng }) {
+export function toggleFavourite({ placeName, lat, lng, osmType = null }) {
   if (isFavourite(lat, lng)) {
     removeFavourite(lat, lng);
     return false;
   }
-  addFavourite({ placeName, lat, lng });
+  addFavourite({ placeName, lat, lng, osmType });
   return true;
 }
 
