@@ -3,6 +3,12 @@ import L from 'leaflet';
 import HistoryIcon from '@mui/icons-material/History';
 import { forwardGeocode } from '../services/nominatim';
 
+/**
+ * @file Map search box with debounced forward-geocoding autocomplete. Guards
+ * against stale responses and stops Leaflet from treating clicks/scrolls in the
+ * control as map interactions.
+ */
+
 const MIN_QUERY_LENGTH = 3;
 const DEBOUNCE_MS = 300;
 const HISTORY_KEY = 'search-history';
@@ -31,6 +37,17 @@ function saveToHistory(item) {
   }
 }
 
+/**
+ * @typedef {Object} SearchControlProps
+ * @property {(place: {lat: number, lng: number, name: string, type: string}) => void} onSelect - Fires with the chosen place when a result is selected.
+ */
+
+/**
+ * Search box that autocompletes place names via {@link forwardGeocode} and
+ * reports the selected place to the parent.
+ * @param {SearchControlProps} props
+ * @returns {import('react').ReactElement}
+ */
 export default function SearchControl({ onSelect }) {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState([]);

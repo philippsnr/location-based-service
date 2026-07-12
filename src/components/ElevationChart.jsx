@@ -1,5 +1,16 @@
 import { computeElevationStats } from '../services/elevationProfile';
 
+/**
+ * @file Elevation profile card for a planned route: a small SVG area chart of
+ * elevations plus ascent/descent/min/max stats. Handles loading and error
+ * states and renders nothing when there is too little data.
+ */
+
+/**
+ * Inline SVG area chart of the elevation samples, with min/mid/max y-axis labels.
+ * @param {{ elevations: number[] }} props - Elevations in metres, in route order.
+ * @returns {import('react').ReactElement}
+ */
 function ElevationSvgChart({ elevations }) {
   const W = 300, H = 108;
   const padL = 36, padR = 6, padT = 6, padB = 14;
@@ -52,6 +63,20 @@ function ElevationSvgChart({ elevations }) {
   );
 }
 
+/**
+ * @typedef {Object} ElevationChartProps
+ * @property {number[]} elevations - Elevation samples in metres, in route order.
+ * @property {boolean} loading - When true, shows a loading message.
+ * @property {boolean} error - When true, shows an "unavailable" message.
+ */
+
+/**
+ * Elevation profile card. Shows a loading or error state, and otherwise renders
+ * the SVG chart with ascent/descent/low/high stats.
+ * @param {ElevationChartProps} props
+ * @returns {import('react').ReactElement | null} Null when not loading/error and
+ *   fewer than two elevation samples are available.
+ */
 export default function ElevationChart({ elevations, loading, error }) {
   if (loading) {
     return (

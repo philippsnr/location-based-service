@@ -1,6 +1,20 @@
+/**
+ * @file Builds an elevation profile for a route by sampling points along its
+ * polyline and querying Open-Meteo's elevation API, plus stats (ascent,
+ * descent, min/max) derived from the sampled elevations.
+ */
+
 const ELEVATION_API_BASE = 'https://api.open-meteo.com/v1/elevation';
 const SAMPLE_COUNT = 100;
 
+/**
+ * Great-circle distance between two coordinates using the haversine formula.
+ * @param {number} lat1 - First point latitude in decimal degrees.
+ * @param {number} lng1 - First point longitude in decimal degrees.
+ * @param {number} lat2 - Second point latitude in decimal degrees.
+ * @param {number} lng2 - Second point longitude in decimal degrees.
+ * @returns {number} Distance in metres.
+ */
 function haversineMeters(lat1, lng1, lat2, lng2) {
   const R = 6371000;
   const dLat = ((lat2 - lat1) * Math.PI) / 180;
@@ -13,7 +27,14 @@ function haversineMeters(lat1, lng1, lat2, lng2) {
   return 2 * R * Math.asin(Math.sqrt(a));
 }
 
-// coords: GeoJSON LineString coordinates [[lng, lat], ...]
+/**
+ * Resample a polyline into `count` points spaced evenly by distance along the
+ * line (so densely-noded segments don't over-sample).
+ * @param {Array<[number, number]>} coords - GeoJSON LineString coordinates,
+ *   each `[lng, lat]`.
+ * @param {number} count - Number of evenly-spaced points to produce.
+ * @returns {Array<{lat: number, lng: number}>} The sampled points.
+ */
 function samplePolyline(coords, count) {
   if (coords.length < 2) return [{ lat: coords[0][1], lng: coords[0][0] }];
 
@@ -42,7 +63,15 @@ function samplePolyline(coords, count) {
   return samples;
 }
 
-// geojsonCoords: [[lng, lat], ...] from OSRM GeoJSON response
+/**
+ * Fetch an elevation profile for a route by sampling its polyline (up to
+ * {@link SAMPLE_COUNT} points) and querying the elevation API in one request.
+ * @param {Array<[number, number]>} geojsonCoords - Route coordinates from an
+ *   OSRM GeoJSON response, each `[lng, lat]`.
+ * @param {AbortSignal} [signal] - Optional signal to cancel the request.
+ * @returns {Promise<number[]>} Elevations in metres (rounded), one per sample.
+ * @throws {Error} When the request fails or the response contains no elevations.
+ */
 export async function fetchElevationProfile(geojsonCoords, signal) {
   const count = Math.min(SAMPLE_COUNT, Math.max(2, geojsonCoords.length));
   const points = samplePolyline(geojsonCoords, count);
@@ -63,6 +92,12 @@ export async function fetchElevationProfile(geojsonCoords, signal) {
   return elevations.map(Math.round);
 }
 
+/**
+ * Compute summary statistics from a sequence of elevations.
+ * @param {number[]} elevations - Elevations in metres, in route order.
+ * @returns {{ascent: number, descent: number, minElevation: number, maxElevation: number}}
+ *   Total ascent and descent (metres, rounded) plus the min/max elevation.
+ */
 export function computeElevationStats(elevations) {
   let ascent = 0;
   let descent = 0;

@@ -13,6 +13,8 @@ const BASE_URL = 'https://nominatim.openstreetmap.org';
  * @property {string|null} country - Full country name, or null.
  * @property {string|null} countryCode - ISO 3166-1 alpha-2 code, lowercase (from Nominatim's `country_code`).
  * @property {string|null} address - Full street-level address (`"<road> <house_number>, <postcode> <city>"`); null when no road is known.
+ * @property {string|null} osmType - OSM address/feature type (from Nominatim's `addresstype` or `type`), e.g. `"city"`, `"attraction"`; null when unknown.
+ * @property {string|null} osmClass - OSM feature class (Nominatim's `class`), e.g. `"boundary"`, `"tourism"`; null when unknown.
  */
 
 /**

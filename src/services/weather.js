@@ -1,3 +1,9 @@
+/**
+ * @file Fetches current weather from Open-Meteo's free, key-less forecast API
+ * and maps WMO weather codes to human-readable descriptions, icons and a visual
+ * theme (used to drive the animated backdrop in the location sheet).
+ */
+
 const WEATHER_API_BASE = 'https://api.open-meteo.com/v1/forecast';
 const CURRENT_PARAM_CANDIDATES = [
   'temperature_2m,apparent_temperature,weathercode,windspeed_10m,winddirection_10m,relative_humidity_2m,uv_index',
@@ -35,6 +41,12 @@ const WMO_WEATHER_MAP = {
   99: { description: 'Thunderstorm with heavy hail', icon: '⛈️' },
 };
 
+/**
+ * Look up the description and icon for a WMO weather code.
+ * @param {number} weatherCode - WMO weather interpretation code.
+ * @returns {{description: string, icon: string}} Metadata, with an "Unknown"
+ *   fallback for unrecognised codes.
+ */
 function getWeatherMeta(weatherCode) {
   return WMO_WEATHER_MAP[weatherCode] ?? {
     description: 'Unknown weather condition',
@@ -42,6 +54,17 @@ function getWeatherMeta(weatherCode) {
   };
 }
 
+/**
+ * Derive a visual theme from the weather code, factoring in day/night for clear
+ * skies. Night detection compares the current local time (in `timezone`)
+ * against sunrise/sunset; parsing failures fall back to daytime.
+ * @param {number} weatherCode - WMO weather interpretation code.
+ * @param {string|null} timezone - IANA timezone name (e.g. `"Europe/Berlin"`).
+ * @param {string|null} sunrise - Sunrise as `"HH:MM"` local time.
+ * @param {string|null} sunset - Sunset as `"HH:MM"` local time.
+ * @returns {'thunderstorm'|'rain'|'snow'|'fog'|'sunny'|'night-clear'|'cloudy'}
+ *   The theme key.
+ */
 function getWeatherTheme(weatherCode, timezone, sunrise, sunset) {
   let isNight = false;
   if (timezone && sunrise && sunset) {
@@ -70,6 +93,15 @@ function getWeatherTheme(weatherCode, timezone, sunrise, sunset) {
   return 'cloudy';
 }
 
+/**
+ * Fetch the current weather for a coordinate. Tries multiple `current`
+ * parameter spellings to tolerate Open-Meteo's older/newer field names.
+ * @param {number} lat - Latitude in decimal degrees.
+ * @param {number} lng - Longitude in decimal degrees.
+ * @returns {Promise<{temperature: number, apparentTemperature: number|null, weatherCode: number, windSpeed: number, windDirection: number|null, description: string, icon: string, sunrise: string|null, sunset: string|null, humidity: number|null, uvIndex: number|null, timezone: string|null, theme: string}>}
+ *   The current weather reading.
+ * @throws {Error} When every candidate request fails (aggregated message).
+ */
 export async function fetchWeather(lat, lng) {
   const lastErrors = [];
 

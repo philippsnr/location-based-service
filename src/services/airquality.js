@@ -1,9 +1,27 @@
-// Open-Meteo's air quality API is free and key-less, mirroring the weather
-// API's request pattern. We use the European Air Quality Index (european_aqi).
+/**
+ * @file Thin wrapper around Open-Meteo's free, key-less air quality API,
+ * mirroring the weather API's request pattern. Uses the European Air Quality
+ * Index (`european_aqi`).
+ */
+
 const AIR_QUALITY_API_BASE = 'https://air-quality-api.open-meteo.com/v1/air-quality';
 
-// Fetch the current European AQI (plus particulate matter) for a coordinate.
-// Returns { aqi, pm25, pm10 } or null if the value is unavailable.
+/**
+ * Result of {@link fetchAirQuality}.
+ * @typedef {Object} AirQuality
+ * @property {number} aqi - Current European Air Quality Index, rounded.
+ * @property {number|null} pm25 - Particulate matter ≤2.5 µm (µg/m³), or null.
+ * @property {number|null} pm10 - Particulate matter ≤10 µm (µg/m³), or null.
+ */
+
+/**
+ * Fetch the current European AQI (plus particulate matter) for a coordinate.
+ * @param {number} lat - Latitude in decimal degrees.
+ * @param {number} lng - Longitude in decimal degrees.
+ * @returns {Promise<AirQuality|null>} The air quality reading, or null when the
+ *   AQI value is unavailable.
+ * @throws {Error} When the network request fails (non-2xx response).
+ */
 export async function fetchAirQuality(lat, lng) {
   const url = new URL(AIR_QUALITY_API_BASE);
   url.searchParams.set('latitude', lat);

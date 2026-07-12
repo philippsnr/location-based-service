@@ -9,8 +9,14 @@ import 'leaflet/dist/leaflet.css';
 import 'leaflet-routing-machine/dist/leaflet-routing-machine.css';
 import App from './App.jsx';
 
+/**
+ * @file Application entry point. Registers Framework7-React, sets up the MUI
+ * theme, and mounts the {@link App} into the `#root` element.
+ */
+
 Framework7.use(Framework7React);
 
+/** MUI theme with the app's primary/secondary palette. */
 const theme = createTheme({
   palette: {
     primary: { main: '#1976d2' },

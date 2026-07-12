@@ -1,6 +1,17 @@
 import { useRegisterSW } from 'virtual:pwa-register/react';
 import { Snackbar, Button } from '@mui/material';
 
+/**
+ * @file Snackbar prompts for the PWA service worker lifecycle: an
+ * "offline ready" notice and a "new version available" refresh prompt. Checks
+ * for updates hourly.
+ */
+
+/**
+ * Renders the offline-ready and update-available snackbars, wiring the
+ * "Aktualisieren" action to activate the waiting service worker.
+ * @returns {import('react').ReactElement}
+ */
 function PWAUpdatePrompt() {
   const {
     offlineReady: [offlineReady, setOfflineReady],
